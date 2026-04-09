@@ -31,6 +31,25 @@ const ProfileTab = () => (
           <label className="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest px-1">Last Name</label>
           <input type="text" defaultValue="Hernández" className="w-full bg-white rounded-xl px-4 py-3 text-sm font-medium text-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/30 transition-all border-none" />
         </div>
+        <div className="space-y-2">
+          <label className="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest px-1">Phone Number</label>
+          <input type="tel" defaultValue="+502 5555 4444" className="w-full bg-white rounded-xl px-4 py-3 text-sm font-medium text-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/30 transition-all border-none" />
+        </div>
+        <div className="space-y-2">
+          <label className="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest px-1">Birthday</label>
+          <input type="date" className="w-full bg-white rounded-xl px-4 py-3 text-sm font-medium text-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/30 transition-all border-none" />
+        </div>
+        <div className="space-y-2 md:col-span-2">
+          <label className="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest px-1">Gender</label>
+          <div className="flex gap-4">
+            {['Male', 'Female', 'Other'].map(opt => (
+              <label key={opt} className="flex-1 flex items-center justify-center py-3 bg-white rounded-xl text-xs font-bold text-[var(--color-primary)] cursor-pointer hover:bg-[var(--color-surface-container-lowest)] transition-colors">
+                <input type="radio" name="gender" className="mr-2 accent-[var(--color-secondary)]" defaultChecked={opt === 'Male'} />
+                {opt}
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -38,27 +57,26 @@ const ProfileTab = () => (
 
 const AccountTab = () => (
   <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-    <div className="bg-white rounded-2xl p-8 ambient-shadow space-y-8">
-      <h3 className="text-lg font-bold text-[var(--color-primary)]">Security & Details</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest px-1">Phone Number</label>
-          <input type="tel" defaultValue="+502 5555 4444" className="w-full bg-[var(--color-surface-container-low)] rounded-xl px-4 py-3 text-sm font-medium text-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/30 transition-all border-none" />
-        </div>
-        <div className="space-y-2">
-          <label className="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest px-1">Birthday</label>
-          <input type="date" className="w-full bg-[var(--color-surface-container-low)] rounded-xl px-4 py-3 text-sm font-medium text-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/30 transition-all border-none" />
-        </div>
-        <div className="space-y-2 md:col-span-2">
-          <label className="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-widest px-1">Gender</label>
-          <div className="flex gap-4">
-            {['Male', 'Female', 'Other'].map(opt => (
-              <label key={opt} className="flex-1 flex items-center justify-center py-3 bg-[var(--color-surface-container-low)] rounded-xl text-xs font-bold text-[var(--color-primary)] cursor-pointer hover:bg-[var(--color-surface-container-high)] transition-colors">
-                <input type="radio" name="gender" className="mr-2 accent-[var(--color-secondary)]" defaultChecked={opt === 'Male'} />
-                {opt}
-              </label>
-            ))}
+    <div className="bg-[var(--color-surface-container-low)] rounded-2xl p-8 space-y-8">
+      <h3 className="text-lg font-bold text-[var(--color-primary)] font-headline">Security & Authentication</h3>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between p-4 bg-white rounded-xl">
+          <div>
+            <p className="text-sm font-bold text-[var(--color-primary)]">Password</p>
+            <p className="text-xs text-[var(--color-on-surface-variant)]">Last changed 3 months ago</p>
           </div>
+          <button className="px-4 py-2 bg-[var(--color-surface-container-high)] text-[var(--color-primary)] rounded-lg text-[10px] font-bold uppercase tracking-widest hover:brightness-95 transition-all">
+            Update
+          </button>
+        </div>
+        <div className="flex items-center justify-between p-4 bg-white rounded-xl">
+          <div>
+            <p className="text-sm font-bold text-[var(--color-primary)]">Two-Factor Authentication (2FA)</p>
+            <p className="text-xs text-[var(--color-on-surface-variant)]">Add an extra layer of security to your account.</p>
+          </div>
+          <button className="px-4 py-2 bg-[var(--color-secondary)] text-white rounded-lg text-[10px] font-bold uppercase tracking-widest shadow-lg hover:brightness-110 transition-all">
+            Enable
+          </button>
         </div>
       </div>
     </div>
@@ -95,7 +113,7 @@ const BillingTab = () => (
       </div>
 
       <div className="bg-[var(--color-surface-container-low)] rounded-2xl p-8 flex flex-col justify-center space-y-4">
-        <h4 className="text-sm font-bold text-[var(--color-primary)]">Default Payment Method</h4>
+        <h4 className="text-sm font-bold text-[var(--color-primary)] font-headline">Default Payment Method</h4>
         <p className="text-xs text-[var(--color-on-surface-variant)] leading-relaxed">
           Your primary card ends in 4251. Billing cycle resets every 14th of the month.
         </p>
@@ -106,10 +124,10 @@ const BillingTab = () => (
     </div>
 
     {/* Transactions */}
-    <div className="bg-white rounded-2xl p-8 ambient-shadow space-y-6">
+    <div className="bg-[var(--color-surface-container-low)] rounded-2xl p-8 space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-bold text-[var(--color-primary)]">Transaction History</h3>
-        <button className="text-xs font-bold text-[var(--color-secondary)] uppercase tracking-widest">Download All</button>
+        <h3 className="text-lg font-bold text-[var(--color-primary)] font-headline">Transaction History</h3>
+        <button className="text-xs font-bold text-[var(--color-secondary)] uppercase tracking-widest hover:underline">Download All</button>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left">
@@ -127,12 +145,12 @@ const BillingTab = () => (
               { desc: 'SMS Add-on Pack (5000)', date: 'Mar 12, 2024', amount: '$49.00', status: 'Completed' },
               { desc: 'Elite Monthly Subscription', date: 'Feb 14, 2024', amount: '$49.00', status: 'Completed' }
             ].map((row, idx) => (
-              <tr key={idx} className="group cursor-default">
+              <tr key={idx} className="group cursor-default border-t border-[var(--color-outline-variant)]/10">
                 <td className="py-4 font-bold text-[var(--color-primary)]">{row.desc}</td>
                 <td className="py-4 text-[var(--color-on-surface-variant)] text-xs">{row.date}</td>
                 <td className="py-4 text-right font-bold">{row.amount}</td>
                 <td className="py-4 text-center">
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded">
+                  <span className="text-[10px] font-bold text-[var(--color-primary)] bg-white px-2.5 py-1 rounded-full shadow-sm">
                     {row.status}
                   </span>
                 </td>
@@ -147,19 +165,19 @@ const BillingTab = () => (
 
 const TeamTab = () => (
   <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-    <div className="bg-white rounded-2xl p-8 ambient-shadow space-y-8">
+    <div className="bg-[var(--color-surface-container-low)] rounded-2xl p-8 space-y-8">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-bold text-[var(--color-primary)]">Co-Administrators</h3>
-        <button className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest">Add Member</button>
+        <h3 className="text-lg font-bold text-[var(--color-primary)] font-headline">Co-Administrators</h3>
+        <button className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-md hover:brightness-110 active:scale-95 transition-all">Add Member</button>
       </div>
       <div className="space-y-4">
         {[
           { name: 'Ana Sofía Lopez', role: 'Event Coordinator', email: 'ana.lopez@attenda.me' },
           { name: 'Carlos Morales', role: 'Security Manager', email: 'c.morales@attenda.me' }
         ].map((member, idx) => (
-          <div key={idx} className="flex items-center justify-between p-4 bg-[var(--color-surface-container-low)] rounded-xl">
+          <div key={idx} className="flex items-center justify-between p-4 bg-white rounded-xl ambient-shadow">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center font-bold text-xs text-[var(--color-primary)] ambient-shadow">
+              <div className="w-10 h-10 rounded-lg bg-[var(--color-surface-container-low)] flex items-center justify-center font-bold text-xs text-[var(--color-primary)]">
                 {member.name.split(' ').map(n => n[0]).join('')}
               </div>
               <div>
@@ -202,7 +220,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="w-full flex flex-col lg:flex-row gap-8 pb-20">
+    <div className="w-full flex flex-col lg:flex-row gap-8 pb-20 mt-4">
       
       {/* ─── Secondary Settings Sidebar ─── */}
       <aside className="lg:w-72 flex flex-col space-y-8 flex-shrink-0">
@@ -231,7 +249,7 @@ const Settings = () => {
         </nav>
 
         {/* Elite Plan Card */}
-        <div className="bg-[var(--color-primary)] rounded-2xl p-6 text-white space-y-4 relative overflow-hidden group">
+        <div className="bg-gradient-to-br from-[#0a1128] to-[#001b44] rounded-2xl p-6 text-white space-y-4 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:scale-110 transition-transform">
             <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
