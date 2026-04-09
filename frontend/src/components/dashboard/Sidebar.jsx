@@ -11,7 +11,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-64 h-screen bg-[var(--color-surface)] flex flex-col pt-8">
+    <div className="w-64 h-screen bg-white border-r border-gray-100 flex flex-col pt-8">
       <div className="px-8 flex-shrink-0">
         {/* We use structural padding to give the impression of a border without a hard line */}
         <Link to="/" className="text-2xl font-bold tracking-tight text-[var(--color-primary)]">
@@ -54,23 +54,23 @@ const Sidebar = () => {
         })}
       </nav>
 
-      <div className="p-4 mt-auto">
-        <div className="bg-[var(--color-surface-container-lowest)] rounded-xl p-4 flex items-center justify-between ambient-shadow">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[var(--color-surface-container-high)] flex items-center justify-center font-bold text-[var(--color-primary)] text-xs">
-              JD
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs font-bold text-[var(--color-primary)]">Jane Doe</span>
-              <span className="text-[10px] text-[var(--color-on-surface-variant)]">Free Plan</span>
-            </div>
+      <div className="p-4 mt-auto space-y-3">
+        <div className="bg-[#f8f9fa] rounded-xl p-4 flex items-center gap-3 border border-gray-100">
+          <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-sm shadow-sm">
+            JD
           </div>
-          <button className="text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)]">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-sm font-bold text-[var(--color-primary)] truncate">Jane Doe</span>
+            <span className="text-xs text-gray-500 truncate">Elite Plan</span>
+          </div>
         </div>
+        
+        <button className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-bold transition-colors">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Cerrar sesión
+        </button>
       </div>
     </div>
   );
