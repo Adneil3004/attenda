@@ -12,60 +12,6 @@ const Settings = () => {
   return (
     <div className="w-full h-full flex bg-[var(--color-surface)] text-[var(--color-on-surface-variant)] -mt-8 font-body">
       
-      {/* ─── Secondary Sidebar (Matches image left nav) ─── */}
-      <aside className="w-64 flex-shrink-0 flex flex-col justify-between py-10 px-6 hidden lg:flex">
-        <div className="space-y-8">
-          <div>
-            <h2 className="text-xl font-bold text-[var(--color-primary)] font-display flex items-center gap-2">
-              <div className="w-6 h-6 bg-black text-white rounded flex items-center justify-center">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                </svg>
-              </div>
-              Settings
-            </h2>
-            <p className="text-[10px] mt-1 text-gray-500">Manage your concierge preferences</p>
-          </div>
-
-          <nav className="space-y-2">
-            {navItems.map(item => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                  activeTab === item.id 
-                    ? 'bg-[#f3f0ff] text-[var(--color-secondary)]' 
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                </svg>
-                {item.id}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        <div className="space-y-4 pt-8 border-t border-gray-200">
-          <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-semibold">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Support
-          </button>
-          <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-semibold">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Logout
-          </button>
-          <button className="w-full py-2.5 bg-[#001b44] text-white rounded-lg text-xs font-bold shadow hover:brightness-110 transition-all">
-            Upgrade Plan
-          </button>
-        </div>
-      </aside>
-
       {/* ─── Main Content Area ─── */}
       <main className="flex-1 flex flex-col xl:flex-row gap-10 py-10 px-8 xl:px-12 overflow-y-auto w-full max-w-7xl mx-auto">
         
