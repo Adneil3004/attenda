@@ -18,7 +18,7 @@ const Landing = () => {
           Eliminate the chaos of manual event organization. From intelligent digital RSVPs to seamless QR check-ins, let technology handle the logistics while you enjoy the moment.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link to="/pricing" className="primary-gradient text-white px-8 py-4 rounded-md font-semibold text-lg hover:opacity-90 transition-opacity ambient-shadow w-full sm:w-auto text-center">
+          <Link to="/register" className="primary-gradient text-white px-8 py-4 rounded-md font-semibold text-lg hover:opacity-90 transition-opacity ambient-shadow w-full sm:w-auto text-center">
             Start for free
           </Link>
           <Link to="/contact" className="px-8 py-4 rounded-md font-semibold text-lg text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)] transition-colors ghost-border w-full sm:w-auto text-center">
