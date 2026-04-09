@@ -7,7 +7,7 @@ import Contact from './pages/Contact';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/attenda/">
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Landing />} />
