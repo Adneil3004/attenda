@@ -50,8 +50,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const resetPassword = async (email) => {
-    // Build the absolute URL for the reset page — works for both localhost and production
-    const redirectTo = `${window.location.origin}${window.location.pathname.replace(/\/[^/]*$/, '')}/reset-password`;
+    // We hardcode the base path '/attenda/' to match your Vite config
+    const redirectTo = `${window.location.origin}/attenda/reset-password`;
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
     if (error) throw error;
   };
