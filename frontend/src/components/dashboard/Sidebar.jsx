@@ -1,7 +1,28 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/login', { replace: true });
+    } catch (err) {
+      console.error('Sign out error:', err);
+    }
+  };
+
+  // Derive initials and display name from the Supabase user
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const initials = displayName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 
   const navItems = [
     { name: 'Overview', path: '/dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
@@ -57,15 +78,18 @@ const Sidebar = () => {
       <div className="p-4 mt-auto space-y-3">
         <div className="bg-[#f8f9fa] rounded-xl p-4 flex items-center gap-3 border border-gray-100">
           <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-sm shadow-sm">
-            JD
+            {initials}
           </div>
           <div className="flex flex-col overflow-hidden">
-            <span className="text-sm font-bold text-[var(--color-primary)] truncate">Jane Doe</span>
-            <span className="text-xs text-gray-500 truncate">Elite Plan</span>
+            <span className="text-sm font-bold text-[var(--color-primary)] truncate">{displayName}</span>
+            <span className="text-xs text-gray-500 truncate">{user?.email}</span>
           </div>
         </div>
         
-        <button className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-bold transition-colors">
+        <button
+          onClick={handleSignOut}
+          className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+        >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>

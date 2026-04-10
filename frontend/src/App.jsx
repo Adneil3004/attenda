@@ -13,6 +13,8 @@ import Guests from './pages/dashboard/Guests';
 import Settings from './pages/dashboard/Settings';
 import Tasks from './pages/dashboard/Tasks';
 
+import ProtectedRoute from './components/auth/ProtectedRoute';
+
 function App() {
   return (
     <BrowserRouter basename="/attenda/">
@@ -27,8 +29,15 @@ function App() {
           <Route path="/register" element={<Register />} />
         </Route>
 
-        {/* Dashboard/Admin Pages */}
-        <Route path="/dashboard" element={<DashboardLayout />}>
+        {/* Protected Dashboard Pages */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Overview />} />
           <Route path="guests" element={<Guests />} />
           <Route path="tasks" element={<Tasks />} />
