@@ -1,0 +1,83 @@
+using Attenda.Domain.Common;
+using Attenda.Domain.Enums;
+using Attenda.Domain.ValueObjects;
+
+namespace Attenda.Domain.Aggregates.EventAggregate;
+
+public class Event : AggregateRoot
+{
+    public string Name { get; private set; }
+    public string? Description { get; private set; }
+    public EventDate Date { get; private set; }
+    public EventStatus Status { get; private set; }
+    public Guid OrganizerId { get; private set; }
+
+    private readonly List<Guest> _guests = new();
+    public IReadOnlyCollection<Guest> Guests => _guests.AsReadOnly();
+
+    private readonly List<GuestGroup> _guestGroups = new();
+    public IReadOnlyCollection<GuestGroup> GuestGroups => _guestGroups.AsReadOnly();
+
+    private readonly List<CheckIn> _checkIns = new();
+    public IReadOnlyCollection<CheckIn> CheckIns => _checkIns.AsReadOnly();
+
+    private readonly List<TaskItem> _taskItems = new();
+    public IReadOnlyCollection<TaskItem> TaskItems => _taskItems.AsReadOnly();
+
+    private Event(string name, string? description, EventDate date, Guid organizerId) : base()
+    {
+        Name = name;
+        Description = description;
+        Date = date;
+        OrganizerId = organizerId;
+        Status = EventStatus.Draft;
+    }
+
+    public static Event Create(string name, string? description, EventDate date, Guid organizerId)
+    {
+        var @event = new Event(name, description, date, organizerId);
+        // Add EventCreated domain event here if needed
+        return @event;
+    }
+
+    public void UpdateDetails(string name, string? description, EventDate date)
+    {
+        Name = name;
+        Description = description;
+        Date = date;
+    }
+
+    public void SetStatus(EventStatus status) => Status = status;
+
+    public void AddGuest(string firstName, string lastName, EmailAddress email, Guid? groupId = null)
+    {
+        if (_guests.Any(g => g.Email == email))
+            throw new InvalidOperationException($"Guest with email {email} already exists in this event.");
+
+        _guests.Add(Guest.Create(firstName, lastName, email, groupId));
+    }
+
+    public void AddGuestGroup(string name)
+    {
+        if (_guestGroups.Any(g => g.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException($"Group with name {name} already exists.");
+
+        _guestGroups.Add(GuestGroup.Create(name));
+    }
+
+    public void RecordCheckIn(Guid guestId, string? scannedBy = null)
+    {
+        if (!_guests.Any(g => g.Id == guestId))
+            throw new InvalidOperationException("Guest not found in this event.");
+
+        if (_checkIns.Any(c => c.GuestId == guestId))
+            throw new InvalidOperationException("Guest is already checked in.");
+
+        _checkIns.Add(CheckIn.Create(guestId, scannedBy));
+    }
+
+    public void AddTask(string title, string? description = null, TaskPriority priority = TaskPriority.Medium, DateTime? dueDate = null)
+    {
+        _taskItems.Add(TaskItem.Create(title, description, priority, dueDate));
+    }
+}

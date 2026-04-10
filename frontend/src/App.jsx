@@ -14,6 +14,8 @@ import Overview from './pages/dashboard/Overview';
 import Guests from './pages/dashboard/Guests';
 import Settings from './pages/dashboard/Settings';
 import Tasks from './pages/dashboard/Tasks';
+import CreateEvent from './pages/dashboard/CreateEvent';
+import MyEvents from './pages/dashboard/MyEvents';
 
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
@@ -46,6 +48,8 @@ function App() {
           <Route path="guests" element={<Guests />} />
           <Route path="tasks" element={<Tasks />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="create-event" element={<CreateEvent />} />
+          <Route path="my-events" element={<MyEvents />} />
         </Route>
       </Routes>
     </BrowserRouter>

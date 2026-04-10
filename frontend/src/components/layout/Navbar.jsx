@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Navbar = () => {
+  const { user } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -13,7 +15,7 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 glass-panel border-b ghost-border">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-bold tracking-tight text-[var(--color-primary)] relative z-50">
+        <Link to={user ? "/dashboard" : "/"} className="text-2xl font-bold tracking-tight text-[var(--color-primary)] relative z-50">
           Attenda.
         </Link>
         

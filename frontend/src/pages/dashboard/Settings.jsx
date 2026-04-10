@@ -111,9 +111,8 @@ const Settings = () => {
   useEffect(() => { loadTeam(); }, [loadTeam]);
 
   /* ── role limit helpers ── */
-  const hasAdmin    = teamMembers.some(m => m.role === 'admin');
   const hasCoAdmin  = teamMembers.some(m => m.role === 'co-admin');
-  const totalCount  = teamMembers.length; // max 4
+  const totalCount  = teamMembers.length; // max 3 invitations
 
   /* ── add member ── */
   const handleAddMember = async (e) => {
@@ -125,12 +124,8 @@ const Settings = () => {
       setAddError('Name and email are required.');
       return;
     }
-    if (totalCount >= 4) {
-      setAddError('You can only add up to 4 team members.');
-      return;
-    }
-    if (role === 'admin' && hasAdmin) {
-      setAddError('Only 1 Admin is allowed. Remove the existing Admin first.');
+    if (totalCount >= 3) {
+      setAddError('You can only add up to 3 team members.');
       return;
     }
     if (role === 'co-admin' && hasCoAdmin) {
@@ -475,12 +470,12 @@ const Settings = () => {
               <div>
                 <h3 className="text-[var(--color-primary)] font-display text-base">Team & Access</h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  Add up to 4 members (1 Admin, 1 Co-Admin, unlimited Guests up to the limit). Guests can only view.
+                  Add up to 3 members (1 Co-Admin, and Guests up to the limit). Guests can only view.
                 </p>
               </div>
               <button
                 onClick={() => { setShowAddModal(true); setAddError(''); }}
-                disabled={totalCount >= 4}
+                disabled={totalCount >= 3}
                 className="bg-black text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -497,10 +492,10 @@ const Settings = () => {
               <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-purple-400 to-indigo-500 rounded-full transition-all"
-                  style={{ width: `${(totalCount / 4) * 100}%` }}
+                  style={{ width: `${(totalCount / 3) * 100}%` }}
                 />
               </div>
-              <span className="text-[10px] text-gray-400 font-semibold whitespace-nowrap">{totalCount} / 4 members</span>
+              <span className="text-[10px] text-gray-400 font-semibold whitespace-nowrap">{totalCount} / 3 members</span>
             </div>
 
             {/* Members grid */}
@@ -605,12 +600,10 @@ const Settings = () => {
                     >
                       <option value="guest">Guest — View only</option>
                       <option value="co-admin" disabled={hasCoAdmin}>Co-Admin{hasCoAdmin ? ' (already assigned)' : ''}</option>
-                      <option value="admin" disabled={hasAdmin}>Admin{hasAdmin ? ' (already assigned)' : ''}</option>
                     </select>
                     <p className="text-[10px] text-gray-400">
                       {newMember.role === 'guest' && 'Guests can only view, not edit.'}
                       {newMember.role === 'co-admin' && 'Co-Admin can manage guests and tasks.'}
-                      {newMember.role === 'admin' && 'Admin has full access except billing.'}
                     </p>
                   </div>
 

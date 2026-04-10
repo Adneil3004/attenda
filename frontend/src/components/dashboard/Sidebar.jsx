@@ -35,7 +35,7 @@ const Sidebar = () => {
     <div className="w-64 h-screen bg-white border-r border-gray-100 hidden lg:flex flex-col pt-8">
       <div className="px-8 flex-shrink-0">
         {/* We use structural padding to give the impression of a border without a hard line */}
-        <Link to="/" className="text-2xl font-bold tracking-tight text-[var(--color-primary)]">
+        <Link to="/dashboard" className="text-2xl font-bold tracking-tight text-[var(--color-primary)]">
           Attenda.
         </Link>
         <div className="mt-2 inline-flex items-center gap-2 bg-[var(--color-surface-container-low)] px-3 py-1 rounded-full text-xs font-semibold text-[var(--color-on-surface-variant)]">
@@ -76,6 +76,28 @@ const Sidebar = () => {
       </nav>
 
       <div className="p-4 mt-auto space-y-3">
+        {/* Rapid Actions Section */}
+        <div className="space-y-2 mb-6 px-1">
+          <button
+            onClick={() => navigate('/dashboard/create-event')}
+            className="w-full h-11 bg-[#030712] text-white rounded-lg flex items-center justify-center gap-2 text-[10px] font-extrabold uppercase tracking-widest hover:brightness-110 shadow-lg shadow-black/10 transition-all active:scale-[0.98]"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+            Nuevo Evento
+          </button>
+          <button
+            onClick={() => navigate('/dashboard/my-events')}
+            className="w-full h-11 bg-[#030712] text-white rounded-lg flex items-center justify-center gap-2 text-[10px] font-extrabold uppercase tracking-widest hover:brightness-110 shadow-lg shadow-black/10 transition-all active:scale-[0.98]"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            Mis Eventos
+          </button>
+        </div>
+
         <div className="bg-[#f8f9fa] rounded-xl p-4 flex items-center gap-3 border border-gray-100">
           <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-sm shadow-sm">
             {initials}
