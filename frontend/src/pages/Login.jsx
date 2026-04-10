@@ -94,7 +94,7 @@ const Login = () => {
             <div className="flex flex-col">
               <div className="flex justify-between items-center mb-2">
                 <label htmlFor="password" className="text-xs font-semibold text-[var(--color-on-surface-variant)]">Password</label>
-                <Link to="#" className="text-xs text-[var(--color-primary)] hover:underline font-medium">Forgot password?</Link>
+                <Link to="/forgot-password" className="text-xs text-[var(--color-primary)] hover:underline font-medium">Forgot password?</Link>
               </div>
               <input
                 type="password"
