@@ -9,7 +9,7 @@ const DashboardLayout = () => {
       
       {/* Main Content Area */}
       <div className="flex-1 overflow-auto bg-[var(--color-surface)] relative">
-        <main className="p-8 md:p-12 w-full max-w-7xl mx-auto">
+        <main className="p-8 md:p-12 w-full max-w-screen-2xl 3xl:max-w-[1800px] mx-auto h-full">
           <Outlet />
         </main>
       </div>

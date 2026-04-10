@@ -43,7 +43,7 @@ const DroppableColumn = ({ column, children, columnTasks }) => {
   return (
     <div 
       ref={setNodeRef}
-      className="w-full lg:w-80 flex-shrink-0 flex flex-col bg-[#f3f4f5] rounded-2xl p-4 hide-scrollbar min-h-[150px] lg:h-full lg:overflow-hidden mb-6 lg:mb-0"
+      className="w-full lg:w-80 2xl:w-96 flex-shrink-0 flex flex-col bg-[#f3f4f5] rounded-2xl p-4 hide-scrollbar min-h-[150px] lg:h-full lg:overflow-hidden mb-6 lg:mb-0"
     >
       <div className="flex items-center justify-between mb-4 px-2">
         <h3 className="font-bold text-sm text-[var(--color-primary)] flex items-center gap-2">
