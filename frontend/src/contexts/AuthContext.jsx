@@ -50,9 +50,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const resetPassword = async (email) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/dashboard/settings`, // Eventually to a reset-password page, but for now Settings or Dashboard
-    });
+    // Build the absolute URL for the reset page — works for both localhost and production
+    const redirectTo = `${window.location.origin}${window.location.pathname.replace(/\/[^/]*$/, '')}/reset-password`;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
     if (error) throw error;
   };
 
