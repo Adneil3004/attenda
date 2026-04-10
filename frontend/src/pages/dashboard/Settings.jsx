@@ -2,18 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 
-/* ── password generator ── */
-const generatePassword = () => {
-  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-  const specials = '!@#$%^&*';
-  const digits   = '0123456789';
-  let base = Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  // guarantee at least 1 digit and 1 special
-  base = base.slice(0, 8)
-    + digits[Math.floor(Math.random() * digits.length)]
-    + specials[Math.floor(Math.random() * specials.length)];
-  return base;
-};
+
 
 /* ── small helpers ── */
 const EyeIcon = ({ open }) => open ? (
@@ -150,31 +139,29 @@ const Settings = () => {
     }
 
     setAddingMember(true);
-    const password = generatePassword();
 
     try {
-      // Register the new user in Supabase Auth
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: { data: { full_name: name.trim() } },
+      const redirectTo = `${window.location.origin}/attenda/reset-password`;
+
+      // Invoke the secure Edge Function to handle invitation and table insertion
+      const { data, error: invokeError } = await supabase.functions.invoke('invite-user', {
+        body: { email: email.trim(), name: name.trim(), role, redirectTo }
       });
-      if (signUpError && !signUpError.message.includes('already registered')) {
-        throw signUpError;
+
+      if (invokeError) {
+        throw invokeError;
+      }
+      
+      if (data && data.error) {
+        throw new Error(data.error);
       }
 
-      // Store in our team_members table
-      const { error: insertError } = await supabase
-        .from('team_members')
-        .insert({ owner_id: user.id, member_email: email.trim(), member_name: name.trim(), role });
-      if (insertError) throw insertError;
-
       await loadTeam();
-      flash(setTeamMsg, 'success', `${name} added as ${role}. They will receive a confirmation email.`);
+      flash(setTeamMsg, 'success', `${name} added as ${role}. They will receive an invitation link via email.`);
       setShowAddModal(false);
       setNewMember({ name: '', email: '', role: 'guest' });
     } catch (err) {
-      setAddError(err.message || 'Failed to add team member.');
+      setAddError(err.message || 'Failed to send invitation.');
     } finally {
       setAddingMember(false);
     }
@@ -576,7 +563,7 @@ const Settings = () => {
                 </button>
 
                 <h4 className="text-lg font-bold text-gray-900 mb-1">Add Team Member</h4>
-                <p className="text-xs text-gray-400 mb-6">They'll receive a Supabase invitation with a temporary password.</p>
+                <p className="text-xs text-gray-400 mb-6">They'll receive an email with a secure link to join your team and set their password.</p>
 
                 {addError && (
                   <div className="mb-5 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
