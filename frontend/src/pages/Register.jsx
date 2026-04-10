@@ -39,6 +39,12 @@ const Register = () => {
       return;
     }
 
+    const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])/;
+    if (!passwordRegex.test(password)) {
+      setError('Password must contain at least one number and one special character (!@#$%^&*).');
+      return;
+    }
+
     try {
       setLoading(true);
       const { session } = await signUp(email, password, fullName);
@@ -173,7 +179,7 @@ const Register = () => {
                   <EyeIcon open={showPassword} />
                 </button>
               </div>
-              <p className="text-xs text-[var(--color-on-surface-variant)] mt-1 opacity-60">Minimum 6 characters</p>
+              <p className="text-xs text-[var(--color-on-surface-variant)] mt-1 opacity-60">Min. 6 chars, 1 number, 1 special char</p>
             </div>
 
             <p className="text-xs text-[var(--color-on-surface-variant)] leading-relaxed">
