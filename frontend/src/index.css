@@ -55,4 +55,12 @@
   .ghost-border {
     border: 1px solid rgba(197, 198, 208, 0.15); /* outline-variant at 15% */
   }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
 }

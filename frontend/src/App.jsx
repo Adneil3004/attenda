@@ -11,6 +11,7 @@ import DashboardLayout from './components/dashboard/DashboardLayout';
 import Overview from './pages/dashboard/Overview';
 import Guests from './pages/dashboard/Guests';
 import Settings from './pages/dashboard/Settings';
+import Tasks from './pages/dashboard/Tasks';
 
 function App() {
   return (
@@ -30,8 +31,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<Overview />} />
           <Route path="guests" element={<Guests />} />
-          {/* Placeholders for future pages */}
-          <Route path="tasks" element={<div className="p-8">Tasks Content</div>} />
+          <Route path="tasks" element={<Tasks />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
