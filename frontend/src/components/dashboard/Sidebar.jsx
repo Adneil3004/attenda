@@ -11,7 +11,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-64 h-screen bg-white border-r border-gray-100 flex flex-col pt-8">
+    <div className="w-64 h-screen bg-white border-r border-gray-100 hidden lg:flex flex-col pt-8">
       <div className="px-8 flex-shrink-0">
         {/* We use structural padding to give the impression of a border without a hard line */}
         <Link to="/" className="text-2xl font-bold tracking-tight text-[var(--color-primary)]">

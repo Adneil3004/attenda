@@ -43,7 +43,7 @@ const DroppableColumn = ({ column, children, columnTasks }) => {
   return (
     <div 
       ref={setNodeRef}
-      className="w-full lg:w-80 2xl:w-96 flex-shrink-0 flex flex-col bg-[#f3f4f5] rounded-2xl p-4 hide-scrollbar min-h-[150px] lg:h-full lg:overflow-hidden mb-6 lg:mb-0"
+      className="w-full lg:w-80 2xl:w-96 min-[1920px]:w-[26rem] flex-shrink-0 flex flex-col bg-[#f3f4f5] rounded-2xl p-4 hide-scrollbar min-h-[150px] lg:h-full lg:overflow-hidden mb-6 lg:mb-0"
     >
       <div className="flex items-center justify-between mb-4 px-2">
         <h3 className="font-bold text-sm text-[var(--color-primary)] flex items-center gap-2">
@@ -195,7 +195,7 @@ const Tasks = () => {
     <div className="flex flex-col h-full bg-[var(--color-surface)]">
       
       {/* Header */}
-      <header className="px-6 lg:px-10 py-6 lg:py-8 flex-shrink-0 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[var(--color-outline-variant)]/10">
+      <header className="px-4 sm:px-6 lg:px-10 py-4 sm:py-6 lg:py-8 flex-shrink-0 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[var(--color-outline-variant)]/10">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-[var(--color-primary)] font-headline tracking-tight">Event Task Management</h1>
           <p className="text-sm text-[var(--color-on-surface-variant)] mt-2">Manage logistics, vendors, and timelines in one place.</p>
@@ -206,7 +206,7 @@ const Tasks = () => {
       </header>
 
       {/* Kanban Board Container (Responsive scrolling on desktop, stacked on mobile) */}
-      <div className="flex-1 lg:overflow-x-auto lg:overflow-y-hidden p-6 lg:p-10">
+      <div className="flex-1 lg:overflow-x-auto lg:overflow-y-hidden p-4 sm:p-6 lg:p-10">
         <DndContext 
           sensors={sensors}
           collisionDetection={closestCorners}
