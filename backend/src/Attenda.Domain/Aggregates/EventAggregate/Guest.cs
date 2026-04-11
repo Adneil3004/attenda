@@ -13,10 +13,11 @@ public class Guest : Entity
     public RsvpToken RsvpToken { get; private set; }
     public Guid? GuestGroupId { get; private set; }
     
-    private readonly List<DietaryRestriction> _dietaryRestrictions = new();
-    public IReadOnlyCollection<DietaryRestriction> DietaryRestrictions => _dietaryRestrictions.AsReadOnly();
+    public string? DietaryRestrictions { get; private set; }
+    public bool PlusOne { get; private set; }
+    public string? Notes { get; private set; }
 
-    private Guest(string firstName, string lastName, EmailAddress email, Guid? guestGroupId = null) : base()
+    private Guest(string firstName, string lastName, EmailAddress email, Guid? guestGroupId = null, string? dietaryRestrictions = null, bool plusOne = false, string? notes = null) : base()
     {
         FirstName = firstName;
         LastName = lastName;
@@ -24,23 +25,18 @@ public class Guest : Entity
         GuestGroupId = guestGroupId;
         RsvpStatus = RsvpStatus.Pending;
         RsvpToken = RsvpToken.Create();
+        DietaryRestrictions = dietaryRestrictions;
+        PlusOne = plusOne;
+        Notes = notes;
     }
 
-    public static Guest Create(string firstName, string lastName, EmailAddress email, Guid? guestGroupId = null)
-        => new(firstName, lastName, email, guestGroupId);
+    public static Guest Create(string firstName, string lastName, EmailAddress email, Guid? guestGroupId = null, string? dietaryRestrictions = null, bool plusOne = false, string? notes = null)
+        => new(firstName, lastName, email, guestGroupId, dietaryRestrictions, plusOne, notes);
 
     public void UpdateRsvpStatus(RsvpStatus status)
     {
         RsvpStatus = status;
     }
-
-    public void AddDietaryRestriction(DietaryRestriction restriction)
-    {
-        if (!_dietaryRestrictions.Contains(restriction))
-            _dietaryRestrictions.Add(restriction);
-    }
-
-    public void ClearDietaryRestrictions() => _dietaryRestrictions.Clear();
 
     public void MoveToGroup(Guid? groupId) => GuestGroupId = groupId;
 }

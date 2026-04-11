@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 
@@ -41,7 +42,11 @@ const ReadOnlyField = ({ label, value, placeholder = '—' }) => (
 
 /* ════════════════════════════════════════════ */
 const Settings = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  /* ── danger zone state ── */
+  const [dangerLoading, setDangerLoading] = useState(false);
 
   /* ── profile state ── */
   const [isEditing, setIsEditing]   = useState(false);
@@ -102,7 +107,6 @@ const Settings = () => {
     const { data, error } = await supabase
       .from('team_members')
       .select('*')
-      .eq('owner_id', user.id)
       .order('invited_at', { ascending: true });
     setTeamLoading(false);
     if (!error) setTeamMembers(data || []);
@@ -164,17 +168,19 @@ const Settings = () => {
 
   /* ── remove member ── */
   const handleRemoveMember = async (memberId, memberName) => {
-    if (!window.confirm(`Remove ${memberName} from your team?`)) return;
-    const { error } = await supabase
-      .from('team_members')
-      .delete()
-      .eq('id', memberId)
-      .eq('owner_id', user.id);
-    if (error) {
+    if (!window.confirm(`Remove ${memberName} from your team? This will completely delete their account access.`)) return;
+    
+    // Invoke the edge function to securely delete them from Auth and Database
+    const { data, error } = await supabase.functions.invoke('remove-user', {
+      body: { memberId }
+    });
+
+    if (error || (data && data.error)) {
       flash(setTeamMsg, 'error', 'Failed to remove member.');
+      console.error(error || data.error);
     } else {
       loadTeam();
-      flash(setTeamMsg, 'success', `${memberName} has been removed.`);
+      flash(setTeamMsg, 'success', `${memberName} has been permanently removed.`);
     }
   };
 
@@ -240,6 +246,43 @@ const Settings = () => {
       flash(setPwdMsg, 'error', err.message || 'Failed to change password.');
     } finally {
       setPwdLoading(false);
+    }
+  };
+
+  /* ── danger actions ── */
+  const handleDeactivateAccount = async () => {
+    if (!window.confirm("Are you sure you want to deactivate your account? This will lock out all team members immediately. You can only regain access by resetting your password on the login screen.")) return;
+    
+    setDangerLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('deactivate-account');
+      if (error || (data && data.error)) throw new Error(error?.message || data?.error);
+      
+      await signOut();
+      navigate('/login');
+    } catch (err) {
+      alert(err.message || 'Failed to deactivate account.');
+      setDangerLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmation = window.prompt("This will PERMANENTLY ERASE your account and all team members. Type 'DELETE' to confirm:");
+    if (confirmation !== 'DELETE') {
+      if (confirmation !== null) alert('Deletion cancelled: You must type DELETE exactly.');
+      return;
+    }
+
+    setDangerLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-account');
+      if (error || (data && data.error)) throw new Error(error?.message || data?.error);
+      
+      await signOut();
+      navigate('/');
+    } catch (err) {
+      alert(err.message || 'Failed to delete account.');
+      setDangerLoading(false);
     }
   };
 
@@ -693,6 +736,43 @@ const Settings = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          </section>
+
+          {/* ── Danger Zone ── */}
+          <section className="bg-white rounded-xl shadow-sm border border-red-100 p-8 space-y-6">
+            <h3 className="text-red-600 font-display text-base">Danger Zone</h3>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100 gap-4">
+              <div>
+                <p className="text-sm font-bold text-red-900">Deactivate Account</p>
+                <p className="text-xs text-red-700 mt-1">
+                  Temporarily lock out yourself and all team members. Reactivate anytime by resetting your password.
+                </p>
+              </div>
+              <button 
+                onClick={handleDeactivateAccount}
+                disabled={dangerLoading}
+                className="whitespace-nowrap px-4 py-2 bg-white text-red-600 border border-red-200 rounded-lg text-sm font-bold hover:bg-red-50 transition-colors shadow-sm disabled:opacity-50"
+              >
+                {dangerLoading ? 'Processing...' : 'Deactivate'}
+              </button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100 gap-4">
+              <div>
+                <p className="text-sm font-bold text-red-900">Delete Account & Data</p>
+                <p className="text-xs text-red-700 mt-1">
+                  Permanently erase your account, all team members, and all associated projects. This cannot be undone.
+                </p>
+              </div>
+              <button 
+                onClick={handleDeleteAccount}
+                disabled={dangerLoading}
+                className="whitespace-nowrap px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50"
+              >
+                {dangerLoading ? 'Processing...' : 'Delete Account'}
+              </button>
             </div>
           </section>
 

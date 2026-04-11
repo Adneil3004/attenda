@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
+  // CORS Handles
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -17,47 +17,59 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error("Missing Supabase environment variables.");
+      throw new Error("Missing environment variables on Supabase.");
     }
 
-    // Create a Supabase client with the admin service role key to bypass RLS and invite users
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // Manual JWT verification to get better error messages
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) throw new Error("No Authorization header provided.");
 
-    // Get the request body
-    const { email, name, role, ownerId } = await req.json();
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
 
-    if (!email || !name || !role || !ownerId) {
-      throw new Error("Missing required fields: email, name, role, or ownerId.");
+    if (userError || !user) {
+      console.error("User Validation Error:", userError);
+      throw new Error("Invalid or expired session. Please log in again.");
     }
 
-    console.log(`Inviting ${email} as ${role} for owner ${ownerId}...`);
+    const { email, name, role, redirectTo } = await req.json();
 
-    // 1. Invite the user via Supabase Auth
+    if (!email || !name || !role) {
+      throw new Error("Parameters missing: email, name, or role.");
+    }
+
+    // Capture the owner who is initiating this request
+    const ownerId = user.id;
+
+    console.log(`Owner ${ownerId} inviting ${email} as ${role}...`);
+
+    // 1. Send Invitation
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
       data: { full_name: name },
-      // Important: this will point them to your reset password component to set their password
-      // The frontend base URL must be handled. For now, since it relies on the URL, we'll try to pass redirectTo from frontend or use a default.
+      redirectTo: redirectTo,
     });
 
     if (authError) {
-      console.error("Auth Invite Error:", authError);
+      // Common error: "Email invitations are not enabled" or invalid redirect URL
+      console.error("Supabase Auth Error:", authError);
       throw authError;
     }
 
-    // 2. Insert the user into the team_members table
+    // 2. Insert into DB (including the auth_user_id)
     const { error: insertError } = await supabaseAdmin
       .from('team_members')
       .insert({
-        owner_id: ownerId, // the user who invited them
+        owner_id: ownerId,
         member_email: email,
         member_name: name,
-        role: role
+        role: role,
+        auth_user_id: authData.user.id
       });
 
     if (insertError) {
-      // If we fail to insert them into DB, maybe log it, but the invite was sent.
-      // Usually, it's fine. We throw to let frontend know.
-      console.error("DB Insert Error:", insertError);
+      console.error("Database Error:", insertError);
       throw insertError;
     }
 
@@ -66,9 +78,10 @@ Deno.serve(async (req) => {
       status: 200,
     });
   } catch (error) {
+    console.error("Function Execution Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
+      status: 400, // Returning 400 instead of 401 for easier debugging from client
     });
   }
 });
