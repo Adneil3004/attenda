@@ -13,11 +13,12 @@ public class Guest : Entity
     public RsvpToken RsvpToken { get; private set; }
     public Guid? GuestGroupId { get; private set; }
     
-    public string? DietaryRestrictions { get; private set; }
+    private readonly List<DietaryRestriction> _dietaryRestrictions = new();
+    public IReadOnlyCollection<DietaryRestriction> DietaryRestrictions => _dietaryRestrictions.AsReadOnly();
     public bool PlusOne { get; private set; }
     public string? Notes { get; private set; }
 
-    private Guest(string firstName, string lastName, EmailAddress email, Guid? guestGroupId = null, string? dietaryRestrictions = null, bool plusOne = false, string? notes = null) : base()
+    private Guest(string firstName, string lastName, EmailAddress email, Guid? guestGroupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, bool plusOne = false, string? notes = null) : base()
     {
         FirstName = firstName;
         LastName = lastName;
@@ -25,12 +26,15 @@ public class Guest : Entity
         GuestGroupId = guestGroupId;
         RsvpStatus = RsvpStatus.Pending;
         RsvpToken = RsvpToken.Create();
-        DietaryRestrictions = dietaryRestrictions;
+        if (dietaryRestrictions != null)
+        {
+            _dietaryRestrictions.AddRange(dietaryRestrictions);
+        }
         PlusOne = plusOne;
         Notes = notes;
     }
 
-    public static Guest Create(string firstName, string lastName, EmailAddress email, Guid? guestGroupId = null, string? dietaryRestrictions = null, bool plusOne = false, string? notes = null)
+    public static Guest Create(string firstName, string lastName, EmailAddress email, Guid? guestGroupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, bool plusOne = false, string? notes = null)
         => new(firstName, lastName, email, guestGroupId, dietaryRestrictions, plusOne, notes);
 
     public void UpdateRsvpStatus(RsvpStatus status)

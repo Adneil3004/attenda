@@ -2,9 +2,12 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import GuestDrawer from '../../components/dashboard/GuestDrawer';
+import ConfirmationModal from '../../components/dashboard/ConfirmationModal';
+
+const API_BASE_URL = 'http://localhost:5263/api';
 
 const Guests = () => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   
   // States
   const [activeEvent, setActiveEvent] = useState(null);
@@ -21,6 +24,20 @@ const Guests = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [groupFilter, setGroupFilter] = useState('All');
+
+  // Selection state
+  const [selectedGuestIds, setSelectedGuestIds] = useState(new Set());
+  
+  // Modal states
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    type: 'danger',
+    requiresKeyword: false,
+    loading: false
+  });
 
   const fetchData = useCallback(async () => {
     if (!user) return;
@@ -108,6 +125,86 @@ const Guests = () => {
       return matchSearch && matchStatus && matchGroup;
     });
   }, [guests, searchTerm, statusFilter, groupFilter]);
+
+  // Selection handlers
+  const toggleSelectGuest = (id) => {
+    const next = new Set(selectedGuestIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedGuestIds(next);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedGuestIds.size === filteredGuests.length && filteredGuests.length > 0) {
+      setSelectedGuestIds(new Set());
+    } else {
+      setSelectedGuestIds(new Set(filteredGuests.map(g => g.id)));
+    }
+  };
+
+  const isAllSelected = filteredGuests.length > 0 && selectedGuestIds.size === filteredGuests.length;
+
+  // Deletion Handlers
+  const handleDeleteSingle = (guest) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Guest',
+      message: `Are you sure you want to remove ${guest.first_name} ${guest.last_name}? This action cannot be undone.`,
+      type: 'danger',
+      requiresKeyword: false,
+      loading: false,
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, loading: true }));
+        const { error } = await supabase.from('guests').delete().eq('id', guest.id);
+        if (error) alert(error.message);
+        else fetchData();
+        setConfirmModal(prev => ({ ...prev, isOpen: false, loading: false }));
+      }
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: `Delete ${selectedGuestIds.size} Guests`,
+      message: `Are you sure you want to remove the ${selectedGuestIds.size} selected guests? This action cannot be undone.`,
+      type: 'danger',
+      requiresKeyword: false,
+      loading: false,
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, loading: true }));
+        const { error } = await supabase.from('guests').delete().in('id', Array.from(selectedGuestIds));
+        if (error) alert(error.message);
+        else {
+          setSelectedGuestIds(new Set());
+          fetchData();
+        }
+        setConfirmModal(prev => ({ ...prev, isOpen: false, loading: false }));
+      }
+    });
+  };
+
+  const handleDeleteAll = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Clear Guest List',
+      message: 'CRITICAL: This will remove ALL guests from this event. You cannot undo this operation.',
+      type: 'danger',
+      requiresKeyword: true,
+      keyword: 'BORRAR',
+      loading: false,
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, loading: true }));
+        const { error } = await supabase.from('guests').delete().eq('event_id', activeEvent.id);
+        if (error) alert(error.message);
+        else {
+          setSelectedGuestIds(new Set());
+          fetchData();
+        }
+        setConfirmModal(prev => ({ ...prev, isOpen: false, loading: false }));
+      }
+    });
+  };
 
   // Download CSV Template
   const handleDownloadTemplate = () => {
@@ -269,6 +366,20 @@ const Guests = () => {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                 <span className="hidden sm:inline">Add Guest</span>
               </button>
+
+              {/* Clear List Button - Always visible if guests exist */}
+              {guests.length > 0 && (
+                <button 
+                  onClick={handleDeleteAll}
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2.5 bg-white border border-red-100 text-red-500 rounded-md text-xs font-bold hover:bg-red-50 hover:border-red-200 transition-all ambient-shadow"
+                  title="Remove all guests from this event"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span className="hidden lg:inline">Clear List</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -279,16 +390,53 @@ const Guests = () => {
           </div>
         )}
 
+        {/* Bulk Actions Bar */}
+        {selectedGuestIds.size > 0 && (
+          <div className="mb-4 p-4 bg-[var(--color-primary-container)]/50 border border-[var(--color-primary)]/10 rounded-xl flex items-center justify-between animate-in slide-in-from-top-4 duration-300 sheen-container">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-bold text-[var(--color-primary)]">
+                {selectedGuestIds.size} guests selected
+              </span>
+              <div className="h-4 w-px bg-[var(--color-primary)]/20 mx-2"></div>
+              <button 
+                onClick={toggleSelectAll}
+                className="text-xs font-bold text-[var(--color-secondary)] hover:underline"
+              >
+                Deselect All
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={handleDeleteSelected}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition-all shadow-sm"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Delete Selected
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* The No-Divider Table */}
         <div className="bg-[var(--color-surface-container-lowest)] rounded-xl ambient-shadow overflow-hidden flex-1 flex flex-col border border-gray-100">
           {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-[var(--color-surface-container-high)] border-b border-[var(--color-outline-variant)]/20 text-[11px] font-black uppercase tracking-widest text-[var(--color-primary)]">
-            <div className="col-span-4 md:col-span-3">Guest Name</div>
+          <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-[var(--color-surface-container-high)] border-b border-[var(--color-outline-variant)]/20 text-[11px] font-black uppercase tracking-widest text-[var(--color-primary)] items-center">
+            <div className="col-span-1 flex justify-center">
+              <input 
+                type="checkbox" 
+                checked={isAllSelected}
+                onChange={toggleSelectAll}
+                className="w-4 h-4 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] cursor-pointer"
+              />
+            </div>
+            <div className="col-span-3 md:col-span-2">Guest Name</div>
             <div className="col-span-4 md:col-span-2">Status</div>
             <div className="hidden md:block col-span-2">Group</div>
             <div className="hidden lg:block col-span-2">Dietary</div>
-            <div className="hidden lg:block col-span-2">Plus One</div>
-            <div className="col-span-4 md:col-span-1 text-right">Actions</div>
+            <div className="hidden lg:block col-span-2 text-center">Plus One</div>
+            <div className="col-span-2 md:col-span-1 text-right pr-2">Actions</div>
           </div>
           
           {/* Table Body */}
@@ -306,30 +454,52 @@ const Guests = () => {
               filteredGuests.map((guest, index) => (
                 <div 
                   key={guest.id} 
-                  className={`grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors group cursor-pointer ${index % 2 === 0 ? 'bg-[var(--color-surface-container-lowest)]' : 'bg-[var(--color-surface-container-low)]/30 hover:bg-[var(--color-surface-container-low)]'}`}
+                  className={`grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors group cursor-pointer ${
+                    selectedGuestIds.has(guest.id) 
+                      ? 'bg-[var(--color-primary)]/[0.03] border-l-4 border-[var(--color-primary)]' 
+                      : index % 2 === 0 ? 'bg-[var(--color-surface-container-lowest)] border-l-4 border-transparent' : 'bg-[var(--color-surface-container-low)]/30 hover:bg-[var(--color-surface-container-low)] border-l-4 border-transparent'
+                  }`}
                   onClick={() => openDrawer(guest)}
                 >
-                  <div className="col-span-4 md:col-span-3">
+                  <div className="col-span-1 flex justify-center" onClick={e => e.stopPropagation()}>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedGuestIds.has(guest.id)}
+                      onChange={() => toggleSelectGuest(guest.id)}
+                      className="w-4 h-4 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] cursor-pointer"
+                    />
+                  </div>
+                  <div className="col-span-3 md:col-span-2">
                     <p className="font-semibold text-[var(--color-primary)] text-sm">{guest.first_name} {guest.last_name}</p>
                     <p className="text-[10px] text-gray-400 mt-0.5">{guest.email}</p>
                   </div>
                   <div className="col-span-4 md:col-span-2">{getStatusBadge(guest.rsvp_status)}</div>
                   <div className="hidden md:block col-span-2 text-sm text-[var(--color-on-surface-variant)]">{guest.guest_groups?.name || '—'}</div>
                   <div className="hidden lg:block col-span-2 text-sm text-[var(--color-on-surface-variant)] truncate">{guest.dietary_restrictions || '—'}</div>
-                  <div className="hidden lg:block col-span-2">
+                  <div className="hidden lg:block col-span-2 text-center">
                     {guest.plus_one ? (
                       <span className="text-[var(--color-secondary)] font-bold text-xs uppercase tracking-widest">Yes</span>
                     ) : (
                       <span className="text-[var(--color-outline-variant)] font-bold text-xs uppercase tracking-widest">No</span>
                     )}
                   </div>
-                  <div className="col-span-4 md:col-span-1 text-right">
+                  <div className="col-span-2 md:col-span-1 text-right flex items-center justify-end gap-1 pr-1">
                     <button 
                       className="text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] p-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={(e) => { e.stopPropagation(); openDrawer(guest); }}
+                      title="Edit Guest"
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    <button 
+                      className="text-red-300 hover:text-red-600 p-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => { e.stopPropagation(); handleDeleteSingle(guest); }}
+                      title="Delete Guest"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
                   </div>
@@ -346,6 +516,18 @@ const Guests = () => {
         guest={selectedGuest} 
         activeEvent={activeEvent}
         groups={groups}
+      />
+
+      <ConfirmationModal 
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        requiresKeyword={confirmModal.requiresKeyword}
+        keyword={confirmModal.keyword}
+        loading={confirmModal.loading}
       />
     </>
   );

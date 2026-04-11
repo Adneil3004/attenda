@@ -1,10 +1,95 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Overview = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  const [activeEvent, setActiveEvent] = useState(null);
+  const [metrics, setMetrics] = useState({
+    total: 0,
+    confirmed: 0,
+    pending: 0,
+    declined: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0 });
+
+  const fetchData = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+
+    try {
+      // 1. Fetch user's primary event
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('*')
+        .eq('organizer_id', user.id)
+        .order('event_date', { ascending: true })
+        .limit(1)
+        .single();
+
+      if (eventError && eventError.code !== 'PGRST116') throw eventError;
+      
+      if (eventData) {
+        setActiveEvent(eventData);
+
+        // 2. Fetch Guests counts
+        const { data: guestsData, error: guestsError } = await supabase
+          .from('guests')
+          .select('rsvp_status')
+          .eq('event_id', eventData.id);
+
+        if (guestsError) throw guestsError;
+
+        const counts = { total: guestsData.length, confirmed: 0, pending: 0, declined: 0 };
+        guestsData.forEach(g => {
+          if (g.rsvp_status === 'Confirmed') counts.confirmed++;
+          else if (g.rsvp_status === 'Pending') counts.pending++;
+          else if (g.rsvp_status === 'Declined') counts.declined++;
+        });
+        setMetrics(counts);
+
+        // 3. Simple Countdown Logic (Native)
+        const eventDate = new Date(eventData.event_date);
+        const now = new Date();
+        const diffMs = eventDate - now;
+        
+        if (diffMs > 0) {
+          const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+          setCountdown({ days, hours });
+        } else {
+          setCountdown({ days: 0, hours: 0 });
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Handle Loading state
+  if (loading) {
+    return (
+      <div className="flex-1 w-full h-[calc(100vh-8rem)] flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 bg-[var(--color-surface-container-high)] rounded-full mb-4"></div>
+          <div className="h-4 w-32 bg-[var(--color-surface-container-high)] rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
   // Simulación de eventos. Cambia el array por datos reales de Supabase luego.
-  const [events, setEvents] = useState([{ id: 1, name: 'Boda de Ana & Carlos' }]);
+  const events = activeEvent ? [activeEvent] : [];
 
   // Empty State View
   if (!events || events.length === 0) {
@@ -58,34 +143,36 @@ const Overview = () => {
       {/* ─── Hero Cards Section ─── */}
       <div className="grid grid-cols-12 gap-6">
         {/* Upcoming Event Card */}
-        <div className="col-span-12 lg:col-span-8 bg-white rounded-xl ambient-shadow border border-[var(--color-outline-variant)]/5 overflow-hidden flex flex-col md:flex-row min-h-[250px]">
+        <div className="col-span-12 lg:col-span-8 bg-white rounded-xl ambient-shadow border border-[var(--color-outline-variant)]/5 overflow-hidden flex flex-col md:flex-row min-h-[250px] sheen-container">
           <div className="flex-1 p-8 flex flex-col border-t-4 border-[#7c3aed]">
             <span className="inline-block bg-[#7c3aed]/10 text-[#7c3aed] text-[9px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full w-fit mb-6">
               Upcoming Event
             </span>
-            <h3 className="text-4xl font-headline font-bold text-[var(--color-primary)] mb-4 leading-tight">Boda de Ana & Carlos</h3>
+            <h3 className="text-4xl font-headline font-bold text-[var(--color-primary)] mb-4 leading-tight">{activeEvent?.name}</h3>
             <div className="space-y-2 mb-8">
               <div className="flex items-center space-x-2 text-[var(--color-on-surface-variant)]">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span className="text-xs font-bold uppercase">September 14, 2026</span>
+                <span className="text-xs font-bold uppercase">
+                  {activeEvent?.event_date && new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date(activeEvent.event_date))}
+                </span>
               </div>
               <div className="flex items-center space-x-2 text-[var(--color-on-surface-variant)]">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span className="text-xs font-bold uppercase">Antigua, Guatemala</span>
+                <span className="text-xs font-bold uppercase">{activeEvent?.location_name || 'Venue not set'}</span>
               </div>
             </div>
             <div className="mt-auto">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-[9px] font-extrabold text-[var(--color-on-surface-variant)] uppercase tracking-widest">Preparation Progress</span>
-                <span className="text-xs font-extrabold text-[#7c3aed]">80%</span>
+                <span className="text-[9px] font-extrabold text-[var(--color-on-surface-variant)] uppercase tracking-widest">Attendance Rate</span>
+                <span className="text-xs font-extrabold text-[#7c3aed]">{metrics.total > 0 ? Math.round((metrics.confirmed / metrics.total) * 100) : 0}%</span>
               </div>
               <div className="w-full h-1.5 bg-[#f3f4f6] rounded-full overflow-hidden">
-                <div className="h-full bg-[#7c3aed] w-[80%] rounded-full"></div>
+                <div className="h-full bg-[#7c3aed] rounded-full transition-all duration-1000" style={{ width: `${metrics.total > 0 ? Math.round((metrics.confirmed / metrics.total) * 100) : 0}%` }}></div>
               </div>
             </div>
           </div>
@@ -93,13 +180,19 @@ const Overview = () => {
           <div className="w-full md:w-1/3 bg-[#030712] relative overflow-hidden flex flex-col items-center justify-center p-8 text-center">
             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_white_1px,transparent_1px)] [background-size:20px_20px]"></div>
             <div className="relative z-10">
-              <div className="w-14 h-14 mx-auto bg-white/5 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/10 mb-4 group hover:scale-105 transition-transform cursor-pointer">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                </svg>
+              <div className="flex gap-4 items-center justify-center mb-6">
+                <div className="text-center">
+                  <p className="text-3xl font-headline font-black text-white">{countdown.days}</p>
+                  <p className="text-[8px] font-extrabold text-white/40 uppercase tracking-widest">Days</p>
+                </div>
+                <div className="h-8 w-px bg-white/20"></div>
+                <div className="text-center">
+                  <p className="text-3xl font-headline font-black text-white">{countdown.hours}</p>
+                  <p className="text-[8px] font-extrabold text-white/40 uppercase tracking-widest">Hours</p>
+                </div>
               </div>
-              <p className="text-[9px] font-extrabold text-white/40 uppercase tracking-[0.2em] mb-1">Event Preview</p>
-              <p className="text-[10px] font-bold text-white uppercase italic">Safe For Work</p>
+              <p className="text-[9px] font-extrabold text-white/40 uppercase tracking-[0.2em] mb-1">Time Remaining</p>
+              <p className="text-[10px] font-bold text-white uppercase italic">Concierge Exclusive</p>
             </div>
           </div>
         </div>
@@ -123,22 +216,6 @@ const Overview = () => {
         </div>
       </div>
 
-      {/* ─── Actions Row ─── */}
-      <div className="flex items-center gap-3">
-        <button className="flex items-center gap-2 px-5 py-2.5 border-2 border-[var(--color-secondary)]/20 text-[var(--color-secondary)] rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-[var(--color-secondary)]/5 transition-all">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-          </svg>
-          Assign Template
-        </button>
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-[var(--color-secondary)] text-white rounded-lg font-extrabold text-[10px] uppercase tracking-widest hover:brightness-110 shadow-lg shadow-[var(--color-secondary)]/20 transition-all">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-          Administrar grupo de invitados
-        </button>
-      </div>
-
       {/* ─── Metrics Section ─── */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-7 rounded-2xl ambient-shadow border border-[var(--color-outline-variant)]/5 flex flex-col justify-between">
@@ -151,7 +228,7 @@ const Overview = () => {
             </div>
           </div>
           <div>
-            <div className="text-4xl font-headline font-extrabold text-[var(--color-primary)] mb-1 tracking-tighter">248</div>
+            <div className="text-4xl font-headline font-extrabold text-[var(--color-primary)] mb-1 tracking-tighter">{metrics.total}</div>
             <p className="text-[var(--color-on-surface-variant)] text-[10px] font-bold opacity-40">Todos los invitados registrados</p>
           </div>
         </div>
@@ -161,7 +238,7 @@ const Overview = () => {
             <span className="text-[var(--color-on-surface-variant)] text-[9px] font-extrabold uppercase tracking-widest opacity-60">Confirmados</span>
             <div className="w-8 h-8 rounded-lg bg-[#10b981]"></div>
           </div>
-          <div className="text-4xl font-headline font-extrabold text-[#10b981] mb-1 tracking-tighter">174</div>
+          <div className="text-4xl font-headline font-extrabold text-[#10b981] mb-1 tracking-tighter">{metrics.confirmed}</div>
           <p className="text-[var(--color-on-surface-variant)] text-[10px] font-bold opacity-40">Asistencias confirmadas</p>
         </div>
 
@@ -170,7 +247,7 @@ const Overview = () => {
             <span className="text-[var(--color-on-surface-variant)] text-[9px] font-extrabold uppercase tracking-widest opacity-60">Pendientes</span>
             <div className="w-8 h-8 rounded-lg bg-[#f59e0b]"></div>
           </div>
-          <div className="text-4xl font-headline font-extrabold text-[#f59e0b] mb-1 tracking-tighter">52</div>
+          <div className="text-4xl font-headline font-extrabold text-[#f59e0b] mb-1 tracking-tighter">{metrics.pending}</div>
           <p className="text-[var(--color-on-surface-variant)] text-[10px] font-bold opacity-40">Invitaciones pendientes</p>
         </div>
 
@@ -179,14 +256,14 @@ const Overview = () => {
             <span className="text-[var(--color-on-surface-variant)] text-[9px] font-extrabold uppercase tracking-widest opacity-60">Declinados</span>
             <div className="w-8 h-8 rounded-lg bg-[#f43f5e]"></div>
           </div>
-          <div className="text-4xl font-headline font-extrabold text-[#f43f5e] mb-1 tracking-tighter">22</div>
+          <div className="text-4xl font-headline font-extrabold text-[#f43f5e] mb-1 tracking-tighter">{metrics.declined}</div>
           <p className="text-[var(--color-on-surface-variant)] text-[10px] font-bold opacity-40">Invitaciones rechazadas</p>
         </div>
       </div>
 
       <div className="grid grid-cols-12 gap-8 mt-2">
         {/* Attendance Breakdown Card */}
-        <div className="col-span-12 lg:col-span-8 bg-white p-8 rounded-2xl ambient-shadow border border-[var(--color-outline-variant)]/5">
+        <div className="col-span-12 bg-white p-8 rounded-2xl ambient-shadow border border-[var(--color-outline-variant)]/5">
           <div className="flex justify-between items-center mb-8">
             <h4 className="text-xl font-headline font-bold text-[var(--color-primary)]">Attendance Breakdown</h4>
             <span className="text-[9px] font-extrabold text-[var(--color-on-surface-variant)] uppercase tracking-[0.2em] opacity-40">Estado del grupo</span>
@@ -196,37 +273,28 @@ const Overview = () => {
             <div>
               <div className="flex justify-between text-[10px] font-extrabold mb-2 uppercase tracking-tight">
                 <span className="text-[var(--color-on-surface-variant)]">Confirmado</span>
-                <span className="text-[var(--color-primary)]">70%</span>
+                <span className="text-[var(--color-primary)]">{metrics.total > 0 ? Math.round((metrics.confirmed / metrics.total) * 100) : 0}%</span>
               </div>
               <div className="w-full h-3 bg-[#f8fafc] rounded-full overflow-hidden">
-                <div className="h-full bg-[#10b981] w-[70%] rounded-full shadow-sm shadow-[#10b981]/20"></div>
+                <div className="h-full bg-[#10b981] rounded-full shadow-sm shadow-[#10b981]/20 transition-all duration-1000" style={{ width: `${metrics.total > 0 ? Math.round((metrics.confirmed / metrics.total) * 100) : 0}%` }}></div>
               </div>
             </div>
             <div>
               <div className="flex justify-between text-[10px] font-extrabold mb-2 uppercase tracking-tight">
                 <span className="text-[var(--color-on-surface-variant)]">Pendiente</span>
-                <span className="text-[var(--color-primary)]">21%</span>
+                <span className="text-[var(--color-primary)]">{metrics.total > 0 ? Math.round((metrics.pending / metrics.total) * 100) : 0}%</span>
               </div>
               <div className="w-full h-3 bg-[#f8fafc] rounded-full overflow-hidden">
-                <div className="h-full bg-[#f59e0b] w-[21%] rounded-full shadow-sm shadow-[#f59e0b]/20"></div>
+                <div className="h-full bg-[#f59e0b] rounded-full shadow-sm shadow-[#f59e0b]/20 transition-all duration-1000" style={{ width: `${metrics.total > 0 ? Math.round((metrics.pending / metrics.total) * 100) : 0}%` }}></div>
               </div>
             </div>
             <div>
               <div className="flex justify-between text-[10px] font-extrabold mb-2 uppercase tracking-tight">
-                <span className="text-[var(--color-on-surface-variant)]">Rechazado</span>
-                <span className="text-[var(--color-primary)]">5%</span>
+                <span className="text-[var(--color-on-surface-variant)]">Declinado</span>
+                <span className="text-[var(--color-primary)]">{metrics.total > 0 ? Math.round((metrics.declined / metrics.total) * 100) : 0}%</span>
               </div>
               <div className="w-full h-3 bg-[#f8fafc] rounded-full overflow-hidden">
-                <div className="h-full bg-[#f43f5e] w-[5%] rounded-full shadow-sm shadow-[#f43f5e]/20"></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-[10px] font-extrabold mb-2 uppercase tracking-tight">
-                <span className="text-[var(--color-on-surface-variant)]">Parcial</span>
-                <span className="text-[var(--color-primary)]">4%</span>
-              </div>
-              <div className="w-full h-3 bg-[#f8fafc] rounded-full overflow-hidden">
-                <div className="h-full bg-[#b45309] w-[4%] rounded-full shadow-sm shadow-[#b45309]/20"></div>
+                <div className="h-full bg-[#f43f5e] rounded-full shadow-sm shadow-[#f43f5e]/20 transition-all duration-1000" style={{ width: `${metrics.total > 0 ? Math.round((metrics.declined / metrics.total) * 100) : 0}%` }}></div>
               </div>
             </div>
           </div>
@@ -242,52 +310,14 @@ const Overview = () => {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-[#f43f5e]"></div>
-              <span className="text-[9px] font-extrabold text-[var(--color-on-surface-variant)] uppercase tracking-widest opacity-60">Rechazado</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#b45309]"></div>
-              <span className="text-[9px] font-extrabold text-[var(--color-on-surface-variant)] uppercase tracking-widest opacity-60">Parcial</span>
+              <span className="text-[9px] font-extrabold text-[var(--color-on-surface-variant)] uppercase tracking-widest opacity-60">Declinado</span>
             </div>
           </div>
         </div>
 
-        {/* ─── Sidebar (Right) ─── */}
+        {/* ─── Sidebar (Now Empty/Removed) ─── */}
         <div className="col-span-12 lg:col-span-4 space-y-8">
           
-          {/* Plantilla de invitación Card */}
-          <div className="bg-white p-8 rounded-2xl ambient-shadow border border-[var(--color-outline-variant)]/5">
-            <div className="flex justify-between items-center mb-6">
-              <h4 className="text-sm font-extrabold text-[var(--color-primary)] uppercase tracking-widest">Plantilla de invitación</h4>
-              <button className="text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-                </svg>
-              </button>
-            </div>
-            
-            <div className="space-y-2 mb-6">
-              <h5 className="font-headline font-bold text-[var(--color-primary)] text-lg">Floral Romance</h5>
-              <div className="flex items-center gap-2 text-[var(--color-on-surface-variant)] opacity-60">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span className="text-[10px] font-extrabold uppercase tracking-widest">Floral</span>
-              </div>
-            </div>
-
-            <div className="aspect-[4/5] bg-[#f8fafc] rounded-xl border-2 border-dashed border-[#e2e8f0] p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-white hover:border-[var(--color-secondary)]/30 transition-all mb-6">
-              <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-6 h-6 text-[#94a3b8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <p className="text-[9px] font-extrabold text-[#94a3b8] uppercase tracking-widest">Ninguna plantilla asignada</p>
-            </div>
-
-            <button className="w-full py-3.5 bg-white border-2 border-[var(--color-secondary)]/10 text-[var(--color-secondary)] rounded-xl font-extrabold text-[10px] uppercase tracking-widest hover:bg-[var(--color-secondary)]/5 transition-all">
-              Ver plantillas
-            </button>
-          </div>
         </div>
       </div>
     </div>

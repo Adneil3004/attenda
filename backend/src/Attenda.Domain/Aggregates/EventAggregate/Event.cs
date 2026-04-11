@@ -19,6 +19,7 @@ public class Event : AggregateRoot
     public string? VenueAddress { get; private set; }
     public string CapacityTier { get; private set; } = "FREE";
     public int GuestLimit { get; private set; } = 20;
+    public DateTime CreatedAt { get; private set; }
 
     private readonly List<Guest> _guests = new();
     public IReadOnlyCollection<Guest> Guests => _guests.AsReadOnly();
@@ -46,6 +47,7 @@ public class Event : AggregateRoot
         VenueAddress = venueAddress;
         CapacityTier = capacityTier;
         GuestLimit = guestLimit;
+        CreatedAt = DateTime.UtcNow;
     }
 
     public static Event Create(string name, string? description, EventDate date, Guid organizerId, string? eventType = null, string[]? celebrants = null, string? organizerName = null, string? religiousAddress = null, string? venueAddress = null, string capacityTier = "FREE", int guestLimit = 20)
@@ -64,7 +66,7 @@ public class Event : AggregateRoot
 
     public void SetStatus(EventStatus status) => Status = status;
 
-    public void AddGuest(string firstName, string lastName, EmailAddress email, Guid? groupId = null, string? dietaryRestrictions = null, bool plusOne = false, string? notes = null)
+    public void AddGuest(string firstName, string lastName, EmailAddress email, Guid? groupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, bool plusOne = false, string? notes = null)
     {
         if (_guests.Count >= GuestLimit)
             throw new InvalidOperationException($"Guest limit of {GuestLimit} reached for this {CapacityTier} event.");
@@ -97,5 +99,27 @@ public class Event : AggregateRoot
     public void AddTask(string title, string? description = null, TaskPriority priority = TaskPriority.Medium, DateTime? dueDate = null)
     {
         _taskItems.Add(TaskItem.Create(title, description, priority, dueDate));
+    }
+
+    public void RemoveGuest(Guid guestId)
+    {
+        var guest = _guests.FirstOrDefault(g => g.Id == guestId);
+        if (guest != null)
+        {
+            _guests.Remove(guest);
+        }
+    }
+
+    public void RemoveGuests(IEnumerable<Guid> guestIds)
+    {
+        foreach (var guestId in guestIds)
+        {
+            RemoveGuest(guestId);
+        }
+    }
+
+    public void RemoveAllGuests()
+    {
+        _guests.Clear();
     }
 }
