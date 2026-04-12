@@ -1,0 +1,112 @@
+/* Dashboard-scoped theme variables */
+
+/* Dark Theme Override for Dashboard only */
+.dashboard-root.dark,
+.dark .dashboard-root {
+  --color-primary: #a78bfa;
+  --color-primary-container: #1e1b4b;
+  --color-secondary: #c4b5fd;
+  --color-secondary-container: #4c1d95;
+  --color-secondary-fixed: #1e1b4b;
+  --color-on-secondary-fixed-variant: #c4b5fd;
+  
+  --color-surface: #0f0f0f;
+  --color-surface-container-lowest: #1a1a1a;
+  --color-surface-container-low: #262626;
+  --color-surface-container-high: #333333;
+  --color-surface-bright: #0f0f0f;
+  
+  --color-on-surface: #f9fafb;
+  --color-on-surface-variant: #9ca3af;
+  
+  --color-outline-variant: #4b5563;
+  
+  --color-card-bg: #1f1f1f;
+  --color-card-border: #374151;
+  --color-page-bg: #0a0a0a;
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-text-muted: #9ca3af;
+  
+  --color-error: #f87171;
+  --color-error-container: #7f1d1d;
+  --color-success: #34d399;
+  --color-success-container: #064e3b;
+  --color-accent: #a78bfa;
+  --color-on-primary: #00020a;
+}
+
+/* Light Theme (Dashboard defaults) */
+.dashboard-root {
+  --color-card-bg: #ffffff;
+  --color-card-border: #e5e7eb;
+  --color-page-bg: #f8f9fa;
+  --color-text-primary: #00020a;
+  --color-text-secondary: #44474f;
+  --color-text-muted: #6b7280;
+  
+  --color-error: #dc2626;
+  --color-error-container: #fef2f2;
+  --color-success: #059669;
+  --color-success-container: #ecfdf5;
+  --color-accent: #4f46e5;
+  --color-on-primary: #ffffff;
+}
+
+/* Sheen animations */
+@keyframes sheenslow {
+  0% {
+    transform: translateX(-100%) rotate(35deg);
+  }
+  100% {
+    transform: translateX(200%) rotate(35deg);
+  }
+}
+
+.animate-sheenslow {
+  animation: sheenslow 3s ease-in-out infinite;
+}
+
+/* VIP Table styles */
+.vip-card {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border: 1px solid #d1d5db;
+  box-shadow: 0 12px 40px rgba(25, 28, 29, 0.06);
+}
+
+.dark .vip-card {
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  border: 1px solid #4b5563;
+}
+
+.vip-table {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border: 1px solid #d1d5db;
+}
+
+.dark .vip-table {
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  border: 1px solid #4b5563;
+}
+
+.vip-table .sheen {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+}
+
+.dark .vip-table .sheen {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+}

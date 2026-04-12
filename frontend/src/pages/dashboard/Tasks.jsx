@@ -43,21 +43,21 @@ const DroppableColumn = ({ column, children, columnTasks }) => {
   return (
     <div 
       ref={setNodeRef}
-      className="w-full lg:w-80 2xl:w-96 min-[1920px]:w-[26rem] flex-shrink-0 flex flex-col bg-[#f3f4f5] rounded-2xl p-4 hide-scrollbar min-h-[150px] lg:h-full lg:overflow-hidden mb-6 lg:mb-0"
+      className="w-full lg:w-80 2xl:w-96 min-[1920px]:w-[26rem] flex-shrink-0 flex flex-col bg-[var(--color-surface-container-low)] dark:bg-[var(--color-surface-container-high)] rounded-2xl p-4 hide-scrollbar min-h-[150px] lg:h-full lg:overflow-hidden mb-6 lg:mb-0"
     >
       <div className="flex items-center justify-between mb-4 px-2">
         <h3 className="font-bold text-sm text-[var(--color-primary)] flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 opacity-60"></span>
+          <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)] opacity-60"></span>
           {column}
         </h3>
         
         {/* Tags / Counts */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] bg-[var(--color-surface-container-high)] dark:bg-[var(--color-surface-container-low)] px-2 py-0.5 rounded-full">
             {columnTasks.length}
           </span>
           {isWIP && (
-            <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${overLimit ? 'bg-red-100 text-red-600' : 'bg-white text-indigo-600 shadow-sm'}`}>
+            <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${overLimit ? 'bg-[var(--color-error)]/10 text-[var(--color-error)]' : 'bg-[var(--color-card-bg)] text-[var(--color-primary)] shadow-sm border border-[var(--color-card-border)]'}`}>
               WIP Limit {wipLimitValue}
             </span>
           )}
@@ -70,7 +70,7 @@ const DroppableColumn = ({ column, children, columnTasks }) => {
         
         {/* Empty State visual affordance */}
         {columnTasks.length === 0 && (
-          <div className="h-24 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center text-xs font-semibold text-gray-400">
+          <div className="h-24 border-2 border-dashed border-[var(--color-card-border)] rounded-xl flex items-center justify-center text-xs font-semibold text-[var(--color-text-muted)]">
             Drag tasks here
           </div>
         )}
@@ -115,30 +115,30 @@ const SortableTaskCard = ({ task, onClick }) => {
 
 // ─── Base Card Component ───
 const TaskCard = ({ task, isLayoutOverlay }) => (
-  <div className={`bg-white rounded-xl p-5 border border-gray-100 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 relative overflow-hidden ${isLayoutOverlay ? 'shadow-2xl rotate-3 scale-105 cursor-grabbing z-50' : 'shadow-sm'}`}>
+  <div className={`bg-[var(--color-card-bg)] rounded-xl p-5 border border-[var(--color-card-border)] hover:-translate-y-1 hover:shadow-lg transition-all duration-300 relative overflow-hidden ${isLayoutOverlay ? 'shadow-2xl rotate-3 scale-105 cursor-grabbing z-50' : 'shadow-sm'}`}>
     {task.priority === 'High' && (
-      <div className="absolute top-0 left-0 w-1 h-full bg-red-400"></div>
+      <div className="absolute top-0 left-0 w-1 h-full bg-[var(--color-error)]"></div>
     )}
     <div className="flex justify-between items-start mb-4">
-      <span className="bg-[#f8f9fa] text-gray-500 text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded">
+      <span className="bg-[var(--color-surface-container-high)] text-[var(--color-text-secondary)] text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded">
         {task.tag}
       </span>
       <div className="flex -space-x-2">
-        <img src={task.avatar} alt="assignee" className="w-6 h-6 rounded-full border-2 border-white shadow-sm" />
+        <img src={task.avatar} alt="assignee" className="w-6 h-6 rounded-full border-2 border-[var(--color-card-bg)] shadow-sm" />
       </div>
     </div>
     <h4 className="text-sm font-semibold text-[var(--color-primary)] font-display leading-snug mb-4">
       {task.title}
     </h4>
-    <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-      <div className="flex items-center gap-1.5 text-gray-400 hover:text-gray-600 transition-colors">
+    <div className="flex items-center justify-between pt-4 border-t border-[var(--color-card-border)]">
+      <div className="flex items-center gap-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors">
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
         <span className="text-[10px] font-bold">{task.dueDate}</span>
       </div>
       {task.status === 'Done' && (
-        <span className="text-emerald-500 animate-in zoom-in duration-300 drop-shadow-sm">
+        <span className="text-[var(--color-success)] animate-in zoom-in duration-300 drop-shadow-sm">
           <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>

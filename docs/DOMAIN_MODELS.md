@@ -25,24 +25,23 @@ classDiagram
         +RsvpStatus RsvpStatus
         +RsvpToken RsvpToken
         +Guid? GuestGroupId
+        +IReadOnlyCollection~DietaryRestriction~ DietaryRestrictions
+        +bool PlusOne
+        +string? Notes
     }
     class GuestGroup {
         +string Name
     }
-    class TaskItem {
-        +string Title
-        +TaskPriority Priority
-        +TaskStatus Status
-    }
-    class CheckIn {
-        +DateTime OccurredAt
-        +string ScannedBy
+    class DietaryRestriction {
+        +string Name
+        +string Severity
     }
 
     Event "1" *-- "0..*" Guest
     Event "1" *-- "0..*" GuestGroup
     Event "1" *-- "0..*" TaskItem
     Event "1" *-- "0..*" CheckIn
+    Guest "1" *-- "0..*" DietaryRestriction : Tiene
     GuestGroup "1" -- "0..*" Guest : Contiene
 ```
 
@@ -51,12 +50,15 @@ classDiagram
 ### 1. Agregado: Evento (`Event`)
 Es la raíz del dominio. Gestiona la configuración del evento, los límites de invitados y coordina las acciones sobre sus entidades hijas.
 - **Religioso vs Recepción**: Soporta direcciones separadas y celebrantes.
-- **Límites**: El `GuestLimit` se aplica según el `CapacityTier` (ej: FREE limitado a 20 invitados).
+- **Límites**: El `GuestLimit` se aplica según el `CapacityTier` (ej: FREE limitado a 20 invitados, PREMIUM hasta 500).
+- **Consistencia**: El agregador asegura que no se exceda la capacidad al añadir invitados.
 
 ### 2. Invitado (`Guest`)
 Representa a una persona invitada al evento.
 - **RSVP**: Estado de respuesta (`Pending`, `Confirmed`, `Declined`).
 - **Token Unique**: Cada invitado tiene un `RsvpToken` para accesos seguros sin login.
+- **Necesidades Especiales**: Almacena `DietaryRestrictions` (ej: Glúten, Lactosa) y `Notes` personalizadas.
+- **Plus One**: Indica si el invitado tiene permitido llevar un acompañante.
 - **Grupos**: Puede pertenecer a un `GuestGroup` (ej: "Familia Novia").
 
 ### 3. Check-In

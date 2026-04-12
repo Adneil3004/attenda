@@ -17,6 +17,7 @@ public class Event : AggregateRoot
     public string? OrganizerName { get; private set; }
     public string? ReligiousAddress { get; private set; }
     public string? VenueAddress { get; private set; }
+    public string? ImageUrl { get; private set; }
     public string CapacityTier { get; private set; } = "FREE";
     public int GuestLimit { get; private set; } = 20;
     public DateTime CreatedAt { get; private set; }
@@ -33,7 +34,9 @@ public class Event : AggregateRoot
     private readonly List<TaskItem> _taskItems = new();
     public IReadOnlyCollection<TaskItem> TaskItems => _taskItems.AsReadOnly();
 
-    private Event(string name, string? description, EventDate date, Guid organizerId, string? eventType = null, string[]? celebrants = null, string? organizerName = null, string? religiousAddress = null, string? venueAddress = null, string capacityTier = "FREE", int guestLimit = 20) : base()
+    private Event() : base() { Name = null!; CapacityTier = null!; } // Required by EF Core
+
+    private Event(string name, string? description, EventDate date, Guid organizerId, string? eventType = null, string[]? celebrants = null, string? organizerName = null, string? religiousAddress = null, string? venueAddress = null, string capacityTier = "FREE", int guestLimit = 20, string? imageUrl = null) : base()
     {
         Name = name;
         Description = description;
@@ -47,26 +50,43 @@ public class Event : AggregateRoot
         VenueAddress = venueAddress;
         CapacityTier = capacityTier;
         GuestLimit = guestLimit;
+        ImageUrl = imageUrl;
         CreatedAt = DateTime.UtcNow;
     }
 
-    public static Event Create(string name, string? description, EventDate date, Guid organizerId, string? eventType = null, string[]? celebrants = null, string? organizerName = null, string? religiousAddress = null, string? venueAddress = null, string capacityTier = "FREE", int guestLimit = 20)
+    public static Event Create(string name, string? description, EventDate date, Guid organizerId, string? eventType = null, string[]? celebrants = null, string? organizerName = null, string? religiousAddress = null, string? venueAddress = null, string capacityTier = "FREE", int guestLimit = 20, string? imageUrl = null)
     {
-        var @event = new Event(name, description, date, organizerId, eventType, celebrants, organizerName, religiousAddress, venueAddress, capacityTier, guestLimit);
+        var @event = new Event(name, description, date, organizerId, eventType, celebrants, organizerName, religiousAddress, venueAddress, capacityTier, guestLimit, imageUrl);
         // Add EventCreated domain event here if needed
         return @event;
     }
 
-    public void UpdateDetails(string name, string? description, EventDate date)
+    public void UpdateDetails(
+        string name, 
+        string? description, 
+        EventDate date, 
+        string? eventType, 
+        string[]? celebrants, 
+        string? organizerName, 
+        string? religiousAddress, 
+        string? venueAddress, 
+        string? imageUrl)
     {
         Name = name;
         Description = description;
         Date = date;
+        EventType = eventType;
+        Celebrants = celebrants;
+        OrganizerName = organizerName;
+        ReligiousAddress = religiousAddress;
+        VenueAddress = venueAddress;
+        ImageUrl = imageUrl;
     }
+
 
     public void SetStatus(EventStatus status) => Status = status;
 
-    public void AddGuest(string firstName, string lastName, EmailAddress email, Guid? groupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, bool plusOne = false, string? notes = null)
+    public Guest AddGuest(string firstName, string lastName, EmailAddress email, Guid? groupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, bool plusOne = false, string? notes = null)
     {
         if (_guests.Count >= GuestLimit)
             throw new InvalidOperationException($"Guest limit of {GuestLimit} reached for this {CapacityTier} event.");
@@ -74,7 +94,9 @@ public class Event : AggregateRoot
         if (_guests.Any(g => g.Email != null && g.Email.Value == email.Value))
             throw new InvalidOperationException($"Guest with email {email} already exists in this event.");
 
-        _guests.Add(Guest.Create(firstName, lastName, email, groupId, dietaryRestrictions, plusOne, notes));
+        var guest = Guest.Create(firstName, lastName, email, groupId, dietaryRestrictions, plusOne, notes);
+        _guests.Add(guest);
+        return guest;
     }
 
     public void AddGuestGroup(string name)
@@ -107,6 +129,7 @@ public class Event : AggregateRoot
         if (guest != null)
         {
             _guests.Remove(guest);
+            _checkIns.RemoveAll(c => c.GuestId == guestId);
         }
     }
 
@@ -118,8 +141,9 @@ public class Event : AggregateRoot
         }
     }
 
-    public void RemoveAllGuests()
+    public void ClearGuests()
     {
         _guests.Clear();
+        _checkIns.Clear();
     }
 }

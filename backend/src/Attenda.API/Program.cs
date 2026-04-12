@@ -1,13 +1,17 @@
+using Microsoft.IdentityModel.Logging;
 using System.Text;
 using Attenda.Application;
 using Attenda.Infrastructure;
-using Attenda.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Enable detailed auth errors for debugging
+IdentityModelEventSource.ShowPII = true;
 
 // Serilog
 Log.Logger = new LoggerConfiguration()
@@ -47,19 +51,74 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Auth
+// Auth - Switching to JWKS Discovery (RS256)
+var supabaseUrl = builder.Configuration["Supabase:Url"] ?? "";
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        var jwtSecret = builder.Configuration["Supabase:JwtSecret"];
+        
+        options.Authority = $"{supabaseUrl}/auth/v1";
+        options.MetadataAddress = $"{supabaseUrl}/auth/v1/.well-known/openid-configuration";
+        options.RequireHttpsMetadata = false; 
+        options.IncludeErrorDetails = true;
+        
+        // Manual ES256 Key Fallback (Extracted from https://pfrblrqwxxjqvzfiftei.supabase.co/auth/v1/.well-known/jwks.json)
+        var x = "RrrhRCKE2gPKeckYBHYwwBiSymgfhPmXjn2UiGZL3BQ";
+        var y = "3WwXWUTgqBYtMKPK31mt86JuItSYEt8foeMre16eZK8";
+        var ecKey = new ECDsaSecurityKey(System.Security.Cryptography.ECDsa.Create(new System.Security.Cryptography.ECParameters
+        {
+            Curve = System.Security.Cryptography.ECCurve.NamedCurves.nistP256,
+            Q = new System.Security.Cryptography.ECPoint
+            {
+                X = Microsoft.IdentityModel.Tokens.Base64UrlEncoder.DecodeBytes(x),
+                Y = Microsoft.IdentityModel.Tokens.Base64UrlEncoder.DecodeBytes(y)
+            }
+        })) { KeyId = "cfee8468-d599-437e-bf47-1ba4e79f07e7" };
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
+            ValidIssuer = $"{supabaseUrl}/auth/v1",
             ValidateAudience = true,
+            ValidAudience = "authenticated",
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? "default_secret_key_for_dev_only"))
+            IssuerSigningKey = ecKey, // Force the ES256 key
+            NameClaimType = ClaimTypes.NameIdentifier,
+            RoleClaimType = "role",
+            ClockSkew = TimeSpan.FromMinutes(5)
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"[AUTH FAILED] {context.Exception.GetType().Name}: {context.Exception.Message}");
+                if (context.Exception.InnerException != null)
+                {
+                    Console.WriteLine($"[AUTH INNER] {context.Exception.InnerException.Message}");
+                }
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                if (context.Principal?.Identity is ClaimsIdentity identity)
+                {
+                    var subClaim = identity.FindFirst("sub");
+                    if (subClaim != null)
+                    {
+                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, subClaim.Value));
+                    }
+                }
+                Console.WriteLine("[AUTH SUCCESS] Token validated successfully.");
+                return Task.CompletedTask;
+            },
+            OnForbidden = context => {
+                Console.WriteLine("[AUTH FORBIDDEN] User is authenticated but not allowed to access this resource.");
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -79,6 +138,49 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Debug Endpoint - Get All Guests (Bypass Auth & Domain Validation)
+app.MapGet("/api/debug/guests", async (Attenda.Infrastructure.Persistence.AppDbContext dbContext) =>
+{
+    try
+    {
+        // Projecting to a simple dynamic object with null checks to avoid mapping errors
+        var guestList = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+            dbContext.Set<Attenda.Domain.Aggregates.EventAggregate.Guest>()
+                .Select(g => new {
+                    g.Id,
+                    FirstName = g.FirstName ?? "Anonymous",
+                    LastName = g.LastName ?? "",
+                    RsvpStatus = g.RsvpStatus.ToString(),
+                    g.PlusOne,
+                    g.Notes
+                })
+        );
+        return Results.Ok(guestList);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Database Error: {ex.Message}");
+    }
+});
+
+// Debug Endpoint - DB Connectivity Check
+app.MapGet("/api/debug/db-health", async (Attenda.Infrastructure.Persistence.AppDbContext dbContext) =>
+{
+    try
+    {
+        var canConnect = await dbContext.Database.CanConnectAsync();
+        if (!canConnect) return Results.Problem("Cannot connect to database. Check your connection string and password.");
+        
+        // Use the correct namespace for Guest entity and ensure EntityFrameworkCore is used
+        var guestCount = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.CountAsync(dbContext.Set<Attenda.Domain.Aggregates.EventAggregate.Guest>());
+        return Results.Ok(new { status = "Healthy", message = "Connected to Supabase DB", count = guestCount });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Database Error: {ex.Message}");
+    }
+});
 
 app.UseCors("AllowAll");
 app.UseAuthentication();

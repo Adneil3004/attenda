@@ -58,8 +58,10 @@ public class GetEventOverviewHandler : IRequestHandler<GetEventOverviewQuery, Ev
             ConfirmedGuests = confirmedGuests,
             PendingGuests = pendingGuests,
             DeclinedGuests = declinedGuests,
-            ProgressPercentage = CalculateProgressPercentage(@event.CreatedAt, @event.Date.StartDate)
+            ProgressPercentage = CalculateProgressPercentage(@event.CreatedAt, @event.Date.StartDate),
+            ImageUrl = @event.ImageUrl
         };
+
     }
 
     private int CalculateProgressPercentage(DateTime createdAt, DateTime eventDate)

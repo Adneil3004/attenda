@@ -18,6 +18,8 @@ public class Guest : Entity
     public bool PlusOne { get; private set; }
     public string? Notes { get; private set; }
 
+    private Guest() : base() { FirstName = null!; LastName = null!; Email = null!; RsvpToken = null!; } // Required by EF Core
+
     private Guest(string firstName, string lastName, EmailAddress email, Guid? guestGroupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, bool plusOne = false, string? notes = null) : base()
     {
         FirstName = firstName;
@@ -43,4 +45,19 @@ public class Guest : Entity
     }
 
     public void MoveToGroup(Guid? groupId) => GuestGroupId = groupId;
+
+    public void UpdateDetails(string firstName, string lastName, EmailAddress email, bool plusOne, string? notes, IEnumerable<DietaryRestriction>? dietaryRestrictions)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        PlusOne = plusOne;
+        Notes = notes;
+        
+        _dietaryRestrictions.Clear();
+        if (dietaryRestrictions != null)
+        {
+            _dietaryRestrictions.AddRange(dietaryRestrictions);
+        }
+    }
 }

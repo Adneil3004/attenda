@@ -1,10 +1,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme, isDark } = useTheme();
 
   const handleSignOut = async () => {
     try {
@@ -26,19 +28,20 @@ const Sidebar = () => {
 
   const navItems = [
     { name: 'Overview', path: '/dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
+    { name: 'Table Layout', path: '/dashboard/table-layout', icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
     { name: 'Guests', path: '/dashboard/guests', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
     { name: 'Tasks', path: '/dashboard/tasks', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
     { name: 'Settings', path: '/dashboard/settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' }
   ];
 
   return (
-    <div className="w-64 h-screen bg-white border-r border-gray-100 hidden lg:flex flex-col pt-8">
+    <div className="w-64 h-screen bg-[var(--color-card-bg)] border-r border-[var(--color-card-border)] hidden lg:flex flex-col pt-8">
       <div className="px-8 flex-shrink-0">
         {/* We use structural padding to give the impression of a border without a hard line */}
         <Link to="/dashboard" className="text-2xl font-bold tracking-tight text-[var(--color-primary)]">
           Attenda.
         </Link>
-        <div className="mt-2 inline-flex items-center gap-2 bg-[var(--color-surface-container-low)] px-3 py-1 rounded-full text-xs font-semibold text-[var(--color-on-surface-variant)]">
+        <div className="mt-2 inline-flex items-center gap-2 bg-[var(--color-surface-container-low)] px-3 py-1 rounded-full text-xs font-semibold text-[var(--color-text-secondary)]">
           <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)]"></span>
           Event Active
         </div>
@@ -98,13 +101,46 @@ const Sidebar = () => {
           </button>
         </div>
 
-        <div className="bg-[#f8f9fa] rounded-xl p-4 flex items-center gap-3 border border-gray-100">
+        {/* Theme Toggle */}
+        <div className="flex items-center justify-between px-4 py-3 bg-[var(--color-surface-container-low)] rounded-xl border border-[var(--color-card-border)] mb-3">
+          <div className="flex items-center gap-3">
+            {isDark ? (
+              <svg className="w-5 h-5 text-[var(--color-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 text-[var(--color-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            )}
+            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+              {isDark ? 'Dark Mode' : 'Light Mode'}
+            </span>
+          </div>
+          
+          <button
+            onClick={toggleTheme}
+            className={`
+              relative w-12 h-6 rounded-full transition-colors duration-300
+              ${isDark ? 'bg-[var(--color-primary)]' : 'bg-gray-300'}
+            `}
+          >
+            <span
+              className={`
+                absolute top-1 w-4 h-4 rounded-full bg-white shadow-md transition-transform duration-300
+                ${isDark ? 'left-7' : 'left-1'}
+              `}
+            />
+          </button>
+        </div>
+
+        <div className="bg-[var(--color-surface-container-low)] rounded-xl p-4 flex items-center gap-3 border border-[var(--color-card-border)]">
           <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-sm shadow-sm">
             {initials}
           </div>
           <div className="flex flex-col overflow-hidden">
-            <span className="text-sm font-bold text-[var(--color-primary)] truncate">{displayName}</span>
-            <span className="text-xs text-gray-500 truncate">{user?.email}</span>
+            <span className="text-sm font-bold text-[var(--color-text-primary)] truncate">{displayName}</span>
+            <span className="text-xs text-[var(--color-text-muted)] truncate">{user?.email}</span>
           </div>
         </div>
         

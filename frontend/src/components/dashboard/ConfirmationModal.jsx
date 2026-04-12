@@ -1,3 +1,4 @@
+// Test Auto Accept Extension - 2026-04-11
 import React, { useState, useEffect } from 'react';
 
 const ConfirmationModal = ({ 

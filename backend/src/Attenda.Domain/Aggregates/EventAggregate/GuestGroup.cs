@@ -6,6 +6,8 @@ public class GuestGroup : Entity
 {
     public string Name { get; private set; }
 
+    private GuestGroup() : base() { Name = null!; } // Required by EF Core
+
     private GuestGroup(string name) : base()
     {
         Name = name;

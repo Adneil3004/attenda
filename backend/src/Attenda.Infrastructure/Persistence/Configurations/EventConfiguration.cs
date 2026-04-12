@@ -24,6 +24,33 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
         builder.Property(e => e.Status)
             .HasConversion<string>();
 
+        builder.Property(e => e.EventType)
+            .HasColumnName("event_type");
+
+        builder.Property(e => e.Celebrants)
+            .HasColumnName("celebrants")
+            .HasColumnType("text[]");
+
+        builder.Property(e => e.OrganizerName)
+            .HasColumnName("organizer_name");
+
+        builder.Property(e => e.ReligiousAddress)
+            .HasColumnName("religious_address");
+
+        builder.Property(e => e.VenueAddress)
+            .HasColumnName("venue_address");
+
+        builder.Property(e => e.ImageUrl)
+            .HasColumnName("image_url");
+
+        builder.Property(e => e.CapacityTier)
+            .HasColumnName("capacity_tier")
+            .HasColumnType("text");
+
+        builder.Property(e => e.GuestLimit)
+            .HasColumnName("guest_limit");
+
+
         builder.HasMany(e => e.Guests)
             .WithOne()
             .HasForeignKey("event_id")

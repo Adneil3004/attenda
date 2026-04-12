@@ -1,39 +1,62 @@
-# Guía del Frontend - Attenda
+# Frontend Guide - Attenda
 
-El frontend de Attenda es una aplicación de página única (SPA) construida con **React** y **Vite**, diseñada para ofrecer una experiencia de usuario rápida, fluida y con una estética premium ("Concierge").
+The Attenda frontend is a Single Page Application (SPA) built with **React** and **Vite**, designed to provide a fast, fluid, and premium "Concierge" user experience.
 
-## Mapa de Navegación
+## Navigation Map
 
 ```mermaid
 graph TD
     L[Landing Page] --> Login[Login / Register]
     Login --> Dashboard[Dashboard Overview]
-    Dashboard --> Guests[Gestión de Invitados]
-    Dashboard --> Events[Mis Eventos / Crear Evento]
-    Dashboard --> Tasks[Lista de Tareas]
-    Dashboard --> Settings[Configuración]
+    Guests[Guest Management]
+    Events[My Events / Create Event]
+    Tasks[Task List]
+    Settings[Settings]
+
+    Dashboard --> Guests
+    Dashboard --> Events
+    Dashboard --> Tasks
+    Dashboard --> Settings
 ```
 
-## Estructura de Archivos (`/src`)
+## Directory Structure (`/src`)
 
 - **`/components`**:
-    - **`layout/`**: Contiene `Navbar`, `Footer` y el `MainLayout` para las páginas públicas.
-    - **`dashboard/`**: Componentes específicos del panel de control (`Sidebar`, `GuestDrawer`, `DashboardLayout`).
+    - **`layout/`**: Contains `Navbar`, `Footer`, and `MainLayout` for public pages.
+    - **`dashboard/`**: Dashboard-specific components (`Sidebar`, `GuestDrawer`, `DashboardLayout`).
 - **`/pages`**:
-    - Páginas públicas de marketing (`Landing`, `Pricing`, `AboutUs`).
-    - **`dashboard/`**: Vistas protegidas para la gestión de eventos e invitados.
+    - Public marketing pages (`Landing`, `Pricing`, `AboutUs`).
+    - **`dashboard/`**: Protected views for event and guest management.
+- **`/lib/api.js`**: **Unified API Client**. Centralized Fetch wrapper that handles Bearer tokens and target URL resolution (`127.0.0.1` for dev stability).
 - **`/contexts`**:
-    - **`AuthContext.jsx`**: Gestiona el estado de autenticación y la sesión del usuario mediante Supabase.
+    - **`AuthContext.jsx`**: Manages authentication state and user session via Supabase.
 
-## Estética y Estilizado
-Se utiliza **Tailwind CSS v4** para el diseño:
-- **Vidrio (Glassmorphism)**: Paneles con fondos traslúcidos y desenfoque.
-- **Micro-interacciones**: Transiciones suaves al navegar entre pestañas del Dashboard.
-- **Mobile-First**: Toda la interfaz está optimizada para dispositivos móviles mediante el `MobileBottomNav`.
+## Management Features
 
-## Integración con el Backend
-- La aplicación se comunica con la API de .NET para las operaciones pesadas de negocio.
-- Utiliza la librería de cliente de **Supabase** directamente para la autenticación y, en algunos casos, para la escucha en tiempo real de cambios en la base de datos.
+### 1. Guest Management (`Guests.jsx`)
+The dashboard's flagship view, providing full control over the attendee list.
+- **Dynamic Filtering**: Name search and instant filtering by RSVP status and groups.
+- **Bulk Actions**: Multi-selection system with an animated toolbar for batch guest deletion.
+- **Import/Export**:
+    - Pre-configured CSV template download.
+    - Direct CSV import with event capacity limit validation.
+- **Safety**: The "Clear List" button requires a keyword confirmation ("BORRAR") to prevent accidents.
+
+### 2. Core Dashboard Components
+- **`GuestDrawer.jsx`**: Sliding side panel for adding or editing guest details (RSVP, dietary restrictions, notes).
+- **`ConfirmationModal.jsx`**: Premium design component for critical actions, supporting loading states and keyword validation.
+- **`Sidebar.jsx`**: Persistent side navigation with active states and glassmorphism design.
+
+## Aesthetics & Styling
+The application uses **Tailwind CSS v4** for styling:
+- **Glassmorphism**: Panels with translucent backgrounds and backdrop blur.
+- **Sheen Effect**: Subtle shine micro-animations on interactive containers to accentuate premium elements.
+- **Micro-interactions**: Framer Motion is used for smooth modal entries and toolbars.
+- **Mobile-First**: Fully optimized for mobile devices through the `MobileBottomNav`.
+
+## Backend Integration
+- **Centralized API**: The frontend no longer uses direct Supabase SDK calls for business logic. It maps complex actions to MediatR commands in the .NET API via the `apiClient`.
+- **Bearer Authentication**: Authentication headers are automatically injected into backend requests using the Supabase `access_token`.
 
 ---
-*Para detalles sobre la base de datos y los servicios de infraestructura, consulta [INFRASTRUCTURE.md](./INFRASTRUCTURE.md).*
+*For details on the database and infrastructure services, see [ARCHITECTURE_AUTH.md](./ARCHITECTURE_AUTH.md).*

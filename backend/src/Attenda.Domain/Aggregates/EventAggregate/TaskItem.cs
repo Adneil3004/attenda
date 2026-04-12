@@ -12,6 +12,8 @@ public class TaskItem : Entity
     public TaskPriority Priority { get; private set; }
     public DateTime? DueDate { get; private set; }
 
+    private TaskItem() : base() { Title = null!; } // Required by EF Core
+
     private TaskItem(string title, string? description, TaskPriority priority, DateTime? dueDate) : base()
     {
         Title = title;

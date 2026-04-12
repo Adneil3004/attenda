@@ -7,7 +7,8 @@ public record EventDto(
     DateTime StartDate,
     DateTime? EndDate,
     string Status,
-    Guid OrganizerId);
+    Guid OrganizerId,
+    string? ImageUrl);
 
 public record EventSummaryDto(
     Guid Id,

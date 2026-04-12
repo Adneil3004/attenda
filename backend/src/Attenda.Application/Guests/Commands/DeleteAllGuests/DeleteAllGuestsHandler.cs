@@ -28,7 +28,7 @@ public class DeleteAllGuestsHandler : IRequestHandler<DeleteAllGuestsCommand>
             throw new UnauthorizedAccessException("You do not have permission to delete guests from this event.");
         }
 
-        @event.RemoveAllGuests();
+        @event.ClearGuests();
 
         _eventRepository.Update(@event);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

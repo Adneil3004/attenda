@@ -3,4 +3,10 @@
 GET {{Attenda.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
-###
+### DB Health Check (Check if Postgres is reachable)
+GET {{Attenda.API_HostAddress}}/api/debug/db-health
+Accept: application/json
+
+### Get Attendees (Requires Auth usually)
+GET {{Attenda.API_HostAddress}}/api/guests
+Accept: application/json

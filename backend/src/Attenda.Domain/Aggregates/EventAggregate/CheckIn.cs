@@ -8,6 +8,8 @@ public class CheckIn : Entity
     public DateTime CheckInTime { get; private set; }
     public string? ScannedBy { get; private set; }
 
+    private CheckIn() : base() { } // Required by EF Core
+
     private CheckIn(Guid guestId, string? scannedBy) : base()
     {
         GuestId = guestId;

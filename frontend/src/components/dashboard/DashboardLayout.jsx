@@ -1,10 +1,11 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import MobileBottomNav from './MobileBottomNav';
+import '../../styles/dashboard-theme.css';
 
 const DashboardLayout = () => {
   return (
-    <div className="flex h-screen bg-[var(--color-surface-container-low)]">
+    <div className="dashboard-root flex h-screen bg-[var(--color-surface-container-low)]">
       {/* Sidebar with distinct background to visually separate without border lines */}
       <Sidebar />
       

@@ -16,6 +16,8 @@ import Settings from './pages/dashboard/Settings';
 import Tasks from './pages/dashboard/Tasks';
 import CreateEvent from './pages/dashboard/CreateEvent';
 import MyEvents from './pages/dashboard/MyEvents';
+import EditEvent from './pages/dashboard/EditEvent';
+import TableLayout from './pages/dashboard/TableLayout';
 
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
@@ -49,11 +51,14 @@ function App() {
           <Route path="tasks" element={<Tasks />} />
           <Route path="settings" element={<Settings />} />
           <Route path="create-event" element={<CreateEvent />} />
+          <Route path="edit-event/:id" element={<EditEvent />} />
           <Route path="my-events" element={<MyEvents />} />
+          <Route path="table-layout" element={<TableLayout />} />
         </Route>
       </Routes>
     </BrowserRouter>
   );
 }
+
 
 export default App;

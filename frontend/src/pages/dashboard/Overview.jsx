@@ -1,82 +1,87 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import StatCard from '../../components/dashboard/StatCard';
+import { apiClient } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Overview = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   
   const [activeEvent, setActiveEvent] = useState(null);
   const [metrics, setMetrics] = useState({
     total: 0,
+    attendance: 0,
     confirmed: 0,
     pending: 0,
-    declined: 0
+    declined: 0,
+    attendanceRate: 0
   });
+  
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0 });
 
-  const fetchData = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-
-    try {
-      // 1. Fetch user's primary event
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select('*')
-        .eq('organizer_id', user.id)
-        .order('event_date', { ascending: true })
-        .limit(1)
-        .single();
-
-      if (eventError && eventError.code !== 'PGRST116') throw eventError;
-      
-      if (eventData) {
-        setActiveEvent(eventData);
-
-        // 2. Fetch Guests counts
-        const { data: guestsData, error: guestsError } = await supabase
-          .from('guests')
-          .select('rsvp_status')
-          .eq('event_id', eventData.id);
-
-        if (guestsError) throw guestsError;
-
-        const counts = { total: guestsData.length, confirmed: 0, pending: 0, declined: 0 };
-        guestsData.forEach(g => {
-          if (g.rsvp_status === 'Confirmed') counts.confirmed++;
-          else if (g.rsvp_status === 'Pending') counts.pending++;
-          else if (g.rsvp_status === 'Declined') counts.declined++;
-        });
-        setMetrics(counts);
-
-        // 3. Simple Countdown Logic (Native)
-        const eventDate = new Date(eventData.event_date);
-        const now = new Date();
-        const diffMs = eventDate - now;
-        
-        if (diffMs > 0) {
-          const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-          setCountdown({ days, hours });
-        } else {
-          setCountdown({ days: 0, hours: 0 });
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    const fetchData = async () => {
+      if (!user) return;
+      setLoading(true);
 
-  // Handle Loading state
+      try {
+        // Priority order for event ID: URL param > localStorage > next upcoming (backend default)
+        const urlId = searchParams.get('eventId');
+        const storedId = localStorage.getItem('activeEventId');
+        const effectiveId = urlId || storedId;
+
+        const dashData = await apiClient.get(`/events/dashboard${effectiveId ? `/${effectiveId}` : ''}`);
+        
+        if (dashData) {
+          setActiveEvent({
+            id: dashData.id,
+            name: dashData.name,
+            eventDate: dashData.eventDate,
+            locationName: dashData.locationName,
+            capacityTier: dashData.capacityTier,
+            imageUrl: dashData.imageUrl
+          });
+
+          // Sync localStorage
+          if (dashData.id) {
+            localStorage.setItem('activeEventId', dashData.id);
+          }
+
+          setMetrics({
+            total: dashData.totalGuests,
+            attendance: dashData.totalCheckedIn,
+            confirmed: dashData.confirmedCount,
+            declined: dashData.declinedCount,
+            pending: dashData.pendingCount,
+            attendanceRate: dashData.totalGuests > 0 ? (dashData.totalCheckedIn / dashData.totalGuests) * 100 : 0,
+          });
+
+          // Countdown Logic
+          const eventDate = new Date(dashData.eventDate);
+          const now = new Date();
+          const diffMs = eventDate - now;
+          
+          if (diffMs > 0) {
+            const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+            setCountdown({ days, hours });
+          } else {
+            setCountdown({ days: 0, hours: 0 });
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user, searchParams]);
+
   if (loading) {
     return (
       <div className="flex-1 w-full h-[calc(100vh-8rem)] flex items-center justify-center">
@@ -88,236 +93,225 @@ const Overview = () => {
     );
   }
 
-  // Simulación de eventos. Cambia el array por datos reales de Supabase luego.
-  const events = activeEvent ? [activeEvent] : [];
-
-  // Empty State View
-  if (!events || events.length === 0) {
+  // If no active event was returned (dashboard data null)
+  if (!activeEvent) {
     return (
-      <div className="flex-1 w-full h-[calc(100vh-8rem)] flex items-center justify-center -mt-8 py-20 px-6">
-        <div className="bg-white rounded-3xl p-12 text-center max-w-lg mx-auto ambient-shadow border border-[var(--color-outline-variant)]/10 flex flex-col items-center">
-          
-          <div className="w-24 h-24 bg-[var(--color-surface-container)] rounded-full flex items-center justify-center mb-8 relative border-8 border-white shadow-sm">
-            <div className="absolute inset-0 bg-[var(--color-secondary)]/10 rounded-full animate-ping opacity-50"></div>
-            <svg className="w-10 h-10 text-[var(--color-secondary)] relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-          
-          <h2 className="text-2xl font-display font-bold text-[var(--color-primary)] mb-3">
-            Aún no tienes eventos
-          </h2>
-          
-          <p className="text-[var(--color-on-surface-variant)] text-sm mb-8 leading-relaxed max-w-sm">
-            Empieza creando tu primer evento para gestionar listas de invitados, asignar mesas y enviar invitaciones digitales.
-          </p>
-          
-          <button 
-            onClick={() => navigate('/dashboard/create-event')}
-            className="flex items-center gap-2 bg-[var(--color-secondary)] hover:brightness-110 transition-all text-white px-8 py-3.5 rounded-xl font-bold uppercase tracking-wider text-xs shadow-lg shadow-[var(--color-secondary)]/30 hover:-translate-y-0.5"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
-            </svg>
-            Crear tu primer evento
-          </button>
+      <div className="flex-1 flex flex-col items-center justify-center p-10 bg-[var(--color-surface-container-lowest)] rounded-3xl min-h-[500px] border border-[var(--color-outline-variant)]/20 animate-in fade-in zoom-in-95 duration-700">
+        <div className="w-24 h-24 rounded-full bg-[var(--color-primary)]/5 flex items-center justify-center mb-8 border border-[var(--color-primary)]/10">
+          <svg className="w-10 h-10 text-[var(--color-primary)] opacity-40 cursor-bolt" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
         </div>
+        <h2 className="text-3xl font-headline font-black text-[var(--color-primary)] mb-4">No tenés eventos activos</h2>
+        <p className="text-[var(--color-on-surface-variant)] text-center max-w-sm mb-10 font-medium leading-relaxed opacity-70">
+          Parece que todavía no creaste ningún evento o no tenés uno próximo para administrar. ¡Empecemos ahora mismo!
+        </p>
+        <button 
+          onClick={() => navigate('/dashboard/create-event')}
+          className="px-10 py-5 bg-[var(--color-primary)] text-white rounded-[24px] font-bold text-sm uppercase tracking-[0.2em] shadow-[0_20px_40px_-15px_rgba(var(--color-primary-rgb),0.3)] hover:scale-105 active:scale-95 transition-all duration-300"
+        >
+          Crear mi primer evento
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-8 w-full p-2 animate-in fade-in duration-700">
-
-      {/* ─── Header ─── */}
-      <div className="flex justify-between items-start mb-2">
-        <div>
-          <h2 className="text-3xl font-headline font-bold text-[var(--color-primary)] tracking-tight">Welcome, Concierge</h2>
-          <p className="text-[var(--color-on-surface-variant)] text-xs font-semibold mt-1">Manage your flagship events and guest lists.</p>
+    <div className="flex-1 animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-out">
+      {/* ─── Event Hero Header ─── */}
+      <div className="grid grid-cols-12 gap-6 mb-8">
+        <div className="col-span-12 lg:col-span-8 bg-white rounded-3xl ambient-shadow overflow-hidden flex flex-col md:flex-row border border-[var(--color-outline-variant)]/10 min-h-[340px]">
+          <div className="w-full md:w-2/5 relative h-64 md:h-auto bg-[#f1f5f9]">
+            <img 
+              src={activeEvent?.imageUrl || 'https://images.unsplash.com/photo-1519224406070-51d3e2ef0dec?q=80&w=1000&auto=format&fit=crop'} 
+              alt="Event Header" 
+              className="w-full h-full object-cover" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent hidden md:block"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent md:hidden"></div>
+          </div>
+          
+          <div className="w-full md:w-3/5 p-8 md:p-10 flex flex-col">
+            <div className="mb-auto">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="bg-[#f0fdf4] text-[#16a34a] text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-widest border border-[#16a34a]/10">Publicado</span>
+                <span className="text-[10px] font-bold text-[var(--color-on-surface-variant)] uppercase tracking-wider opacity-60">ID: #{activeEvent?.id?.slice(0, 8) || '---'}</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-headline font-black text-[var(--color-primary)] tracking-tight mb-4 leading-tight">
+                {activeEvent?.name || 'Cargando evento...'}
+              </h1>
+              <div className="flex flex-wrap items-center gap-6 text-[var(--color-on-surface-variant)]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--color-secondary)]/10 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-[var(--color-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-bold text-[var(--color-primary)]">
+                    {activeEvent?.eventDate ? new Date(activeEvent.eventDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : '---'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--color-secondary)]/10 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-[var(--color-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-bold text-[var(--color-primary)] truncate max-w-[200px]">{activeEvent?.locationName || 'Sin ubicación'}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-8 pt-8 border-t border-[var(--color-outline-variant)]/10 flex items-center justify-between">
+              <div className="flex -space-x-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center overflow-hidden">
+                    <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="avatar" />
+                  </div>
+                ))}
+                <div className="w-10 h-10 rounded-full border-2 border-white bg-[#7c3aed] text-white flex items-center justify-center text-[10px] font-black uppercase">
+                  +{metrics.total > 4 ? metrics.total - 4 : 0}
+                </div>
+              </div>
+              <button 
+                onClick={() => navigate('/dashboard/guests')}
+                className="text-[var(--color-on-surface-variant)] text-[10px] font-extrabold uppercase tracking-widest hover:text-[var(--color-primary)] transition-colors"
+              >
+                Ver todos los invitados →
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white text-xs font-bold border-4 border-white shadow-sm">
-          JD
+
+        {/* Countdown / Tier Card */}
+        <div className="col-span-12 lg:col-span-4 bg-[#030712] rounded-3xl overflow-hidden relative group">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,_#3b82f633_0%,_transparent_50%)]"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,_#8b5cf633_0%,_transparent_50%)]"></div>
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 contrast-150"></div>
+          
+          <div className="relative p-10 h-full flex flex-col justify-between z-10">
+            <div>
+              <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mb-8">Tiempo Restante</p>
+              <div className="flex items-center gap-6">
+                <div>
+                  <p className="text-6xl font-headline font-black text-white leading-none mb-2">{countdown.days}</p>
+                  <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Días</p>
+                </div>
+                <div className="w-px h-12 bg-white/10"></div>
+                <div>
+                  <p className="text-6xl font-headline font-black text-white leading-none mb-2">{countdown.hours}</p>
+                  <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Horas</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Tu Plan</p>
+                  <p className="text-lg font-headline font-black text-white uppercase italic tracking-tighter">{(activeEvent?.capacityTier || 'FREE').toUpperCase()}</p>
+                </div>
+                <div className="p-3 bg-white/5 rounded-2xl border border-white/10 group-hover:scale-110 transition-transform duration-500">
+                  <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                </div>
+              </div>
+              <button 
+                onClick={() => navigate('/pricing')}
+                className="w-full py-4 bg-white/5 hover:bg-white text-white hover:text-black rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10 hover:border-white transition-all duration-300"
+              >
+                Upgrade Plan
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ─── Hero Cards Section ─── */}
-      <div className="grid grid-cols-12 gap-6">
-        {/* Upcoming Event Card */}
-        <div className="col-span-12 lg:col-span-8 bg-white rounded-xl ambient-shadow border border-[var(--color-outline-variant)]/5 overflow-hidden flex flex-col md:flex-row min-h-[250px] sheen-container">
-          <div className="flex-1 p-8 flex flex-col border-t-4 border-[#7c3aed]">
-            <span className="inline-block bg-[#7c3aed]/10 text-[#7c3aed] text-[9px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full w-fit mb-6">
-              Upcoming Event
-            </span>
-            <h3 className="text-4xl font-headline font-bold text-[var(--color-primary)] mb-4 leading-tight">{activeEvent?.name}</h3>
-            <div className="space-y-2 mb-8">
-              <div className="flex items-center space-x-2 text-[var(--color-on-surface-variant)]">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span className="text-xs font-bold uppercase">
-                  {activeEvent?.event_date && new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date(activeEvent.event_date))}
-                </span>
-              </div>
-              <div className="flex items-center space-x-2 text-[var(--color-on-surface-variant)]">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span className="text-xs font-bold uppercase">{activeEvent?.location_name || 'Venue not set'}</span>
-              </div>
-            </div>
-            <div className="mt-auto">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-[9px] font-extrabold text-[var(--color-on-surface-variant)] uppercase tracking-widest">Attendance Rate</span>
-                <span className="text-xs font-extrabold text-[#7c3aed]">{metrics.total > 0 ? Math.round((metrics.confirmed / metrics.total) * 100) : 0}%</span>
-              </div>
-              <div className="w-full h-1.5 bg-[#f3f4f6] rounded-full overflow-hidden">
-                <div className="h-full bg-[#7c3aed] rounded-full transition-all duration-1000" style={{ width: `${metrics.total > 0 ? Math.round((metrics.confirmed / metrics.total) * 100) : 0}%` }}></div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="w-full md:w-1/3 bg-[#030712] relative overflow-hidden flex flex-col items-center justify-center p-8 text-center">
-            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_white_1px,transparent_1px)] [background-size:20px_20px]"></div>
-            <div className="relative z-10">
-              <div className="flex gap-4 items-center justify-center mb-6">
-                <div className="text-center">
-                  <p className="text-3xl font-headline font-black text-white">{countdown.days}</p>
-                  <p className="text-[8px] font-extrabold text-white/40 uppercase tracking-widest">Days</p>
-                </div>
-                <div className="h-8 w-px bg-white/20"></div>
-                <div className="text-center">
-                  <p className="text-3xl font-headline font-black text-white">{countdown.hours}</p>
-                  <p className="text-[8px] font-extrabold text-white/40 uppercase tracking-widest">Hours</p>
-                </div>
-              </div>
-              <p className="text-[9px] font-extrabold text-white/40 uppercase tracking-[0.2em] mb-1">Time Remaining</p>
-              <p className="text-[10px] font-bold text-white uppercase italic">Concierge Exclusive</p>
-            </div>
-          </div>
-        </div>
+      {/* ─── Metric Cards ─── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <StatCard 
+          label="Total Invitados" 
+          value={metrics.total.toString()} 
+          icon="guests" 
+          color="#3b82f6"
+          trend="+12%" 
+        />
+        <StatCard 
+          label="Confirmados" 
+          value={metrics.confirmed.toString()} 
+          icon="check" 
+          color="#10b981"
+          trend={metrics.total > 0 ? `${Math.round((metrics.confirmed/metrics.total)*100)}%` : '0%'} 
+        />
+        <StatCard 
+          label="Pendientes" 
+          value={metrics.pending.toString()} 
+          icon="clock" 
+          color="#f59e0b" 
+        />
+        <StatCard 
+          label="Tasa Asistencia" 
+          value={`${Math.round(metrics.attendanceRate)}%`} 
+          icon="pulse" 
+          color="#7c3aed"
+          trend="Real-time" 
+        />
+      </div>
 
-        {/* Concierge Support Card */}
-        <div className="col-span-12 lg:col-span-4 bg-[var(--color-primary)] rounded-xl shadow-2xl p-8 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute -top-4 -right-4 opacity-5 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
-            <svg className="w-48 h-48 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      {/* ─── Secondary Grid ─── */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Concierge Support */}
+        <div className="col-span-12 lg:col-span-4 bg-[var(--color-primary)] rounded-3xl p-10 flex flex-col justify-between relative overflow-hidden group min-h-[400px]">
+          <div className="absolute -top-10 -right-10 opacity-5 group-hover:scale-110 transition-transform duration-1000 pointer-events-none">
+            <svg className="w-80 h-80 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
+          
           <div className="relative z-10">
-            <h4 className="text-2xl font-headline font-bold text-white mb-3">Concierge Support</h4>
-            <p className="text-white/60 text-xs leading-relaxed mb-8">
-              Need assistance with your planning? Our specialist team is on standby 24/7 for premium members.
+            <h3 className="text-3xl font-headline font-black text-white mb-4 leading-tight">Soporte Concierge</h3>
+            <p className="text-white/60 text-sm leading-relaxed max-w-[240px]">
+              Tu evento merece la perfección. Nuestro equipo está listo para ayudarte con la lista de invitados 24/7.
             </p>
           </div>
-          <button className="w-full bg-white text-[var(--color-primary)] py-3.5 rounded-lg font-extrabold text-[10px] uppercase tracking-widest shadow-xl hover:bg-[#f8fafc] transition-all active:scale-[0.98]">
-            Contact VIP Specialist
-          </button>
-        </div>
-      </div>
-
-      {/* ─── Metrics Section ─── */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-7 rounded-2xl ambient-shadow border border-[var(--color-outline-variant)]/5 flex flex-col justify-between">
-          <div className="flex justify-between items-start mb-6">
-            <span className="text-[var(--color-on-surface-variant)] text-[9px] font-extrabold uppercase tracking-widest opacity-60">Total Invitados</span>
-            <div className="w-10 h-10 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[var(--color-secondary)]">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            </div>
+          
+          <div className="relative z-10 pt-10">
+            <button className="px-8 py-4 bg-white text-[var(--color-primary)] rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl hover:bg-[#f8fafc] transition-all">
+              Hablar con un experto
+            </button>
           </div>
-          <div>
-            <div className="text-4xl font-headline font-extrabold text-[var(--color-primary)] mb-1 tracking-tighter">{metrics.total}</div>
-            <p className="text-[var(--color-on-surface-variant)] text-[10px] font-bold opacity-40">Todos los invitados registrados</p>
-          </div>
-        </div>
-        
-        <div className="bg-white p-7 rounded-2xl ambient-shadow border border-[var(--color-outline-variant)]/5">
-          <div className="flex justify-between items-start mb-6">
-            <span className="text-[var(--color-on-surface-variant)] text-[9px] font-extrabold uppercase tracking-widest opacity-60">Confirmados</span>
-            <div className="w-8 h-8 rounded-lg bg-[#10b981]"></div>
-          </div>
-          <div className="text-4xl font-headline font-extrabold text-[#10b981] mb-1 tracking-tighter">{metrics.confirmed}</div>
-          <p className="text-[var(--color-on-surface-variant)] text-[10px] font-bold opacity-40">Asistencias confirmadas</p>
         </div>
 
-        <div className="bg-white p-7 rounded-2xl ambient-shadow border border-[var(--color-outline-variant)]/5">
-          <div className="flex justify-between items-start mb-6">
-            <span className="text-[var(--color-on-surface-variant)] text-[9px] font-extrabold uppercase tracking-widest opacity-60">Pendientes</span>
-            <div className="w-8 h-8 rounded-lg bg-[#f59e0b]"></div>
-          </div>
-          <div className="text-4xl font-headline font-extrabold text-[#f59e0b] mb-1 tracking-tighter">{metrics.pending}</div>
-          <p className="text-[var(--color-on-surface-variant)] text-[10px] font-bold opacity-40">Invitaciones pendientes</p>
-        </div>
-
-        <div className="bg-white p-7 rounded-2xl ambient-shadow border border-[var(--color-outline-variant)]/5">
-          <div className="flex justify-between items-start mb-6">
-            <span className="text-[var(--color-on-surface-variant)] text-[9px] font-extrabold uppercase tracking-widest opacity-60">Declinados</span>
-            <div className="w-8 h-8 rounded-lg bg-[#f43f5e]"></div>
-          </div>
-          <div className="text-4xl font-headline font-extrabold text-[#f43f5e] mb-1 tracking-tighter">{metrics.declined}</div>
-          <p className="text-[var(--color-on-surface-variant)] text-[10px] font-bold opacity-40">Invitaciones rechazadas</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-12 gap-8 mt-2">
-        {/* Attendance Breakdown Card */}
-        <div className="col-span-12 bg-white p-8 rounded-2xl ambient-shadow border border-[var(--color-outline-variant)]/5">
+        {/* Placeholder for future sections */}
+        <div className="col-span-12 lg:col-span-8 bg-white/50 border border-[var(--color-outline-variant)]/10 rounded-3xl p-10 backdrop-blur-xl">
           <div className="flex justify-between items-center mb-8">
-            <h4 className="text-xl font-headline font-bold text-[var(--color-primary)]">Attendance Breakdown</h4>
-            <span className="text-[9px] font-extrabold text-[var(--color-on-surface-variant)] uppercase tracking-[0.2em] opacity-40">Estado del grupo</span>
+            <h3 className="text-xl font-headline font-black text-[var(--color-primary)] uppercase tracking-tight">Actividad Reciente</h3>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              <span className="text-[10px] font-extrabold text-[var(--color-on-surface-variant)] uppercase tracking-widest opacity-60">Live Updates</span>
+            </div>
           </div>
           
-          <div className="space-y-8">
-            <div>
-              <div className="flex justify-between text-[10px] font-extrabold mb-2 uppercase tracking-tight">
-                <span className="text-[var(--color-on-surface-variant)]">Confirmado</span>
-                <span className="text-[var(--color-primary)]">{metrics.total > 0 ? Math.round((metrics.confirmed / metrics.total) * 100) : 0}%</span>
-              </div>
-              <div className="w-full h-3 bg-[#f8fafc] rounded-full overflow-hidden">
-                <div className="h-full bg-[#10b981] rounded-full shadow-sm shadow-[#10b981]/20 transition-all duration-1000" style={{ width: `${metrics.total > 0 ? Math.round((metrics.confirmed / metrics.total) * 100) : 0}%` }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-[10px] font-extrabold mb-2 uppercase tracking-tight">
-                <span className="text-[var(--color-on-surface-variant)]">Pendiente</span>
-                <span className="text-[var(--color-primary)]">{metrics.total > 0 ? Math.round((metrics.pending / metrics.total) * 100) : 0}%</span>
-              </div>
-              <div className="w-full h-3 bg-[#f8fafc] rounded-full overflow-hidden">
-                <div className="h-full bg-[#f59e0b] rounded-full shadow-sm shadow-[#f59e0b]/20 transition-all duration-1000" style={{ width: `${metrics.total > 0 ? Math.round((metrics.pending / metrics.total) * 100) : 0}%` }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-[10px] font-extrabold mb-2 uppercase tracking-tight">
-                <span className="text-[var(--color-on-surface-variant)]">Declinado</span>
-                <span className="text-[var(--color-primary)]">{metrics.total > 0 ? Math.round((metrics.declined / metrics.total) * 100) : 0}%</span>
-              </div>
-              <div className="w-full h-3 bg-[#f8fafc] rounded-full overflow-hidden">
-                <div className="h-full bg-[#f43f5e] rounded-full shadow-sm shadow-[#f43f5e]/20 transition-all duration-1000" style={{ width: `${metrics.total > 0 ? Math.round((metrics.declined / metrics.total) * 100) : 0}%` }}></div>
-              </div>
-            </div>
+          <div className="space-y-4">
+             {[1, 2, 3].map((i) => (
+               <div key={i} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-white transition-all cursor-pointer border border-transparent hover:border-[var(--color-outline-variant)]/10">
+                 <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-[var(--color-primary)]">
+                   {i}
+                 </div>
+                 <div className="flex-1">
+                   <p className="text-sm font-bold text-[var(--color-primary)]">Invitado {i} ha confirmado asistencia</p>
+                   <p className="text-[10px] text-[var(--color-on-surface-variant)] opacity-50 font-medium">Hace {i*15} minutos</p>
+                 </div>
+                 <div className="text-[#10b981]">
+                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                   </svg>
+                 </div>
+               </div>
+             ))}
           </div>
-
-          <div className="mt-10 pt-8 border-t border-[#f1f5f9] flex flex-wrap gap-6 items-center">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#10b981]"></div>
-              <span className="text-[9px] font-extrabold text-[var(--color-on-surface-variant)] uppercase tracking-widest opacity-60">Confirmado</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]"></div>
-              <span className="text-[9px] font-extrabold text-[var(--color-on-surface-variant)] uppercase tracking-widest opacity-60">Pendiente</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#f43f5e]"></div>
-              <span className="text-[9px] font-extrabold text-[var(--color-on-surface-variant)] uppercase tracking-widest opacity-60">Declinado</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ─── Sidebar (Now Empty/Removed) ─── */}
-        <div className="col-span-12 lg:col-span-4 space-y-8">
-          
         </div>
       </div>
     </div>

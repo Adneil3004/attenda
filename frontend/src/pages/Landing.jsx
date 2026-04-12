@@ -3,10 +3,16 @@ import { Link } from 'react-router-dom';
 const Landing = () => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center py-24 px-6 relative overflow-hidden">
-      {/* Subtle background decoration */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-[var(--color-secondary-fixed)] opacity-50 blur-[100px]"></div>
-        <div className="absolute top-[60%] -left-[10%] w-[40%] h-[40%] rounded-full bg-[#d8e2ff] opacity-40 blur-[80px]"></div>
+      {/* Background image with overlay */}
+      <div 
+        className="absolute inset-0 -z-10"
+        style={{
+          backgroundImage: "url('/attenda/imgs/adneil3004-carreta-6264647.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-white/75"></div>
       </div>
       
       <div className="max-w-4xl text-center">

@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
+
+const API_BASE_URL = 'http://127.0.0.1:5263/api';
 
 const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
+  const { session } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -18,13 +21,13 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
   // Hydrate form when guest changes
   useEffect(() => {
     if (guest) {
-      setFirstName(guest.first_name || '');
-      setLastName(guest.last_name || '');
+      setFirstName(guest.firstName || '');
+      setLastName(guest.lastName || '');
       setEmail(guest.email || '');
-      setStatus(guest.rsvp_status || 'Pending');
-      setGroupId(guest.guest_group_id || '');
-      setDiet(guest.dietary_restrictions || '');
-      setPlusOne(guest.plus_one || false);
+      setStatus(guest.rsvpStatus || 'Pending');
+      setGroupId(guest.guestGroupId || '');
+      setDiet(guest.dietaryRestrictions ? guest.dietaryRestrictions.join(', ') : '');
+      setPlusOne(guest.plusOne || false);
       setNotes(guest.notes || '');
     } else {
       setFirstName('');
@@ -50,32 +53,38 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
     setErrorMsg('');
 
     const guestData = {
-      event_id: activeEvent.id,
-      first_name: firstName,
-      last_name: lastName || null,
-      email: email || null,
-      rsvp_status: status,
-      guest_group_id: groupId || null,
-      dietary_restrictions: diet || null,
-      plus_one: plusOne,
-      notes: notes || null
+      eventId: activeEvent.id,
+      firstName: firstName,
+      lastName: lastName || '',
+      email: email || '',
+      rsvpStatus: status,
+      guestGroupId: groupId || null,
+      dietaryRestrictions: diet ? diet.split(',').map(s => s.trim()).filter(s => s) : [],
+      plusOne: plusOne,
+      notes: notes || ''
     };
 
     try {
-      if (guest) {
-        // Update existing guest
-        const { error } = await supabase
-          .from('guests')
-          .update(guestData)
-          .eq('id', guest.id);
-        if (error) throw error;
-      } else {
-        // Create new guest
-        const { error } = await supabase
-          .from('guests')
-          .insert([guestData]);
-        if (error) throw error;
+      const url = guest 
+        ? `${API_BASE_URL}/Guests/${guest.id}`
+        : `${API_BASE_URL}/Guests`;
+      
+      const method = guest ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify(guestData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Error ${response.status}: Failed to save guest.`);
       }
+
       onClose(); // Will trigger fetch on parent
     } catch (err) {
       setErrorMsg(err.message || 'Failed to save guest data.');

@@ -11,4 +11,6 @@ public class EventOverviewDto
     public int PendingGuests { get; set; }
     public int DeclinedGuests { get; set; }
     public int ProgressPercentage { get; set; }
+    public string? ImageUrl { get; set; }
 }
+

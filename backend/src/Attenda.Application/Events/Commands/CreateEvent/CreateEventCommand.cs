@@ -8,4 +8,15 @@ public record CreateEventCommand(
     string? Description,
     DateTime StartDate,
     DateTime? EndDate,
-    Guid OrganizerId) : IRequest<Guid>;
+    Guid OrganizerId,
+    string? EventType = null,
+    string[]? Celebrants = null,
+    string? OrganizerName = null,
+    string? ReligiousAddress = null,
+    string? VenueAddress = null,
+    string CapacityTier = "FREE",
+    int GuestLimit = 20,
+    // Payment method — optional. Assumes the token was already obtained from Stripe on the frontend.
+    string? CardToken = null,
+    string? CardLast4 = null,
+    string? CardBrand = null) : IRequest<Guid>;

@@ -17,11 +17,11 @@ const EyeIcon = ({ open }) => open ? (
   </svg>
 );
 
-const Toast = ({ message, type }) => {
+  const Toast = ({ message, type }) => {
   if (!message) return null;
   const colors = type === 'success'
-    ? 'bg-green-50 text-green-700 border-green-200'
-    : 'bg-red-50 text-red-700 border-red-200';
+    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
+    : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800';
   return (
     <div className={`mb-6 p-4 rounded-lg text-sm font-medium border flex items-center gap-2 ${colors}`}>
       {type === 'success'
@@ -33,10 +33,10 @@ const Toast = ({ message, type }) => {
   );
 };
 
-const ReadOnlyField = ({ label, value, placeholder = '—' }) => (
+  const ReadOnlyField = ({ label, value, placeholder = '—' }) => (
   <div className="space-y-1">
-    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</p>
-    <p className="text-sm font-medium text-gray-800">{value || placeholder}</p>
+    <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">{label}</p>
+    <p className="text-sm font-medium text-[var(--color-text-primary)]">{value || placeholder}</p>
   </div>
 );
 
@@ -72,6 +72,11 @@ const Settings = () => {
   const [newMember, setNewMember]       = useState({ name: '', email: '', role: 'guest' });
   const [addingMember, setAddingMember] = useState(false);
   const [addError, setAddError]         = useState('');
+
+  /* ── danger zone state ── */
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   /* ── load profile ── */
   useEffect(() => {
@@ -185,9 +190,9 @@ const Settings = () => {
   };
 
   const roleBadgeColor = (role) => {
-    if (role === 'admin')    return 'bg-purple-100 text-purple-700';
-    if (role === 'co-admin') return 'bg-blue-100 text-blue-700';
-    return 'bg-gray-100 text-gray-600';
+    if (role === 'admin')    return 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300';
+    if (role === 'co-admin') return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
+    return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
   };
 
   /* ── save profile ── */
@@ -251,8 +256,10 @@ const Settings = () => {
 
   /* ── danger actions ── */
   const handleDeactivateAccount = async () => {
-    if (!window.confirm("Are you sure you want to deactivate your account? This will lock out all team members immediately. You can only regain access by resetting your password on the login screen.")) return;
-    
+    setShowDeactivateModal(true);
+  };
+
+  const confirmDeactivate = async () => {
     setDangerLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('deactivate-account');
@@ -263,15 +270,17 @@ const Settings = () => {
     } catch (err) {
       alert(err.message || 'Failed to deactivate account.');
       setDangerLoading(false);
+      setShowDeactivateModal(false);
     }
   };
 
-  const handleDeleteAccount = async () => {
-    const confirmation = window.prompt("This will PERMANENTLY ERASE your account and all team members. Type 'DELETE' to confirm:");
-    if (confirmation !== 'DELETE') {
-      if (confirmation !== null) alert('Deletion cancelled: You must type DELETE exactly.');
-      return;
-    }
+  const handleDeleteAccount = () => {
+    setShowDeleteModal(true);
+    setDeleteConfirmText('');
+  };
+
+  const confirmDelete = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
 
     setDangerLoading(true);
     try {
@@ -283,6 +292,7 @@ const Settings = () => {
     } catch (err) {
       alert(err.message || 'Failed to delete account.');
       setDangerLoading(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -295,21 +305,21 @@ const Settings = () => {
         <div className="flex-1 space-y-6">
           <header className="mb-6">
             <h1 className="text-xl text-[var(--color-primary)] font-display">Account Settings</h1>
-            <p className="text-sm text-gray-500 mt-2 max-w-xl leading-relaxed">
+            <p className="text-sm text-[var(--color-text-muted)] mt-2 max-w-xl leading-relaxed">
               Manage your personal information and security preferences.
             </p>
           </header>
 
           {/* ── Profile Card ── */}
-          <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <section className="bg-[var(--color-card-bg)] rounded-xl shadow-sm border border-[var(--color-card-border)] overflow-hidden">
             <div className="h-1 w-full bg-gradient-to-r from-indigo-500 to-purple-400" />
 
             <div className="px-8 pt-8 pb-8">
               {/* Header row */}
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-5">
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-xl bg-gray-200 overflow-hidden shadow-inner">
+                    <div className="relative">
+                     <div className="w-16 h-16 rounded-xl bg-[var(--color-surface-container-high)] overflow-hidden shadow-inner">
                       <img
                         src={`https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.full_name || 'User')}&background=4F46E5&color=fff&size=128`}
                         alt={profileData.full_name}
@@ -318,8 +328,8 @@ const Settings = () => {
                     </div>
                   </div>
                   <div>
-                    <p className="text-base font-bold text-gray-900">{profileData.full_name || '—'}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{user?.email}</p>
+                    <p className="text-base font-bold text-[var(--color-text-primary)]">{profileData.full_name || '—'}</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{user?.email}</p>
                   </div>
                 </div>
 
@@ -327,7 +337,7 @@ const Settings = () => {
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#f3f0ff] text-purple-700 text-xs font-bold hover:bg-purple-100 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-surface-container-high)] text-[var(--color-primary)] text-xs font-bold hover:bg-[var(--color-surface-container-low)] transition-colors"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -338,14 +348,14 @@ const Settings = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleCancelEdit}
-                      className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 text-xs font-bold hover:bg-gray-50 transition-colors"
+                      className="px-4 py-2 rounded-lg border border-[var(--color-card-border)] text-[var(--color-text-secondary)] text-xs font-bold hover:bg-[var(--color-surface-container-low)] transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSaveProfile}
                       disabled={profileLoading}
-                      className="flex items-center gap-2 px-5 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold hover:bg-purple-700 transition-colors disabled:opacity-60"
+                      className="flex items-center gap-2 px-5 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold hover:brightness-110 transition-colors disabled:opacity-60"
                     >
                       {profileLoading
                         ? <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving…</>
@@ -361,54 +371,54 @@ const Settings = () => {
               {isEditing ? (
                 /* ── EDIT MODE ── */
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-gray-700">Full Name</label>
-                    <input
-                      type="text"
-                      value={editDraft.full_name}
-                      onChange={e => setEditDraft({ ...editDraft, full_name: e.target.value })}
-                      placeholder="Your full name"
-                      className="w-full bg-[#f1f3f5] rounded-lg px-4 py-2.5 text-sm font-medium text-gray-800 border-none focus:ring-2 focus:ring-purple-300 outline-none"
-                    />
-                  </div>
+                    <div className="space-y-1.5">
+                     <label className="text-xs font-semibold text-[var(--color-text-primary)]">Full Name</label>
+                     <input
+                       type="text"
+                       value={editDraft.full_name}
+                       onChange={e => setEditDraft({ ...editDraft, full_name: e.target.value })}
+                       placeholder="Your full name"
+                       className="w-full bg-[var(--color-surface-container-high)] rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--color-text-primary)] border-none focus:ring-2 focus:ring-purple-300 outline-none"
+                     />
+                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-gray-700">Email Address</label>
-                    <input
-                      type="email"
-                      value={user?.email || ''}
-                      disabled
-                      className="w-full bg-[#f1f3f5] rounded-lg px-4 py-2.5 text-sm text-gray-400 border-none cursor-not-allowed"
-                    />
-                    <p className="text-[10px] text-gray-400">Email cannot be changed here.</p>
-                  </div>
+                   <div className="space-y-1.5">
+                     <label className="text-xs font-semibold text-[var(--color-text-primary)]">Email Address</label>
+                     <input
+                       type="email"
+                       value={user?.email || ''}
+                       disabled
+                       className="w-full bg-[var(--color-surface-container-high)] rounded-lg px-4 py-2.5 text-sm text-[var(--color-text-muted)] border-none cursor-not-allowed"
+                     />
+                     <p className="text-[10px] text-[var(--color-text-muted)]">Email cannot be changed here.</p>
+                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-gray-700">Phone Number</label>
-                    <input
-                      type="tel"
-                      value={editDraft.phone}
-                      onChange={e => setEditDraft({ ...editDraft, phone: e.target.value })}
-                      placeholder="+1 (555) 000-0000"
-                      className="w-full bg-[#f1f3f5] rounded-lg px-4 py-2.5 text-sm font-medium text-gray-800 border-none focus:ring-2 focus:ring-purple-300 outline-none"
-                    />
-                  </div>
+                   <div className="space-y-1.5">
+                     <label className="text-xs font-semibold text-[var(--color-text-primary)]">Phone Number</label>
+                     <input
+                       type="tel"
+                       value={editDraft.phone}
+                       onChange={e => setEditDraft({ ...editDraft, phone: e.target.value })}
+                       placeholder="+1 (555) 000-0000"
+                       className="w-full bg-[var(--color-surface-container-high)] rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--color-text-primary)] border-none focus:ring-2 focus:ring-purple-300 outline-none"
+                     />
+                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-gray-700">Birthdate</label>
-                    <input
-                      type="date"
-                      value={editDraft.birthdate}
-                      onChange={e => setEditDraft({ ...editDraft, birthdate: e.target.value })}
-                      className="w-full bg-[#f1f3f5] rounded-lg px-4 py-2.5 text-sm font-medium text-gray-800 border-none focus:ring-2 focus:ring-purple-300 outline-none"
-                    />
-                  </div>
+                   <div className="space-y-1.5">
+                     <label className="text-xs font-semibold text-[var(--color-text-primary)]">Birthdate</label>
+                     <input
+                       type="date"
+                       value={editDraft.birthdate}
+                       onChange={e => setEditDraft({ ...editDraft, birthdate: e.target.value })}
+                       className="w-full bg-[var(--color-surface-container-high)] rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--color-text-primary)] border-none focus:ring-2 focus:ring-purple-300 outline-none"
+                     />
+                   </div>
 
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-xs font-semibold text-gray-700">Gender</label>
-                    <div className="flex items-center gap-6">
-                      {['Male', 'Female', 'Non-binary'].map(g => (
-                        <label key={g} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                   <div className="space-y-2 md:col-span-2">
+                     <label className="text-xs font-semibold text-[var(--color-text-primary)]">Gender</label>
+                     <div className="flex items-center gap-6">
+                       {['Male', 'Female', 'Non-binary'].map(g => (
+                         <label key={g} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--color-text-primary)]">
                           <input
                             type="radio"
                             name="gender"
@@ -430,24 +440,24 @@ const Settings = () => {
                   <ReadOnlyField label="Phone Number"  value={profileData.phone}     placeholder="Not set" />
                   <ReadOnlyField label="Birthdate"     value={profileData.birthdate} placeholder="Not set" />
                   <div className="space-y-1 md:col-span-2">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Gender</p>
-                    <p className="text-sm font-medium text-gray-800">{profileData.gender || 'Not set'}</p>
+                    <p className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">Gender</p>
+                    <p className="text-sm font-medium text-[var(--color-text-primary)]">{profileData.gender || 'Not set'}</p>
                   </div>
                 </div>
               )}
 
               {/* ── Security / Change Password ── */}
-              <hr className="my-8 border-gray-100" />
+              <hr className="my-8 border-[var(--color-card-border)]" />
 
               <div>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold text-[var(--color-primary)]">Security</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Update your login password.</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Update your login password.</p>
                   </div>
                   <button
                     onClick={() => { setPwdOpen(v => !v); setPwdMsg({ type: '', text: '' }); }}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#f3f0ff] text-purple-700 text-xs font-bold rounded-lg hover:bg-purple-100 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface-container-high)] text-[var(--color-primary)] text-xs font-bold rounded-lg hover:bg-[var(--color-surface-container-low)] transition-colors"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -458,7 +468,7 @@ const Settings = () => {
 
                 {/* Password form — collapsed by default */}
                 {pwdOpen && (
-                  <form onSubmit={handleChangePassword} className="mt-6 space-y-4 bg-[#fafafa] border border-gray-100 rounded-xl p-6">
+                  <form onSubmit={handleChangePassword} className="mt-6 space-y-4 bg-[var(--color-surface-container-low)] border border-[var(--color-card-border)] rounded-xl p-6">
                     <Toast message={pwdMsg.text} type={pwdMsg.type} />
 
                     {[
@@ -466,19 +476,19 @@ const Settings = () => {
                       { key: 'confirm', label: 'Confirm New Password' }
                     ].map(({ key, label }) => (
                       <div key={key} className="space-y-1.5">
-                        <label className="text-xs font-semibold text-gray-700">{label}</label>
+                        <label className="text-xs font-semibold text-[var(--color-text-primary)]">{label}</label>
                         <div className="relative">
                           <input
                             type={showPwd[key] ? 'text' : 'password'}
                             value={pwd[key]}
                             onChange={e => setPwd({ ...pwd, [key]: e.target.value })}
                             placeholder="••••••••"
-                            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-2 focus:ring-purple-300 outline-none"
+                            className="w-full bg-[var(--color-card-bg)] border border-[var(--color-card-border)] rounded-lg px-4 py-2.5 pr-11 text-sm text-[var(--color-text-primary)] focus:ring-2 focus:ring-purple-300 outline-none"
                           />
                           <button
                             type="button"
                             onClick={() => setShowPwd(v => ({ ...v, [key]: !v[key] }))}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-colors p-1"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-purple-600 transition-colors p-1"
                           >
                             <EyeIcon open={showPwd[key]} />
                           </button>
@@ -486,7 +496,7 @@ const Settings = () => {
                       </div>
                     ))}
 
-                    <p className="text-[10px] text-gray-400">
+                    <p className="text-[10px] text-[var(--color-text-muted)]">
                       Min. 6 chars · at least 1 number · at least 1 special character (!@#$%^&*)
                     </p>
 
@@ -494,7 +504,7 @@ const Settings = () => {
                       <button
                         type="submit"
                         disabled={pwdLoading}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-60"
+                        className="flex items-center gap-2 px-6 py-2.5 bg-[var(--color-primary)] text-[var(--color-on-primary)] text-xs font-bold rounded-lg hover:brightness-110 transition-colors disabled:opacity-60"
                       >
                         {pwdLoading
                           ? <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Updating…</>
@@ -508,18 +518,18 @@ const Settings = () => {
           </section>
 
           {/* ── Team & Access Card ── */}
-          <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 pt-5 space-y-5">
+          <section className="bg-[var(--color-card-bg)] rounded-xl shadow-sm border border-[var(--color-card-border)] p-6 pt-5 space-y-5">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-[var(--color-primary)] font-display text-base">Team & Access</h3>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[var(--color-text-muted)] mt-1">
                   Add up to 3 members (1 Co-Admin, and Guests up to the limit). Guests can only view.
                 </p>
               </div>
               <button
                 onClick={() => { setShowAddModal(true); setAddError(''); }}
                 disabled={totalCount >= 3}
-                className="bg-black text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 hover:bg-purple-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
@@ -532,22 +542,22 @@ const Settings = () => {
 
             {/* Capacity indicator */}
             <div className="flex items-center gap-2">
-              <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div className="flex-1 h-1.5 bg-[var(--color-surface-container-high)] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-purple-400 to-indigo-500 rounded-full transition-all"
                   style={{ width: `${(totalCount / 3) * 100}%` }}
                 />
               </div>
-              <span className="text-[10px] text-gray-400 font-semibold whitespace-nowrap">{totalCount} / 3 members</span>
+              <span className="text-[10px] text-[var(--color-text-muted)] font-semibold whitespace-nowrap">{totalCount} / 3 members</span>
             </div>
 
             {/* Members grid */}
             {teamLoading ? (
-              <div className="py-6 text-center text-xs text-gray-400">Loading team…</div>
+              <div className="py-6 text-center text-xs text-[var(--color-text-muted)]">Loading team…</div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {teamMembers.map(m => (
-                  <div key={m.id} className="flex items-center justify-between p-3.5 bg-[#f8f9fc] rounded-lg group">
+                  <div key={m.id} className="flex items-center justify-between p-3.5 bg-[var(--color-surface-container-low)] rounded-lg group">
                     <div className="flex items-center gap-3 min-w-0">
                       <img
                         src={`https://ui-avatars.com/api/?name=${encodeURIComponent(m.member_name)}&background=4F46E5&color=fff`}
@@ -555,8 +565,8 @@ const Settings = () => {
                         alt={m.member_name}
                       />
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-gray-900 truncate">{m.member_name}</p>
-                        <p className="text-[10px] text-gray-400 truncate">{m.member_email}</p>
+                        <p className="text-xs font-bold text-[var(--color-text-primary)] truncate">{m.member_name}</p>
+                        <p className="text-[10px] text-[var(--color-text-muted)] truncate">{m.member_email}</p>
                         <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mt-0.5 inline-block ${roleBadgeColor(m.role)}`}>
                           {m.role}
                         </span>
@@ -564,7 +574,7 @@ const Settings = () => {
                     </div>
                     <button
                       onClick={() => handleRemoveMember(m.id, m.member_name)}
-                      className="text-gray-300 hover:text-red-500 transition-colors ml-2 flex-shrink-0 opacity-0 group-hover:opacity-100"
+                      className="text-[var(--color-text-muted)] hover:text-red-500 transition-colors ml-2 flex-shrink-0 opacity-0 group-hover:opacity-100"
                       title="Remove member"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -574,7 +584,7 @@ const Settings = () => {
                   </div>
                 ))}
                 {totalCount === 0 && (
-                  <div className="col-span-2 py-8 text-center text-xs text-gray-400">
+                  <div className="col-span-2 py-8 text-center text-xs text-[var(--color-text-muted)]">
                     No team members yet. Click <strong>Add User</strong> to invite your first collaborator.
                   </div>
                 )}
@@ -590,61 +600,61 @@ const Settings = () => {
                 className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                 onClick={() => setShowAddModal(false)}
               />
-              <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 z-10">
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition-colors"
-                >
+              <div className="relative bg-[var(--color-card-bg)] rounded-2xl shadow-2xl w-full max-w-md p-8 z-10 border border-[var(--color-card-border)]">
+<button
+                      onClick={() => setShowAddModal(false)}
+                      className="absolute top-4 right-4 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                    >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
 
-                <h4 className="text-lg font-bold text-gray-900 mb-1">Add Team Member</h4>
-                <p className="text-xs text-gray-400 mb-6">They'll receive an email with a secure link to join your team and set their password.</p>
+                <h4 className="text-lg font-bold text-[var(--color-text-primary)] mb-1">Add Team Member</h4>
+                <p className="text-xs text-[var(--color-text-muted)] mb-6">They'll receive an email with a secure link to join your team and set their password.</p>
 
                 {addError && (
-                  <div className="mb-5 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
+                  <div className="mb-5 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
                     {addError}
                   </div>
                 )}
 
                 <form onSubmit={handleAddMember} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-gray-700">Full Name</label>
+                    <label className="text-xs font-semibold text-[var(--color-text-primary)]">Full Name</label>
                     <input
                       type="text"
                       value={newMember.name}
                       onChange={e => setNewMember({ ...newMember, name: e.target.value })}
                       placeholder="Jane Doe"
                       required
-                      className="w-full bg-[#f1f3f5] rounded-lg px-4 py-2.5 text-sm text-gray-800 outline-none focus:ring-2 focus:ring-purple-300"
+                      className="w-full bg-[var(--color-surface-container-high)] rounded-lg px-4 py-2.5 text-sm text-[var(--color-text-primary)] outline-none focus:ring-2 focus:ring-purple-300"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-gray-700">Email Address</label>
+                    <label className="text-xs font-semibold text-[var(--color-text-primary)]">Email Address</label>
                     <input
                       type="email"
                       value={newMember.email}
                       onChange={e => setNewMember({ ...newMember, email: e.target.value })}
                       placeholder="jane@example.com"
                       required
-                      className="w-full bg-[#f1f3f5] rounded-lg px-4 py-2.5 text-sm text-gray-800 outline-none focus:ring-2 focus:ring-purple-300"
+                      className="w-full bg-[var(--color-surface-container-high)] rounded-lg px-4 py-2.5 text-sm text-[var(--color-text-primary)] outline-none focus:ring-2 focus:ring-purple-300"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-gray-700">Role</label>
+                    <label className="text-xs font-semibold text-[var(--color-text-primary)]">Role</label>
                     <select
                       value={newMember.role}
                       onChange={e => setNewMember({ ...newMember, role: e.target.value })}
-                      className="w-full bg-[#f1f3f5] rounded-lg px-4 py-2.5 text-sm text-gray-800 outline-none focus:ring-2 focus:ring-purple-300"
+                      className="w-full bg-[var(--color-surface-container-high)] rounded-lg px-4 py-2.5 text-sm text-[var(--color-text-primary)] outline-none focus:ring-2 focus:ring-purple-300"
                     >
                       <option value="guest">Guest — View only</option>
                       <option value="co-admin" disabled={hasCoAdmin}>Co-Admin{hasCoAdmin ? ' (already assigned)' : ''}</option>
                     </select>
-                    <p className="text-[10px] text-gray-400">
+                    <p className="text-[10px] text-[var(--color-text-muted)]">
                       {newMember.role === 'guest' && 'Guests can only view, not edit.'}
                       {newMember.role === 'co-admin' && 'Co-Admin can manage guests and tasks.'}
                     </p>
@@ -654,14 +664,14 @@ const Settings = () => {
                     <button
                       type="button"
                       onClick={() => setShowAddModal(false)}
-                      className="px-5 py-2.5 rounded-lg border border-gray-200 text-gray-600 text-xs font-bold hover:bg-gray-50"
+                      className="px-5 py-2.5 rounded-lg border border-[var(--color-card-border)] text-[var(--color-text-secondary)] text-xs font-bold hover:bg-[var(--color-surface-container-high)]"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={addingMember}
-                      className="flex items-center gap-2 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-60"
+                      className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-60"
                     >
                       {addingMember
                         ? <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Adding…</>
@@ -673,8 +683,115 @@ const Settings = () => {
             </div>
           )}
 
+          {/* ══ DEACTIVATE ACCOUNT MODAL ══ */}
+          {showDeactivateModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                onClick={() => setShowDeactivateModal(false)}
+              />
+              <div className="relative bg-white dark:bg-[#1e1e2f] rounded-2xl shadow-2xl w-full max-w-md p-8 z-10 border border-red-200 dark:border-red-800/50">
+                <button
+                  onClick={() => setShowDeactivateModal(false)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+
+                <h4 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">Deactivate Account</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-6 leading-relaxed">
+                  This will lock out <strong>all team members</strong> immediately. You can only regain access by resetting your password on the login screen.
+                </p>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDeactivateModal(false)}
+                    className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDeactivate}
+                    disabled={dangerLoading}
+                    className="flex-1 px-4 py-2.5 rounded-lg bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50"
+                  >
+                    {dangerLoading ? 'Processing...' : 'Deactivate'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ══ DELETE ACCOUNT MODAL ══ */}
+          {showDeleteModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                onClick={() => setShowDeleteModal(false)}
+              />
+              <div className="relative bg-white dark:bg-[#1e1e2f] rounded-2xl shadow-2xl w-full max-w-md p-8 z-10 border border-red-200 dark:border-red-800/50">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </div>
+
+                <h4 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">Delete Account</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-4 leading-relaxed">
+                  This will <strong className="text-red-600 dark:text-red-400">PERMANENTLY ERASE</strong> your account, all team members, and all associated data. <span className="text-red-500 font-bold">This cannot be undone.</span>
+                </p>
+
+                <div className="mb-6">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                    Type <span className="text-red-600 dark:text-red-400 font-black">DELETE</span> to confirm
+                  </label>
+                  <input
+                    type="text"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder="DELETE"
+                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-white font-mono uppercase text-center outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteModal(false)}
+                    className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    disabled={dangerLoading || deleteConfirmText !== 'DELETE'}
+                    className="flex-1 px-4 py-2.5 rounded-lg bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {dangerLoading ? 'Processing...' : 'Delete Forever'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ── Payment Methods ── */}
-          <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 space-y-8">
+          <section className="bg-[var(--color-card-bg)] rounded-xl shadow-sm border border-[var(--color-card-border)] p-8 space-y-8">
             <h3 className="text-[var(--color-primary)] font-display text-base">Payment Methods</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-[#000a1f] rounded-xl p-5 text-white shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[160px]">
@@ -697,12 +814,12 @@ const Settings = () => {
                 </div>
               </div>
 
-              <div className="border border-dashed border-gray-300 rounded-xl flex items-center justify-center min-h-[160px] hover:bg-gray-50 cursor-pointer transition-colors p-4">
-                <div className="text-center text-gray-500">
-                  <svg className="w-6 h-6 mx-auto mb-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="border border-dashed border-[var(--color-card-border)] rounded-xl flex items-center justify-center min-h-[160px] hover:bg-[var(--color-surface-container-low)] cursor-pointer transition-colors p-4">
+                <div className="text-center text-[var(--color-text-secondary)]">
+                  <svg className="w-6 h-6 mx-auto mb-2 text-[var(--color-text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                   </svg>
-                  <span className="text-xs font-semibold text-gray-700">Link New Account</span>
+                  <span className="text-xs font-semibold text-[var(--color-text-primary)]">Link New Account</span>
                 </div>
               </div>
             </div>
@@ -710,28 +827,28 @@ const Settings = () => {
             <div className="pt-2">
               <div className="flex justify-between items-center mb-4">
                 <h4 className="text-sm text-[var(--color-primary)] font-display">Recent Transactions</h4>
-                <button className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:underline">View All History</button>
+                <button className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-widest hover:underline">View All History</button>
               </div>
               <div className="space-y-3">
                 {[
                   { name: 'Annual Membership',   date: 'May 12, 2024',   amount: '$420.00' },
                   { name: 'Custom Calligraphy Set', date: 'April 28, 2024', amount: '$85.00'  }
                 ].map(t => (
-                  <div key={t.name} className="flex items-center justify-between p-3.5 bg-[#f9f9f9] rounded-lg">
+                  <div key={t.name} className="flex items-center justify-between p-3.5 bg-[var(--color-surface-container-low)] rounded-lg">
                     <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-md bg-white border border-gray-200 flex items-center justify-center text-gray-500">
+                      <div className="w-8 h-8 rounded-md bg-[var(--color-card-bg)] border border-[var(--color-card-border)] flex items-center justify-center text-[var(--color-text-muted)]">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-900">{t.name}</p>
-                        <p className="text-[10px] text-gray-500 mt-0.5">{t.date}</p>
+                        <p className="text-xs font-bold text-[var(--color-text-primary)]">{t.name}</p>
+                        <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">{t.date}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs font-bold text-gray-900">{t.amount}</p>
-                      <p className="text-[8px] font-bold text-indigo-600 mt-1 uppercase tracking-widest">Completed</p>
+                      <p className="text-xs font-bold text-[var(--color-text-primary)]">{t.amount}</p>
+                      <p className="text-[8px] font-bold text-[var(--color-accent)] mt-1 uppercase tracking-widest">Completed</p>
                     </div>
                   </div>
                 ))}
@@ -740,29 +857,29 @@ const Settings = () => {
           </section>
 
           {/* ── Danger Zone ── */}
-          <section className="bg-white rounded-xl shadow-sm border border-red-100 p-8 space-y-6">
-            <h3 className="text-red-600 font-display text-base">Danger Zone</h3>
+          <section className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-sm border border-red-200 dark:border-red-900/30 p-8 space-y-6">
+            <h3 className="text-red-600 dark:text-red-400 font-display text-base">Danger Zone</h3>
             
-            <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100 gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-200 dark:border-red-900/30 gap-4">
               <div>
-                <p className="text-sm font-bold text-red-900">Deactivate Account</p>
-                <p className="text-xs text-red-700 mt-1">
+                <p className="text-sm font-bold text-gray-800 dark:text-white">Deactivate Account</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   Temporarily lock out yourself and all team members. Reactivate anytime by resetting your password.
                 </p>
               </div>
               <button 
                 onClick={handleDeactivateAccount}
                 disabled={dangerLoading}
-                className="whitespace-nowrap px-4 py-2 bg-white text-red-600 border border-red-200 rounded-lg text-sm font-bold hover:bg-red-50 transition-colors shadow-sm disabled:opacity-50"
+                className="whitespace-nowrap px-4 py-2 bg-white dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700/50 rounded-lg text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors shadow-sm disabled:opacity-50"
               >
                 {dangerLoading ? 'Processing...' : 'Deactivate'}
               </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100 gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-200 dark:border-red-900/30 gap-4">
               <div>
-                <p className="text-sm font-bold text-red-900">Delete Account & Data</p>
-                <p className="text-xs text-red-700 mt-1">
+                <p className="text-sm font-bold text-gray-800 dark:text-white">Delete Account & Data</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   Permanently erase your account, all team members, and all associated projects. This cannot be undone.
                 </p>
               </div>

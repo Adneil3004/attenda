@@ -17,7 +17,8 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
         services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
+                   .UseSnakeCaseNamingConvention());
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
         services.AddScoped<IEventRepository, EventRepository>();
@@ -25,6 +26,8 @@ public static class DependencyInjection
 
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IQrCodeService, QrCodeService>();
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         return services;
     }

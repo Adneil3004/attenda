@@ -3,8 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import GuestDrawer from '../../components/dashboard/GuestDrawer';
 import ConfirmationModal from '../../components/dashboard/ConfirmationModal';
-
-const API_BASE_URL = 'http://localhost:5263/api';
+import { apiClient } from '../../lib/api';
 
 const Guests = () => {
   const { user, session } = useAuth();
@@ -45,7 +44,7 @@ const Guests = () => {
     setErrorMsg('');
 
     try {
-      // 1. Fetch user's event
+      // 1. Fetch user's event (keeping supabase for event itself for now as it's just one call, but we can migrate later)
       const { data: eventsData, error: eventError } = await supabase
         .from('events')
         .select('*')
@@ -61,29 +60,13 @@ const Guests = () => {
       }
       
       setActiveEvent(eventsData);
-
-      // 2. Fetch Groups for this event
-      const { data: groupsData, error: groupsError } = await supabase
-        .from('guest_groups')
-        .select('*')
-        .eq('event_id', eventsData.id);
-        
-      if (groupsError) throw groupsError;
+      
+      // 2. Fetch Groups for this event from Backend
+      const groupsData = await apiClient.get(`/Groups/event/${eventsData.id}`);
       setGroups(groupsData || []);
 
-      // 3. Fetch Guests for this event
-      const { data: guestsData, error: guestsError } = await supabase
-        .from('guests')
-        .select(`
-          *,
-          guest_groups (
-            name
-          )
-        `)
-        .eq('event_id', eventsData.id)
-        .order('created_at', { ascending: false });
-
-      if (guestsError) throw guestsError;
+      // 3. Fetch Guests for this event from Backend
+      const guestsData = await apiClient.get(`/Guests/event/${eventsData.id}`);
       setGuests(guestsData || []);
       
     } catch (err) {
@@ -92,7 +75,7 @@ const Guests = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, session]);
 
   useEffect(() => {
     fetchData();
@@ -119,9 +102,9 @@ const Guests = () => {
   // derived filtered state
   const filteredGuests = useMemo(() => {
     return guests.filter(g => {
-      const matchSearch = (g.first_name + ' ' + (g.last_name||'')).toLowerCase().includes(searchTerm.toLowerCase());
-      const matchStatus = statusFilter === 'All' || g.rsvp_status === statusFilter;
-      const matchGroup = groupFilter === 'All' || (g.guest_groups?.name === groupFilter);
+      const matchSearch = (g.firstName + ' ' + (g.lastName||'')).toLowerCase().includes(searchTerm.toLowerCase());
+      const matchStatus = statusFilter === 'All' || g.rsvpStatus === statusFilter;
+      const matchGroup = groupFilter === 'All' || (g.groupName === groupFilter);
       return matchSearch && matchStatus && matchGroup;
     });
   }, [guests, searchTerm, statusFilter, groupFilter]);
@@ -149,16 +132,24 @@ const Guests = () => {
     setConfirmModal({
       isOpen: true,
       title: 'Delete Guest',
-      message: `Are you sure you want to remove ${guest.first_name} ${guest.last_name}? This action cannot be undone.`,
+      message: `Are you sure you want to remove ${guest.firstName} ${guest.lastName}? This action cannot be undone.`,
       type: 'danger',
       requiresKeyword: false,
       loading: false,
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, loading: true }));
-        const { error } = await supabase.from('guests').delete().eq('id', guest.id);
-        if (error) alert(error.message);
-        else fetchData();
-        setConfirmModal(prev => ({ ...prev, isOpen: false, loading: false }));
+        try {
+          await apiClient.delete('/Guests/batch', {
+            eventId: activeEvent.id,
+            guestIds: [guest.id]
+          });
+
+          fetchData();
+        } catch (err) {
+          alert(err.message);
+        } finally {
+          setConfirmModal(prev => ({ ...prev, isOpen: false, loading: false }));
+        }
       }
     });
   };
@@ -173,13 +164,19 @@ const Guests = () => {
       loading: false,
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, loading: true }));
-        const { error } = await supabase.from('guests').delete().in('id', Array.from(selectedGuestIds));
-        if (error) alert(error.message);
-        else {
+        try {
+          await apiClient.delete('/Guests/batch', {
+            eventId: activeEvent.id,
+            guestIds: Array.from(selectedGuestIds)
+          });
+
           setSelectedGuestIds(new Set());
           fetchData();
+        } catch (err) {
+          alert(err.message);
+        } finally {
+          setConfirmModal(prev => ({ ...prev, isOpen: false, loading: false }));
         }
-        setConfirmModal(prev => ({ ...prev, isOpen: false, loading: false }));
       }
     });
   };
@@ -195,68 +192,76 @@ const Guests = () => {
       loading: false,
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, loading: true }));
-        const { error } = await supabase.from('guests').delete().eq('event_id', activeEvent.id);
-        if (error) alert(error.message);
-        else {
+        try {
+          await apiClient.delete(`/Guests/event/${activeEvent.id}/all`);
+
           setSelectedGuestIds(new Set());
           fetchData();
+        } catch (err) {
+          alert(err.message);
+        } finally {
+          setConfirmModal(prev => ({ ...prev, isOpen: false, loading: false }));
         }
-        setConfirmModal(prev => ({ ...prev, isOpen: false, loading: false }));
       }
     });
   };
 
-  // Download CSV Template
+  // Download CSV Template - Resilient Method
   const handleDownloadTemplate = () => {
-    const headers = ['FirstName', 'LastName', 'Email', 'Group', 'DietaryRestrictions', 'PlusOne', 'Notes'];
-    const row = ['John', 'Doe', 'john@example.com', 'Family', 'Vegetarian', 'FALSE', 'Allergic to peanuts'];
-    const csvContent = "data:text/csv;charset=utf-8," + headers.join(',') + "\n" + row.join(',');
+    const headers = ['FirstName', 'LastName', 'Email', 'GroupName', 'DietaryRestrictions', 'PlusOne', 'Notes'];
+    const row = ['John', 'Doe', 'john@example.com', 'Family', 'Vegetarian;Gluten-Free', 'FALSE', 'Allergic to peanuts'];
+    const csvString = headers.join(',') + "\n" + row.join(',');
     
-    const encodedUri = encodeURI(csvContent);
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    
+    // Explicit anchor tag creation and click
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.href = url;
     link.setAttribute("download", "guests_template.csv");
-    document.body.appendChild(link); // Required for FF
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Cleanup
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+    }, 1000);
   };
 
-  // Handle CSV Upload via simple text parsing
+  // Handle CSV Upload with improved column mapping
   const handleImportCSV = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     if (!activeEvent) {
-      alert("No active event found. Please create an event first.");
+      alert("No active event found.");
       return;
     }
     
     const reader = new FileReader();
     reader.onload = async (e) => {
       const text = e.target.result;
-      const lines = text.split('\n');
-      if (lines.length < 2) return; // Only headers
+      const lines = text.split(/\r?\n/); // Handle both \n and \r\n
+      if (lines.length < 2) return;
 
-      // Skip header, parse rest
       const newGuests = [];
       for (let i = 1; i < lines.length; i++) {
-        if (!lines[i].trim()) continue;
-        const cols = lines[i].split(',');
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        // Simple CSV split (note: doesn't handle quoted commas, but better than nothing for now)
+        const cols = line.split(',').map(c => c.trim());
+        
         if (cols.length >= 2) {
-          const first_name = cols[0].trim();
-          const last_name = cols[1] ? cols[1].trim() : null;
-          const email = cols[2] ? cols[2].trim() : null;
-          
-          if (!first_name) continue;
-
           newGuests.push({
-            event_id: activeEvent.id,
-            first_name,
-            last_name,
-            email,
-            rsvp_status: 'Pending',
-            plus_one: cols[5] && cols[5].trim().toLowerCase() === 'true',
-            dietary_restrictions: cols[4] ? cols[4].trim() : null,
-            notes: cols[6] ? cols[6].trim() : null
+            firstName: cols[0] || '',
+            lastName: cols[1] || '',
+            email: cols[2] || '',
+            groupName: cols[3] || null,
+            dietaryRestrictions: cols[4] ? cols[4].split(';').map(s => s.trim()).filter(s => s) : [],
+            plusOne: cols[5]?.toLowerCase() === 'true',
+            notes: cols[6] || null
           });
         }
       }
@@ -270,12 +275,17 @@ const Guests = () => {
       }
 
       setLoading(true);
-      const { error } = await supabase.from('guests').insert(newGuests);
-      if (error) {
-        alert('Error importing guests: ' + error.message);
+      try {
+        await apiClient.post('/Guests/import', {
+          eventId: activeEvent.id,
+          guests: newGuests
+        });
+
+        fetchData();
+      } catch (err) {
+        alert(err.message);
+      } finally {
         setLoading(false);
-      } else {
-        fetchData(); // reload
       }
     };
     reader.readAsText(file);
@@ -470,14 +480,14 @@ const Guests = () => {
                     />
                   </div>
                   <div className="col-span-3 md:col-span-2">
-                    <p className="font-semibold text-[var(--color-primary)] text-sm">{guest.first_name} {guest.last_name}</p>
+                    <p className="font-semibold text-[var(--color-primary)] text-sm">{guest.firstName} {guest.lastName}</p>
                     <p className="text-[10px] text-gray-400 mt-0.5">{guest.email}</p>
                   </div>
-                  <div className="col-span-4 md:col-span-2">{getStatusBadge(guest.rsvp_status)}</div>
-                  <div className="hidden md:block col-span-2 text-sm text-[var(--color-on-surface-variant)]">{guest.guest_groups?.name || '—'}</div>
-                  <div className="hidden lg:block col-span-2 text-sm text-[var(--color-on-surface-variant)] truncate">{guest.dietary_restrictions || '—'}</div>
+                  <div className="col-span-4 md:col-span-2">{getStatusBadge(guest.rsvpStatus)}</div>
+                  <div className="hidden md:block col-span-2 text-sm text-[var(--color-on-surface-variant)]">{guest.groupName || '—'}</div>
+                  <div className="hidden lg:block col-span-2 text-sm text-[var(--color-on-surface-variant)] truncate">{guest.dietaryRestrictions?.join(', ') || '—'}</div>
                   <div className="hidden lg:block col-span-2 text-center">
-                    {guest.plus_one ? (
+                    {guest.plusOne ? (
                       <span className="text-[var(--color-secondary)] font-bold text-xs uppercase tracking-widest">Yes</span>
                     ) : (
                       <span className="text-[var(--color-outline-variant)] font-bold text-xs uppercase tracking-widest">No</span>

@@ -5,19 +5,19 @@ Bienvenido al centro de documentación técnica de Attenda. Esta guía está dis
 ## Índice de Documentación
 
 ### 1. 🏗️ [Arquitectura del Sistema](./ARCHITECTURE.md)
-Descripión de las capas (.NET Clean Architecture), patrones de diseño (CQRS/MediatR) y flujo de datos.
+Descripción de las capas (.NET Clean Architecture), patrones de diseño (CQRS/MediatR) y el flujo de datos entre el Frontend y los Handlers de Aplicación.
 
 ### 2. 🧩 [Modelos de Dominio](./DOMAIN_MODELS.md)
-Detalles sobre los Agregados (`Event`, `User`), Entidades y reglas de negocio centrales. Incluye diagramas de clase.
+Detalles sobre los Agregados (`Event`, `User`), Entidades (`Guest`, `TaskItem`) y reglas de negocio centrales. Incluye el manejo de límites de capacidad, plus-ones y restricciones dietéticas.
 
 ### 3. 🔌 [Referencia de API y Comandos](./API_REFERENCE.md)
-Mapeo de endpoints REST, comandos MediatR y estructura de DTOs.
+Mapeo de endpoints REST para Eventos e Invitados, comandos MediatR y estructura de DTOs. Documenta las operaciones por lotes (batch operations) de gestión de listas.
 
 ### 4. 🎨 [Guía del Frontend](./FRONTEND_GUIDE.md)
-Estructura de React/Vite, navegación, componentes premium y estilizado con Tailwind v4.
+Estructura de React/Vite, navegación del Dashboard, componentes premium (`GuestDrawer`, `Sidebar`) y estilizado interactivo con Tailwind v4 y Framer Motion.
 
 ### 5. ☁️ [Infraestructura y Supabase](./INFRASTRUCTURE.md)
-Detalles sobre la integración con Supabase (Auth, Funciones Edge, Postgres) y servicios de infraestructura.
+Detalles sobre la integración con Supabase (Auth, Funciones Edge, Postgres), políticas de seguridad Row Level Security (RLS) y servicios de infraestructura cloud.
 
 ---
 

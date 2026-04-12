@@ -26,6 +26,10 @@ public class EventRepository : IEventRepository
     public async Task<IEnumerable<Event>> GetByOrganizerIdAsync(Guid organizerId, CancellationToken cancellationToken = default)
     {
         return await _context.Events
+            .Include(e => e.Guests)
+            .Include(e => e.GuestGroups)
+            .Include(e => e.TaskItems)
+            .Include(e => e.CheckIns)
             .Where(e => e.OrganizerId == organizerId)
             .OrderByDescending(e => e.Date.StartDate)
             .ToListAsync(cancellationToken);
