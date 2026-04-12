@@ -32,6 +32,7 @@ This file provides a structured view of the Attenda solution to optimize navigat
         - launchSettings.json
       - **Controllers/**
         - EventsController.cs
+        - GuestsController.cs
     - **Attenda.Application/**  # Application layer: DTOs, Services, and Use Cases.
       - Attenda.Application.csproj
       - DependencyInjection.cs
@@ -54,6 +55,13 @@ This file provides a structured view of the Attenda solution to optimize navigat
       - **Guests/**
         - **DTOs/**
           - GuestDtos.cs
+        - **Commands/**
+          - **DeleteGuests/**
+            - DeleteGuestsCommand.cs
+            - DeleteGuestsHandler.cs
+          - **DeleteAllGuests/**
+            - DeleteAllGuestsCommand.cs
+            - DeleteAllGuestsHandler.cs
     - **Attenda.Domain/**  # Domain layer: Entities, Aggregates, and Value Objects (Business Logic).
       - Attenda.Domain.csproj
       - **Aggregates/**

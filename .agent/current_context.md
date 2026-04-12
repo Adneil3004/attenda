@@ -1,23 +1,30 @@
 # Current Session Context
+# testing account 
+    user josehdez800@yahoo.com
+    supa0125
 
-**Last Updated**: 2026-04-10 23:10 (Next Scheduled Update: 2026-04-11 04:10)
+**Last Updated**: 2026-04-11 10:45 (Next Scheduled Update: 2026-04-11 15:45)
 
 ## Current Objective
-Optimize agent functioning and context management for the Attenda project.
+Guest Deletion Integration (Individual, Batch, and All) Stabilized and Verified.
 
-## Active Task
-Implementing the Context Engineering system (Mapping, Context Snapshots, and Bootstrap Template).
+## Active Tasks
+1. **QA Stabilization**: Final verification of Guest Deletion flows and test suite creation. (Completed)
 
 ## Decisions & Learnings
-- **Update Cycle**: A 5-hour update cycle for `current_context.md` has been established.
-- **File Handling**: Files > 500 lines will be processed in chunks or summarized to protect the token budget.
-- **Local RAG**: `project_mapping.md` and `skills_index.md` are the primary entry points for discovery.
+- **Multi-Agent Flow**: Added the `Managin` role for centralized orchestration and feedback.
+- **API Transition**: Decided to move from direct Supabase calls to the Backend API to maintain business logic and authorization consistency.
+- **Feedback Loop**: Sub-agents now report final comments to `.agent/roles/managin/agent_logs.md`.
 
 ## Technical Debt / Findings
-- Need to ensure the `.agent/` directory is excluded from standard file scans to avoid self-referential token inflation.
-- The `project_mapping.md` now includes semantic descriptions for key architecture layers.
+- **Data Integrity**: Verified that `Event` aggregate correctly handles check-in cleanup.
+- **Environment**: Fixed .NET 10.0 framework target for all test projects.
 
-## Subtasks Progress
-- [x] Enrich `project_mapping.md`
-- [ ] Create `agent_bootstrap.md` (Universal Template)
-- [ ] Establish 500-line chunking protocol
+- [x] Initialized `Managin` Role
+- [x] Delegated tasks to Frontend & Documentation
+- [x] Integrate Frontend with Backend API
+- [x] Document API Deletion Endpoints
+- [x] Finalized Backend Logic for Batch and Bulk Deletion (All)
+- [x] Stabilized Guest Deletion (QA)
+- [x] Implemented Unit Test Suite (10 Total Tests)
+

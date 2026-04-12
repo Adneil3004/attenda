@@ -123,6 +123,29 @@ public class Event : AggregateRoot
         _taskItems.Add(TaskItem.Create(title, description, priority, dueDate));
     }
 
+    public void UpdateTask(Guid taskId, string title, string? description, TaskPriority priority, DateTime? dueDate)
+    {
+        var taskItem = _taskItems.FirstOrDefault(t => t.Id == taskId);
+        if (taskItem == null)
+        {
+            throw new KeyNotFoundException($"Task {taskId} not found.");
+        }
+
+        taskItem.UpdateDetails(title, description, dueDate);
+        taskItem.UpdatePriority(priority);
+    }
+
+    public void RemoveTask(Guid taskId)
+    {
+        var taskItem = _taskItems.FirstOrDefault(t => t.Id == taskId);
+        if (taskItem == null)
+        {
+            throw new KeyNotFoundException($"Task {taskId} not found.");
+        }
+
+        _taskItems.Remove(taskItem);
+    }
+
     public void RemoveGuest(Guid guestId)
     {
         var guest = _guests.FirstOrDefault(g => g.Id == guestId);

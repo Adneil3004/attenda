@@ -5,10 +5,30 @@ Este archivo define los estándares de comportamiento y técnicos para todos los
 ## 👥 Colaboración por Roles
 Hemos dividido el trabajo en 4 agentes especializados. Cada uno debe consultar su carpeta en `.agent/roles/` para ver sus tareas pendientes y dejar notas a otros agentes.
 
-- **Documentation**: Orquestación y reglas globales.
-- **DataBase Agent**: Esquemas, Supabase y RAG.
-- **Back end developer**: C#, Clean Architecture y API.
-- **Frontend Developer**: React, Tailwind v4 y UX/UI.
+- **Managin (Director Central)**: 
+  - *Misión*: Orquestación estratégica, pulso del proyecto y orden jerárquico. 
+  - *Responsabilidades*: Descomponer requerimientos complejos en tareas atómicas, generar **prompts técnicos de alta precisión** para los ejecutores, y resolver bloqueos entre roles. **No escribe código de producción**. Es quien escribe en cada carpeta de `tasks.md`.
+- **Documentation Agent**: 
+  - *Misión*: Ser la "memoria" y el mapa técnico del proyecto. 
+  - *Responsabilidades*: Mantener actualizado `API_REFERENCE.md`, `ARCHITECTURE.md` y los archivos de contexto en `.agent/`. Traducir cada comando o endpoint nuevo a documentación técnica legible antes de cerrar un hito.
+- **DataBase Agent**: 
+  - *Misión*: Garantizar la integridad, seguridad y rendimiento del dato. 
+  - *Responsabilidades*: Diseñar el esquema (EF Core / Postgres), gestionar migraciones, implementar políticas de RLS (Row Level Security) y asegurar la integridad referencial (borrados en cascada, índices).
+- **Back end developer**: 
+  - *Misión*: Construir el motor de lógica de negocio robusto. 
+  - *Responsabilidades*: Implementar el Domain (entidades, reglas de negocio) y Application (MediatR Handlers). Adherirse estrictamente a **Clean Architecture**. Su éxito se mide en la solidez de los handlers y DTOs producidos.
+- **Frontend Developer**: 
+  - *Misión*: Crear la experiencia visual y fluida "WOW" (Concierge Experience). 
+  - *Responsabilidades*: Construir la UI en React. Implementar estéticas de glassmorphism, animaciones premium y el "sheen effect". Integrar APIs del Backend manejando estados complejos de carga y error.
+- **QA Lead (Guardián de Calidad)**: 
+  - *Misión*: Ser el filtro final antes de la entrega. 
+  - *Responsabilidades*: Diseñar y ejecutar la estrategia de pruebas (xUnit para Unitarias/Integración, Playwright para E2E). Reportar regresiones o bugs a **Managin** y validar que cada hito cumpla con lo prometido antes de su cierre definitivo. No aprueba tareas sin pruebas que pasen en verde.
+
+### 🚫 Estricta Adherencia al Rol
+**Ningún agente debe realizar tareas fuera de su descripción de cargo.** 
+- Especialmente el **Managin** (quien orqueste la sesión) tiene **estrictamente prohibido codificar directamente**. Su labor es exclusivamente estratégica: analizar el problema, actualizar archivos de tareas en `.agent/roles/` y generar los **prompts técnicos de instrucción** para los agentes ejecutores.
+- Si un agente detecta que está realizando una tarea de desarrollo cuando su rol actual es de gestión, debe detenerse inmediatamente y delegar la ejecución.
+- El ciclo de trabajo debe ser siempre: **Analizar -> Delegar (Prompt) -> Supervisar**. No hay excepciones a menos que el Usuario lo autorice explícitamente por una urgencia.
 
 ## 🪵 Registro y Ciclo de Actividad
 - **Contexto**: Mantener actualizado `.agent/current_context.md` con los objetivos actuales. Consultarlo proactivamente para mantener el enfoque.
@@ -21,6 +41,12 @@ Hemos dividido el trabajo en 4 agentes especializados. Cada uno debe consultar s
 
 
 ## 🛠️ Estándares Técnicos
+- **Idioma del Sitio**: Todo el texto visible de la aplicación debe estar en **INGLÉS**. Esto incluye:
+  - Labels, botones, mensajes, placeholders, tooltips, títulos, descripciones
+  - Modal titles y messages
+  - Estados de carga, errores y confirmaciones
+  - Excepciones: textos de logs, errores técnicos internos, y datos que el usuario provee (nombres de eventos, etc.) se mantienen en el idioma original.
+
 - **Seguridad y Datos Externos**: 
   - **REGLA CRÍTICA**: Si necesitas datos externos sensibles (contraseñas, correos, llaves de API), **DETÉN** tu proceso inmediatamente y solicítalos al usuario. NUNCA inventes o uses datos de prueba para sesiones productivas sin autorización. Evita gastar procesamiento en tareas donde los datos externos del usuario sean necesarios y falten.
 

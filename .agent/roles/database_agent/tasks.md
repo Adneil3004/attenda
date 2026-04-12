@@ -14,5 +14,15 @@ Este agente debe garantizar que la capa de persistencia soporte las consultas ag
 ### 3. Rendimiento
 - [x] Evaluar la creación de un índice en `Guests(event_id, status)` para acelerar los conteos de métricas del Dashboard.
 
+
+## Hito 3: Auditoría & Performance
+### 1. Optimización
+- [ ] Revisar indexación en tabla `CheckIns` para conteos rápidos.
+
+### 2. Auditoría
+- [ ] Auditoría completa de políticas RLS para aislamiento de usuarios.
+
+*Modelo Recomendado: Gemini 1.5 Pro (Precisión)*
+
 ## Notas de Sincronización
 - Reportar al **Backend Developer** cualquier cambio en los nombres de las columnas.

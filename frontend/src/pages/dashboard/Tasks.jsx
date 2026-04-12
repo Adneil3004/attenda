@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   DndContext,
   KeyboardSensor,
@@ -12,28 +12,19 @@ import {
 import {
   SortableContext,
   sortableKeyboardCoordinates,
-  horizontalListSortingStrategy,
   verticalListSortingStrategy,
   useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import TaskDrawer from '../../components/dashboard/TaskDrawer';
+import { tasksApi } from '../../lib/tasks';
 
-// ─── Dummy Data ───
-const initialTasks = [
-  { id: 't3', status: 'To Do', title: 'Confirm Floral Arrangements', tag: 'Vendor', priority: 'High', assignee: 'Alex Ivory', avatar: 'https://ui-avatars.com/api/?name=Alex+Ivory&background=0D1117&color=fff', dueDate: 'Sep 30' },
-  { id: 't4', status: 'In Progress', title: 'Design seating chart layout', tag: 'Planning', priority: 'Normal', assignee: 'Jane Doe', avatar: 'https://ui-avatars.com/api/?name=Jane+Doe&background=0D1117&color=fff', dueDate: 'Sep 25' },
-  { id: 't5', status: 'In Progress', title: 'Review evening playlist', tag: 'Entertainment', priority: 'Normal', assignee: 'James Chen', avatar: 'https://ui-avatars.com/api/?name=James+Chen&background=0D1117&color=fff', dueDate: 'Sep 26' },
-  { id: 't6', status: 'Review', title: 'Deposit for photographer', tag: 'Finance', priority: 'High', assignee: 'Alex Ivory', avatar: 'https://ui-avatars.com/api/?name=Alex+Ivory&background=0D1117&color=fff', dueDate: 'Sep 20' },
-  { id: 't7', status: 'To Do', title: 'Compile guest addresses', tag: 'Logistics', priority: 'Normal', assignee: 'Jane Doe', avatar: 'https://ui-avatars.com/api/?name=Jane+Doe&background=0D1117&color=fff', dueDate: 'Oct 12' }
-];
-
-const COLUMNS = ['To Do', 'In Progress', 'Review', 'Done'];
+const COLUMNS = ['To Do', 'In Progress', 'Done', 'Cancelled'];
 
 // ─── Droppable Column Component ───
 const DroppableColumn = ({ column, children, columnTasks }) => {
   const { setNodeRef } = useDroppable({
-    id: column, // Unique id representing the column itself
+    id: column,
   });
 
   const wipLimitValue = 3;
@@ -51,7 +42,6 @@ const DroppableColumn = ({ column, children, columnTasks }) => {
           {column}
         </h3>
         
-        {/* Tags / Counts */}
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-[var(--color-text-muted)] bg-[var(--color-surface-container-high)] dark:bg-[var(--color-surface-container-low)] px-2 py-0.5 rounded-full">
             {columnTasks.length}
@@ -64,11 +54,9 @@ const DroppableColumn = ({ column, children, columnTasks }) => {
         </div>
       </div>
 
-      {/* Task List Container */}
       <div className="flex-1 lg:overflow-y-auto overflow-x-hidden space-y-4 pb-4 lg:pb-10 hide-scrollbar pt-2">
         {children}
         
-        {/* Empty State visual affordance */}
         {columnTasks.length === 0 && (
           <div className="h-24 border-2 border-dashed border-[var(--color-card-border)] rounded-xl flex items-center justify-center text-xs font-semibold text-[var(--color-text-muted)]">
             Drag tasks here
@@ -93,7 +81,7 @@ const SortableTaskCard = ({ task, onClick }) => {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.3 : 1, // Let ghost stay visible so grid doesn't collapse weirdly
+    opacity: isDragging ? 0.3 : 1,
   };
 
   return (
@@ -114,50 +102,236 @@ const SortableTaskCard = ({ task, onClick }) => {
 };
 
 // ─── Base Card Component ───
-const TaskCard = ({ task, isLayoutOverlay }) => (
-  <div className={`bg-[var(--color-card-bg)] rounded-xl p-5 border border-[var(--color-card-border)] hover:-translate-y-1 hover:shadow-lg transition-all duration-300 relative overflow-hidden ${isLayoutOverlay ? 'shadow-2xl rotate-3 scale-105 cursor-grabbing z-50' : 'shadow-sm'}`}>
-    {task.priority === 'High' && (
-      <div className="absolute top-0 left-0 w-1 h-full bg-[var(--color-error)]"></div>
-    )}
-    <div className="flex justify-between items-start mb-4">
-      <span className="bg-[var(--color-surface-container-high)] text-[var(--color-text-secondary)] text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded">
-        {task.tag}
-      </span>
-      <div className="flex -space-x-2">
-        <img src={task.avatar} alt="assignee" className="w-6 h-6 rounded-full border-2 border-[var(--color-card-bg)] shadow-sm" />
-      </div>
-    </div>
-    <h4 className="text-sm font-semibold text-[var(--color-primary)] font-display leading-snug mb-4">
-      {task.title}
-    </h4>
-    <div className="flex items-center justify-between pt-4 border-t border-[var(--color-card-border)]">
-      <div className="flex items-center gap-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors">
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <span className="text-[10px] font-bold">{task.dueDate}</span>
-      </div>
-      {task.status === 'Done' && (
-        <span className="text-[var(--color-success)] animate-in zoom-in duration-300 drop-shadow-sm">
-          <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-        </span>
+const TaskCard = ({ task, isLayoutOverlay }) => {
+  const priorityConfig = {
+    'Urgent': { color: 'var(--color-error)', label: 'Urgent', bg: 'bg-red-50', text: 'text-red-700', pulse: true },
+    'High': { color: '#f97316', label: 'High', bg: 'bg-orange-50', text: 'text-orange-700', pulse: false },
+    'Medium': { color: 'var(--color-primary)', label: 'Medium', bg: 'bg-blue-50', text: 'text-blue-700', pulse: false },
+    'Low': { color: '#94a3b8', label: 'Low', bg: 'bg-slate-50', text: 'text-slate-600', pulse: false }
+  };
+
+  const config = priorityConfig[task.priority] || priorityConfig['Medium'];
+
+  return (
+    <div className={`bg-[var(--color-card-bg)] rounded-xl p-5 border border-[var(--color-card-border)] hover:-translate-y-1 hover:shadow-lg transition-all duration-300 relative overflow-hidden ${isLayoutOverlay ? 'shadow-2xl rotate-3 scale-105 cursor-grabbing z-50' : 'shadow-sm'}`}>
+      {/* Priority Indicator Line */}
+      <div 
+        className={`absolute top-0 left-0 w-1.5 h-full ${config.pulse ? 'animate-pulse' : ''}`}
+        style={{ backgroundColor: config.color }}
+      ></div>
+      
+      {config.pulse && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500/20 to-transparent"></div>
       )}
+
+      <div className="flex justify-between items-start mb-4 pl-1">
+        <div className="flex flex-col gap-1">
+          <span className="bg-[var(--color-surface-container-high)] text-[var(--color-text-secondary)] text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded w-fit">
+            {task.tag || 'General'}
+          </span>
+          <span className={`${config.bg} ${config.text} text-[8px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border border-current opacity-80 w-fit`}>
+            {config.label}
+          </span>
+        </div>
+        <div className="flex -space-x-2">
+          <img src={task.avatar || 'https://ui-avatars.com/api/?name=User&background=0D1117&color=fff'} alt="assignee" className="w-6 h-6 rounded-full border-2 border-[var(--color-card-bg)] shadow-sm" />
+        </div>
+      </div>
+      
+      <h4 className="text-sm font-semibold text-[var(--color-primary)] font-display leading-snug mb-4 pl-1">
+        {task.title}
+      </h4>
+      
+      <div className="flex items-center justify-between pt-4 border-t border-[var(--color-card-border)] pl-1">
+        <div className="flex items-center gap-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors">
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span className="text-[10px] font-bold">{task.dueDate || 'No date'}</span>
+        </div>
+        {task.status === 'Done' && (
+          <span className="text-[var(--color-success)] animate-in zoom-in duration-300 drop-shadow-sm">
+            <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+          </span>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
+
+// ─── New Task Modal ───
+const NewTaskModal = ({ isOpen, onClose, onSubmit, loading }) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState('Medium');
+  const [dueDate, setDueDate] = useState('');
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (!isOpen) {
+      setTitle('');
+      setDescription('');
+      setPriority('Medium');
+      setDueDate('');
+      setErrors({});
+    }
+  }, [isOpen]);
+
+  const today = new Date().toISOString().split('T')[0];
+
+  if (!isOpen) return null;
+
+  const validate = () => {
+    const newErrors = {};
+    if (!title.trim()) {
+      newErrors.title = 'Title is required';
+    }
+    if (!dueDate) {
+      newErrors.dueDate = 'Due date is required';
+    } else if (dueDate < today) {
+      newErrors.dueDate = 'Date must be in the future';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+    onSubmit({ title: title.trim(), description, priority, dueDate: dueDate || null });
+  };
+
+  const handleTitleChange = (e) => {
+    setTitle(e.target.value);
+    if (errors.title) setErrors({ ...errors, title: null });
+  };
+
+  const handleDateChange = (e) => {
+    setDueDate(e.target.value);
+    if (errors.dueDate) setErrors({ ...errors, dueDate: null });
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-white/30 backdrop-blur-md z-40" onClick={onClose} />
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-[var(--color-outline-variant)]/20">
+          <div className="p-6 border-b border-[var(--color-outline-variant)]/10">
+            <h2 className="text-xl font-bold text-[var(--color-primary)]">New Task</h2>
+          </div>
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Title</label>
+              <input
+                type="text"
+                value={title}
+                onChange={handleTitleChange}
+                className={`w-full px-4 py-3 rounded-xl border focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all ${errors.title ? 'border-red-500 ring-2 ring-red-500/20' : 'border-[var(--color-outline-variant)]/20'}`}
+                placeholder="Task title"
+                required
+              />
+              {errors.title && <p className="text-[10px] text-red-500 mt-1">{errors.title}</p>}
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-[var(--color-outline-variant)]/20 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all resize-none"
+                rows={3}
+                placeholder="Task description (optional)"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Priority</label>
+                <select
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--color-outline-variant)]/20 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all font-bold text-xs"
+                >
+                  <option value="Low" className="text-slate-500 font-bold">Low</option>
+                  <option value="Medium" className="text-blue-600 font-bold">Medium</option>
+                  <option value="High" className="text-orange-600 font-bold">High</option>
+                  <option value="Urgent" className="text-red-600 font-bold font-black">Urgent</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Due Date</label>
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={handleDateChange}
+                  min={today}
+                  className={`w-full px-4 py-3 rounded-xl border focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all ${errors.dueDate ? 'border-red-500 ring-2 ring-red-500/20' : 'border-[var(--color-outline-variant)]/20'}`}
+                />
+                {errors.dueDate && <p className="text-[10px] text-red-500 mt-1">{errors.dueDate}</p>}
+              </div>
+            </div>
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest border border-[var(--color-outline-variant)]/20 hover:bg-gray-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading || !title.trim()}
+                className="flex-1 py-3 bg-[var(--color-primary)] text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Creating...' : 'Create Task'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </>
+  );
+};
 
 // ─── Main Tasks Dashboard ───
 const Tasks = () => {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
   const [selectedTaskForDrawer, setSelectedTaskForDrawer] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showNewTaskModal, setShowNewTaskModal] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
+
+  // Load tasks from API
+  const loadTasks = useCallback(async () => {
+    try {
+      setLoading(true);
+      const eventId = localStorage.getItem('activeEventId');
+      console.log('[TasksBoard] Loading tasks for event:', eventId);
+      
+      if (!eventId) {
+        console.warn('[TasksBoard] No active event ID found in localStorage');
+        setTasks([]);
+        return;
+      }
+
+      const loadedTasks = await tasksApi.getAll();
+      setTasks(loadedTasks);
+    } catch (error) {
+      console.error('Failed to load tasks:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
 
   const getTasksByStatus = (status) => tasks.filter(t => t.status === status);
 
@@ -167,86 +341,140 @@ const Tasks = () => {
     setActiveTask(task);
   };
 
-  const handleDragEnd = (event) => {
+  const handleDragEnd = async (event) => {
     setActiveTask(null);
     const { active, over } = event;
 
     if (!over) return;
 
     const activeId = active.id;
-    const overId = over.id; // This can be a Task ID OR a Column ID
+    const overId = over.id;
 
-    const activeTask = tasks.find(t => t.id === activeId);
+    const activeTaskItem = tasks.find(t => t.id === activeId);
     
-    // Determine the new status based on what we dropped over.
-    // If overId is one of our COLUMNS, they dropped directly into the column rect.
-    // If it's a Task ID, they dropped over another task and inherited its column.
     let newStatus = COLUMNS.includes(overId) ? overId : tasks.find(t => t.id === overId)?.status;
 
-    if (activeTask && newStatus && activeTask.status !== newStatus) {
+    if (activeTaskItem && newStatus && activeTaskItem.status !== newStatus) {
+      // Optimistic update
       setTasks(tasks.map(t => {
         if (t.id === activeId) return { ...t, status: newStatus };
         return t;
       }));
+
+      // Call API
+      try {
+        await tasksApi.updateStatus(activeId, newStatus);
+      } catch (error) {
+        console.error('Failed to update task status:', error);
+        // Revert on error
+        loadTasks();
+      }
     }
+  };
+
+  const handleCreateTask = async (taskData) => {
+    setCreating(true);
+    try {
+      const eventId = localStorage.getItem('activeEventId');
+      if (!eventId) {
+        alert('Please select an event first from "My Events"');
+        return;
+      }
+      
+      const newTask = await tasksApi.create({ ...taskData, eventId });
+      setTasks([...tasks, newTask]);
+      setShowNewTaskModal(false);
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      alert('Failed to create task. Please try again.');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleTaskUpdated = (updatedTask) => {
+    setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t));
+    setSelectedTaskForDrawer(null);
+  };
+
+  const handleTaskDeleted = (taskId) => {
+    setTasks(tasks.filter(t => t.id !== taskId));
+    setSelectedTaskForDrawer(null);
   };
 
   return (
     <div className="flex flex-col h-full bg-[var(--color-surface)]">
-      
-      {/* Header */}
       <header className="px-4 sm:px-6 lg:px-10 py-4 sm:py-6 lg:py-8 flex-shrink-0 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[var(--color-outline-variant)]/10">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-[var(--color-primary)] font-headline tracking-tight">Event Task Management</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl lg:text-3xl font-bold text-[var(--color-primary)] font-headline tracking-tight">Event Task Management</h1>
+            <span className="bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-[9px] font-black px-2 py-0.5 rounded-md border border-[var(--color-primary)]/10">
+              ID: {localStorage.getItem('activeEventId')?.slice(0, 8)}...
+            </span>
+          </div>
           <p className="text-sm text-[var(--color-on-surface-variant)] mt-2">Manage logistics, vendors, and timelines in one place.</p>
         </div>
-        <button className="bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 sm:w-auto">
+        <button 
+          onClick={() => setShowNewTaskModal(true)}
+          className="bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 sm:w-auto"
+        >
           <span>+</span> New Task
         </button>
       </header>
 
-      {/* Kanban Board Container (Responsive scrolling on desktop, stacked on mobile) */}
       <div className="flex-1 lg:overflow-x-auto lg:overflow-y-hidden p-4 sm:p-6 lg:p-10">
-        <DndContext 
-          sensors={sensors}
-          collisionDetection={closestCorners}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="flex flex-col lg:flex-row gap-6 h-full lg:items-start lg:min-w-max">
-            {COLUMNS.map(column => {
-              const columnTasks = getTasksByStatus(column);
-              
-              return (
-                <DroppableColumn key={column} column={column} columnTasks={columnTasks}>
-                  <SortableContext items={columnTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                    {columnTasks.map(task => (
-                      <SortableTaskCard 
-                        key={task.id} 
-                        task={task} 
-                        onClick={() => setSelectedTaskForDrawer(task)}
-                      />
-                    ))}
-                  </SortableContext>
-                </DroppableColumn>
-              );
-            })}
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]"></div>
           </div>
-          
-          {/* Active Drag Overlay */}
-          <DragOverlay dropAnimation={{ duration: 200, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
-            {activeTask ? <TaskCard task={activeTask} isLayoutOverlay={true} /> : null}
-          </DragOverlay>
-        </DndContext>
+        ) : (
+          <DndContext 
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="flex flex-col lg:flex-row gap-6 h-full lg:items-start lg:min-w-max">
+              {COLUMNS.map(column => {
+                const columnTasks = getTasksByStatus(column);
+                
+                return (
+                  <DroppableColumn key={column} column={column} columnTasks={columnTasks}>
+                    <SortableContext items={columnTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+                      {columnTasks.map(task => (
+                        <SortableTaskCard 
+                          key={task.id} 
+                          task={task} 
+                          onClick={() => setSelectedTaskForDrawer(task)}
+                        />
+                      ))}
+                    </SortableContext>
+                  </DroppableColumn>
+                );
+              })}
+            </div>
+            
+            <DragOverlay dropAnimation={{ duration: 200, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
+              {activeTask ? <TaskCard task={activeTask} isLayoutOverlay={true} /> : null}
+            </DragOverlay>
+          </DndContext>
+        )}
       </div>
 
-      {/* Task Drawer */}
       <TaskDrawer 
         isOpen={!!selectedTaskForDrawer} 
         onClose={() => setSelectedTaskForDrawer(null)} 
-        task={selectedTaskForDrawer} 
+        task={selectedTaskForDrawer}
+        onUpdate={handleTaskUpdated}
+        onDelete={handleTaskDeleted}
       />
       
+      <NewTaskModal 
+        isOpen={showNewTaskModal} 
+        onClose={() => setShowNewTaskModal(false)} 
+        onSubmit={handleCreateTask}
+        loading={creating}
+      />
     </div>
   );
 };

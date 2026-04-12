@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable dark mode via class - supports both root dark class and dashboard-root.dark */
+@custom-variant dark (&:where(.dark, .dark *, .dashboard-root.dark, .dashboard-root.dark *));
+
 @theme {
   --font-display: 'Manrope', sans-serif;
   --font-body: 'Inter', sans-serif;

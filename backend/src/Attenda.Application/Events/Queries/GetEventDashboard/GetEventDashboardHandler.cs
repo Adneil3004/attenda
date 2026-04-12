@@ -1,4 +1,5 @@
 using Attenda.Application.Events.DTOs;
+using Attenda.Application.Tasks.DTOs;
 using Attenda.Domain.Aggregates.EventAggregate;
 using Attenda.Domain.Enums;
 using Attenda.Domain.Interfaces;
@@ -52,16 +53,30 @@ public class GetEventDashboardHandler : IRequestHandler<GetEventDashboardQuery, 
             {
                 Id = @event.Id,
                 Name = @event.Name,
+                Description = @event.Description,
+                EventType = @event.EventType,
+                Celebrants = @event.Celebrants?.ToList() ?? new List<string>(),
+                OrganizerName = @event.OrganizerName,
+                ReligiousAddress = @event.ReligiousAddress,
                 TotalGuests = @event.Guests.Count,
                 TotalCheckedIn = @event.CheckIns.Count,
                 CheckInsToday = @event.CheckIns.Count(c => c.CheckInTime.ToUniversalTime().Date == today),
                 ConfirmedCount = @event.Guests.Count(g => g.RsvpStatus == RsvpStatus.Confirmed),
                 PendingCount = @event.Guests.Count(g => g.RsvpStatus == RsvpStatus.Pending),
                 DeclinedCount = @event.Guests.Count(g => g.RsvpStatus == RsvpStatus.Declined),
+                Status = @event.Status.ToString(),
                 EventDate = @event.Date.StartDate,
                 LocationName = @event.VenueAddress ?? "No venue set",
                 CapacityTier = @event.CapacityTier ?? "FREE",
-                ImageUrl = @event.ImageUrl
+                ImageUrl = @event.ImageUrl,
+                Tasks = @event.TaskItems.Select(t => new TaskItemDto(
+                    t.Id,
+                    t.Title,
+                    t.Description,
+                    t.Status.ToString(),
+                    t.Priority.ToString(),
+                    t.DueDate,
+                    t.CreatedAt)).ToList()
             };
 
         }

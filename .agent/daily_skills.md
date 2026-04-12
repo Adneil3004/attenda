@@ -15,6 +15,7 @@ Este registro rastrea las habilidades y flujos de trabajo utilizados durante la 
 | 23:20 | `mermaid-expert` | Generación de diagramas ER, clases y secuencia. | 5 diagramas técnicos creados en los docs. |
 | 23:30 | `architecture-documentation` | Redacción de guías de Clean Architecture y UI. | Centro de documentación integral completado. |
 | 23:35 | `c4-architecture` | Mapeo de capas y dependencias del sistema. | `ARCHITECTURE.md` y `INFRASTRUCTURE.md` creados. |
+| 11:05 | `engram-setup` | Instalación de Go y CLI de Engram. | Entorno listo y `AGENTS.md` (Engram pattern) operativo. |
 
 ---
 *Este archivo debe ser consultado por el agente al inicio de cada jornada.*

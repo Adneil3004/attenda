@@ -48,6 +48,18 @@ public class ExceptionHandlingMiddleware
                 Message = invalidOpException.Message,
                 Errors = (IEnumerable<string>?)null
             },
+            KeyNotFoundException => new
+            {
+                StatusCode = (int)HttpStatusCode.NotFound,
+                Message = exception.Message,
+                Errors = (IEnumerable<string>?)null
+            },
+            UnauthorizedAccessException => new
+            {
+                StatusCode = (int)HttpStatusCode.Unauthorized,
+                Message = "Unauthorized access",
+                Errors = (IEnumerable<string>?)null
+            },
             _ => new
             {
                 StatusCode = (int)HttpStatusCode.InternalServerError,

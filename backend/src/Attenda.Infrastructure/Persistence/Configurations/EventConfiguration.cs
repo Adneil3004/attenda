@@ -66,6 +66,7 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
             .HasForeignKey("event_id")
             .OnDelete(DeleteBehavior.Cascade);
 
+
         builder.HasMany(e => e.CheckIns)
             .WithOne()
             .HasForeignKey("event_id")

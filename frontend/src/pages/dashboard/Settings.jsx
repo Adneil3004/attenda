@@ -390,7 +390,7 @@ const Settings = () => {
                        disabled
                        className="w-full bg-[var(--color-surface-container-high)] rounded-lg px-4 py-2.5 text-sm text-[var(--color-text-muted)] border-none cursor-not-allowed"
                      />
-                     <p className="text-[10px] text-[var(--color-text-muted)]">Email cannot be changed here.</p>
+                     <p className="text-[11px] text-[var(--color-text-muted)]">Email cannot be changed here.</p>
                    </div>
 
                    <div className="space-y-1.5">
@@ -496,7 +496,7 @@ const Settings = () => {
                       </div>
                     ))}
 
-                    <p className="text-[10px] text-[var(--color-text-muted)]">
+                    <p className="text-[11px] text-[var(--color-text-muted)]">
                       Min. 6 chars · at least 1 number · at least 1 special character (!@#$%^&*)
                     </p>
 
@@ -548,7 +548,7 @@ const Settings = () => {
                   style={{ width: `${(totalCount / 3) * 100}%` }}
                 />
               </div>
-              <span className="text-[10px] text-[var(--color-text-muted)] font-semibold whitespace-nowrap">{totalCount} / 3 members</span>
+              <span className="text-[11px] text-[var(--color-text-muted)] font-semibold whitespace-nowrap">{totalCount} / 3 members</span>
             </div>
 
             {/* Members grid */}
@@ -566,8 +566,8 @@ const Settings = () => {
                       />
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-[var(--color-text-primary)] truncate">{m.member_name}</p>
-                        <p className="text-[10px] text-[var(--color-text-muted)] truncate">{m.member_email}</p>
-                        <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mt-0.5 inline-block ${roleBadgeColor(m.role)}`}>
+                        <p className="text-[11px] text-[var(--color-text-muted)] truncate">{m.member_email}</p>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mt-0.5 inline-block ${roleBadgeColor(m.role)}`}>
                           {m.role}
                         </span>
                       </div>
@@ -654,7 +654,7 @@ const Settings = () => {
                       <option value="guest">Guest — View only</option>
                       <option value="co-admin" disabled={hasCoAdmin}>Co-Admin{hasCoAdmin ? ' (already assigned)' : ''}</option>
                     </select>
-                    <p className="text-[10px] text-[var(--color-text-muted)]">
+                    <p className="text-[11px] text-[var(--color-text-muted)]">
                       {newMember.role === 'guest' && 'Guests can only view, not edit.'}
                       {newMember.role === 'co-admin' && 'Co-Admin can manage guests and tasks.'}
                     </p>
@@ -803,12 +803,12 @@ const Settings = () => {
                   <p className="text-sm font-mono tracking-[0.2em] text-white">••••  ••••  ••••  4242</p>
                   <div className="flex justify-between items-end">
                     <div>
-                      <p className="text-[7px] uppercase tracking-widest text-[#a3a3a3]">Card Holder</p>
-                      <p className="text-[10px] font-bold uppercase mt-0.5">{profileData.full_name || 'Account Holder'}</p>
+                      <p className="text-[8px] uppercase tracking-widest text-[#a3a3a3]">Card Holder</p>
+                      <p className="text-[11px] font-bold uppercase mt-0.5">{profileData.full_name || 'Account Holder'}</p>
                     </div>
                     <div>
-                      <p className="text-[7px] uppercase tracking-widest text-[#a3a3a3]">Expires</p>
-                      <p className="text-[10px] font-bold mt-0.5">12/28</p>
+                      <p className="text-[8px] uppercase tracking-widest text-[#a3a3a3]">Expires</p>
+                      <p className="text-[11px] font-bold mt-0.5">12/28</p>
                     </div>
                   </div>
                 </div>
@@ -827,7 +827,7 @@ const Settings = () => {
             <div className="pt-2">
               <div className="flex justify-between items-center mb-4">
                 <h4 className="text-sm text-[var(--color-primary)] font-display">Recent Transactions</h4>
-                <button className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-widest hover:underline">View All History</button>
+                <button className="text-[11px] font-bold text-[var(--color-primary)] uppercase tracking-widest hover:underline">View All History</button>
               </div>
               <div className="space-y-3">
                 {[
@@ -843,12 +843,12 @@ const Settings = () => {
                       </div>
                       <div>
                         <p className="text-xs font-bold text-[var(--color-text-primary)]">{t.name}</p>
-                        <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">{t.date}</p>
+                        <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">{t.date}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-xs font-bold text-[var(--color-text-primary)]">{t.amount}</p>
-                      <p className="text-[8px] font-bold text-[var(--color-accent)] mt-1 uppercase tracking-widest">Completed</p>
+                      <p className="text-[9px] font-bold text-[var(--color-accent)] mt-1 uppercase tracking-widest">Completed</p>
                     </div>
                   </div>
                 ))}
@@ -893,7 +893,7 @@ const Settings = () => {
             </div>
           </section>
 
-          <footer className="text-center pt-8 text-[10px] text-gray-400">
+          <footer className="text-center pt-8 text-[11px] text-gray-400">
             Attenda • Version 1.0 • © 2025
           </footer>
         </div>
@@ -908,7 +908,7 @@ const Settings = () => {
             </div>
 
             <div className="relative z-10">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#86a3d9] font-bold mb-2">Current Plan</p>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-[#86a3d9] font-bold mb-2">Current Plan</p>
               <h3 className="text-4xl font-display font-light text-white tracking-tight">
                 Elite <span className="text-sm text-[#86a3d9] font-normal italic ml-1 opacity-80">/ Yearly</span>
               </h3>
@@ -938,7 +938,7 @@ const Settings = () => {
             </div>
 
             <div className="relative z-10 text-center">
-              <button className="text-[10px] text-white/40 hover:text-white transition-colors tracking-widest uppercase font-bold">
+              <button className="text-[11px] text-white/40 hover:text-white transition-colors tracking-widest uppercase font-bold">
                 Cancel Subscription
               </button>
             </div>
@@ -948,7 +948,7 @@ const Settings = () => {
           <div className="bg-[#f8f9fa] rounded-xl p-5 flex items-start gap-4">
             <div>
               <p className="text-sm font-semibold text-gray-800">Data Privacy</p>
-              <p className="text-[10px] text-gray-500 mt-0.5">Your data is encrypted and secure.</p>
+              <p className="text-[11px] text-gray-500 mt-0.5">Your data is encrypted and secure.</p>
             </div>
             <div className="text-gray-400 mt-0.5">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

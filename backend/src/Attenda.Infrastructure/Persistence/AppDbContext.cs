@@ -25,6 +25,20 @@ public class AppDbContext : DbContext, IUnitOfWork
         modelBuilder.Ignore<Attenda.Domain.Common.AggregateRoot>();
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        modelBuilder.Entity<TaskItem>(t =>
+        {
+            t.ToTable("task_items");
+            t.HasKey(x => x.Id);
+            t.Property(x => x.Id).ValueGeneratedOnAdd();
+            
+            t.Property(x => x.Priority)
+                .HasConversion<string>();
+                
+            t.Property(x => x.Status)
+                .HasConversion<string>();
+        });
+
         base.OnModelCreating(modelBuilder);
     }
 }

@@ -3,9 +3,9 @@
 Este agente se encarga de la orquestación y actualización de la base de conocimientos técnica.
 
 ## Tareas Pendientes
-- [ ] Documentar el nuevo `/api/guests` en `docs/API_REFERENCE.md`.
-- [ ] Asegurar que el flujo de eliminación masiva esté reflejado en `docs/ARCHITECTURE.md`.
-- [ ] Monitorear que los otros agentes sigan la regla de **Seguridad y Datos Externos** en `.agent/rules.md`.
+- [x] **API Reference**: Documentar los nuevos endpoints de `GuestsController` en `docs/API_REFERENCE.md`.
+- [x] **Arquitectura**: Asegurar que el flujo de eliminación masiva esté reflejado en `docs/ARCHITECTURE.md`.
+- [x] **Consistencia de Datos**: Validar que las DTOs en la documentación coincidan con `GuestDtos.cs`.
 
-## Notas de Sincronización
-- Sincronizar con el **DataBase Agent** si se requiere implementar Soft Delete en el futuro (actualmente es Hard Delete).
+## Notas de Sincronización (Director)
+- Sincronizar con el **DataBase Agent** si se requiere implementar Soft Delete en el futuro.

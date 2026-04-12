@@ -1,3 +1,5 @@
+using Attenda.Application.Tasks.DTOs;
+
 namespace Attenda.Application.Events.DTOs;
 
 public class EventDashboardDto
@@ -10,9 +12,16 @@ public class EventDashboardDto
     public int ConfirmedCount { get; set; }
     public int PendingCount { get; set; }
     public int DeclinedCount { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string? EventType { get; set; }
+    public List<string> Celebrants { get; set; } = new();
+    public string? OrganizerName { get; set; }
+    public string? ReligiousAddress { get; set; }
     public DateTime EventDate { get; set; }
     public string LocationName { get; set; } = string.Empty;
     public string CapacityTier { get; set; } = string.Empty;
     public string? ImageUrl { get; set; }
+    public List<TaskItemDto> Tasks { get; set; } = new();
 }
 

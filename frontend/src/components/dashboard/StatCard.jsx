@@ -33,7 +33,7 @@ const StatCard = ({ label, value, icon, color, trend }) => {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 ambient-shadow border border-[var(--color-outline-variant)]/10 hover:border-[var(--color-primary)]/20 transition-all group">
+    <div className="bg-[var(--color-card-bg)] rounded-3xl p-6 ambient-shadow border border-[var(--color-outline-variant)]/10 hover:border-[var(--color-primary)]/20 transition-all group">
       <div className="flex justify-between items-start mb-4">
         <div 
           className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-500"

@@ -3,10 +3,10 @@ namespace Attenda.Application.Events.DTOs;
 public record EventListDto(
     Guid Id,
     string Name,
-    string? Type,
+    string? EventType,
     DateTime Date,
-    string? Location,
+    string? LocationName,
     int GuestCount,
     string Status,
-    string Tier,
+    string CapacityTier,
     string? ImageUrl);

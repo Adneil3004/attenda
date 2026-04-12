@@ -38,6 +38,14 @@ export const apiClient = {
 
     if (!response.ok) {
         const error = await response.json().catch(() => ({ message: 'An error occurred' }));
+        if (error.error || error.details) {
+            console.error('[apiClient] Error Details:', { 
+                status: response.status,
+                message: error.message,
+                error: error.error,
+                details: error.details
+            });
+        }
         throw new Error(error.message || `Error: ${response.status}`);
     }
 
@@ -50,6 +58,27 @@ export const apiClient = {
 
     const response = await fetch(`${BACKEND_URL}${endpoint}`, {
       method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'An error occurred' }));
+        throw new Error(error.message || `Error: ${response.status}`);
+    }
+
+    return response.json();
+  },
+
+  async patch(endpoint, body) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': token ? `Bearer ${token}` : '',
@@ -85,5 +114,28 @@ export const apiClient = {
 
     if (response.status === 204) return null;
     return response.json().catch(() => null);
+  },
+
+  async uploadImage(endpoint, file) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+      throw new Error(error.message || `Error: ${response.status}`);
+    }
+
+    return response.json();
   }
 };

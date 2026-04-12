@@ -11,6 +11,7 @@ public class TaskItem : Entity
     public TaskStatus Status { get; private set; }
     public TaskPriority Priority { get; private set; }
     public DateTime? DueDate { get; private set; }
+    public DateTime CreatedAt { get; private set; }
 
     private TaskItem() : base() { Title = null!; } // Required by EF Core
 
@@ -21,6 +22,7 @@ public class TaskItem : Entity
         Status = TaskStatus.Pending;
         Priority = priority;
         DueDate = dueDate;
+        CreatedAt = DateTime.UtcNow;
     }
 
     public static TaskItem Create(string title, string? description = null, TaskPriority priority = TaskPriority.Medium, DateTime? dueDate = null)
