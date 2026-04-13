@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 
-const BACKEND_URL = 'http://localhost:5263/api';
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5263/api';
 
 export const apiClient = {
   async get(endpoint) {
