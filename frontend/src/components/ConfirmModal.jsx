@@ -13,14 +13,12 @@ const ConfirmModal = ({
   requireMatch = null // If provided, user must type this text to enable the button
 }) => {
   const [inputValue, setInputValue] = useState('');
-  const isMatch = requireMatch ? inputValue.trim() === requireMatch.trim() : true;
+  const isMatch = requireMatch ? inputValue.trim().toUpperCase() === requireMatch.trim().toUpperCase() : true;
 
-  // Reset input when modal opens/closes
+  // Reset input when modal opens/closes or requireMatch changes
   useEffect(() => {
-    if (!isOpen) {
-      setInputValue('');
-    }
-  }, [isOpen]);
+    setInputValue('');
+  }, [isOpen, requireMatch]);
 
   if (!isOpen) return null;
 
