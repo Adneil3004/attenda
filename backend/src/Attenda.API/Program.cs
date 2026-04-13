@@ -143,6 +143,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Welcome Endpoint
+app.MapGet("/", () => Results.Ok(new { message = "Attenda API is running 🚀", environment = app.Environment.EnvironmentName, version = "1.0.0" }));
+
 // Debug Endpoint - Get All Guests (Bypass Auth & Domain Validation)
 app.MapGet("/api/debug/guests", async (Attenda.Infrastructure.Persistence.AppDbContext dbContext) =>
 {
