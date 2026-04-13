@@ -6,7 +6,7 @@ services:
     # Carpeta donde vive el Backend
     rootDir: backend
     # El Dockerfile está en la raíz de la carpeta 'backend'
-    dockerFilePath: Dockerfile
+    dockerfile: Dockerfile
     # Solo permitimos que se compile sobre la rama dev o Master
     branch: dev
     envVars:
@@ -18,5 +18,5 @@ services:
         sync: false
       - key: Supabase__AnonKey
         sync: false
-      - key: JwtSettings__Secret
+      - key: Jwt__Secret
         sync: false
