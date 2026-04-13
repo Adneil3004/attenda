@@ -2,6 +2,18 @@ import { supabase } from './supabase';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5263/api';
 
+/**
+ * Ensures that URLs pointing to the backend use HTTPS in production environments
+ * to avoid Mixed Content errors.
+ */
+export const ensureHttps = (url) => {
+  if (!url) return url;
+  if (url.includes('onrender.com') && url.startsWith('http://')) {
+    return url.replace('http://', 'https://');
+  }
+  return url;
+};
+
 export const apiClient = {
   async get(endpoint) {
     const { data: { session } } = await supabase.auth.getSession();

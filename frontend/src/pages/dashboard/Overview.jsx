@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import StatCard from '../../components/dashboard/StatCard';
-import { apiClient } from '../../lib/api';
+import { apiClient, ensureHttps } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -133,7 +133,7 @@ const Overview = () => {
           
           <div className="w-full md:w-2/5 relative h-64 md:h-auto bg-[#f1f5f9]" style={isDarkMode ? { background: 'transparent' } : {}}>
             <img 
-              src={activeEvent?.imageUrl || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop'} 
+              src={ensureHttps(activeEvent?.imageUrl) || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop'} 
               alt="Event Header" 
               className="w-full h-full object-cover transition-transform duration-[20s] hover:scale-110" 
             />
