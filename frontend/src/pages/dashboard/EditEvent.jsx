@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { apiClient } from '../../lib/api';
+import { apiClient, ensureHttps } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
 import ConfirmModal from '../../components/ConfirmModal';
 
@@ -429,7 +429,7 @@ const EditEvent = () => {
             <div className="flex justify-center p-2">
               {formData.imageUrl ? (
                 <div className="relative w-full aspect-[16/10] rounded-[2rem] overflow-hidden border-[10px] border-white dark:border-gray-800 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] group">
-                  <img src={formData.imageUrl} alt="Event Preview" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                  <img src={ensureHttps(formData.imageUrl)} alt="Event Preview" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60"></div>
                   <div className="absolute bottom-4 left-6 right-6">
                     <p className="text-[8px] font-black text-white/50 uppercase tracking-[0.2em] mb-1">Preview</p>
