@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: attenda-backend
+    env: docker
+    plan: free
+    # Carpeta donde vive el Backend
+    rootDir: backend
+    # El Dockerfile está en la raíz de la carpeta 'backend'
+    dockerfile: Dockerfile
+    # Solo permitimos que se compile sobre la rama dev o Master
+    branch: dev
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__DefaultConnection
+        sync: false # Lo llenarás en el panel de Render por seguridad
+      - key: Supabase__Url
+        sync: false
+      - key: Supabase__AnonKey
+        sync: false
+      - key: Jwt__Secret
+        sync: false
