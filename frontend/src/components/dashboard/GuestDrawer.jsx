@@ -1,42 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-
-const API_BASE_URL = 'http://127.0.0.1:5263/api';
+import { apiClient } from '../../lib/api';
 
 const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
-  const { session } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Form state
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [status, setStatus] = useState('Pending');
   const [groupId, setGroupId] = useState('');
+  const [groupName, setGroupName] = useState(''); // New state for custom/suggested group names
   const [diet, setDiet] = useState('');
-  const [plusOne, setPlusOne] = useState(false);
   const [notes, setNotes] = useState('');
+
+  const socialGroups = ['Familia', 'Padrinos', 'Amigos', 'Compañeros de trabajo', 'Otros'];
+  const corporateGroups = ['Directivos', 'Gerentes', 'Empleados', 'Proveedores', 'Clientes', 'Otros'];
+  
+  const suggestedGroups = activeEvent?.isBusiness ? corporateGroups : socialGroups;
 
   // Hydrate form when guest changes
   useEffect(() => {
     if (guest) {
       setFirstName(guest.firstName || '');
       setLastName(guest.lastName || '');
-      setEmail(guest.email || '');
+      setPhoneNumber(guest.phoneNumber || '');
       setStatus(guest.rsvpStatus || 'Pending');
       setGroupId(guest.guestGroupId || '');
+      setGroupName(guest.groupName || '');
       setDiet(guest.dietaryRestrictions ? guest.dietaryRestrictions.join(', ') : '');
-      setPlusOne(guest.plusOne || false);
       setNotes(guest.notes || '');
     } else {
       setFirstName('');
       setLastName('');
-      setEmail('');
+      setPhoneNumber('');
       setStatus('Pending');
       setGroupId('');
+      setGroupName('');
       setDiet('');
-      setPlusOne(false);
       setNotes('');
     }
     setErrorMsg('');
@@ -56,33 +58,19 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
       eventId: activeEvent.id,
       firstName: firstName,
       lastName: lastName || '',
-      email: email || '',
+      phoneNumber: phoneNumber || '',
       rsvpStatus: status,
       guestGroupId: groupId || null,
+      groupName: groupId ? null : (groupName || null), // Send groupName only if no specific groupId is selected
       dietaryRestrictions: diet ? diet.split(',').map(s => s.trim()).filter(s => s) : [],
-      plusOne: plusOne,
       notes: notes || ''
     };
 
     try {
-      const url = guest 
-        ? `${API_BASE_URL}/Guests/${guest.id}`
-        : `${API_BASE_URL}/Guests`;
-      
-      const method = guest ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify(guestData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Error ${response.status}: Failed to save guest.`);
+      if (guest) {
+        await apiClient.put(`/Guests/${guest.id}`, guestData);
+      } else {
+        await apiClient.post('/Guests', guestData);
       }
 
       onClose(); // Will trigger fetch on parent
@@ -90,6 +78,18 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
       setErrorMsg(err.message || 'Failed to save guest data.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGroupSelect = (val) => {
+    // If it matches an existing group ID
+    const existingGroup = groups?.find(g => g.id === val);
+    if (existingGroup) {
+      setGroupId(val);
+      setGroupName(existingGroup.name);
+    } else {
+      setGroupId('');
+      setGroupName(val);
     }
   };
 
@@ -107,7 +107,7 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
       >
         <div className="flex items-center justify-between px-8 py-6">
           <h2 className="text-xl font-bold text-[var(--color-primary)]">
-            {guest ? 'Edit Guest' : 'Add New Guest'}
+            {guest ? 'Editar Invitado' : 'Nuevo Invitado'}
           </h2>
           <button 
             type="button"
@@ -132,98 +132,95 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col relative">
-              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">First Name *</label>
+              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Nombre *</label>
               <input 
                 type="text" 
                 required
                 value={firstName}
                 onChange={e => setFirstName(e.target.value)}
                 className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm"
-                placeholder="Jane"
+                placeholder="Nombre"
               />
             </div>
             <div className="flex flex-col relative">
-              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Last Name</label>
+              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Apellido</label>
               <input 
                 type="text" 
                 value={lastName}
                 onChange={e => setLastName(e.target.value)}
                 className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm"
-                placeholder="Doe"
+                placeholder="Apellido"
               />
             </div>
           </div>
 
           <div className="flex flex-col relative">
-            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Email Address</label>
+            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Número de Teléfono</label>
             <input 
-              type="email" 
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              type="tel" 
+              value={phoneNumber}
+              onChange={e => setPhoneNumber(e.target.value)}
               className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm"
-              placeholder="jane@example.com"
+              placeholder="+54 9 11 ..."
             />
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col relative">
-              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">RSVP Status</label>
+              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Estado RSVP</label>
               <select 
                 value={status}
                 onChange={e => setStatus(e.target.value)}
                 className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm appearance-none"
               >
-                <option value="Confirmed">Confirmed</option>
-                <option value="Pending">Pending</option>
-                <option value="Declined">Declined</option>
+                <option value="Confirmed">Confirmado</option>
+                <option value="Pending">Pendiente</option>
+                <option value="Declined">Declinado</option>
               </select>
             </div>
             <div className="flex flex-col relative">
-              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Group</label>
+              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Grupo</label>
               <select 
-                value={groupId}
-                onChange={e => setGroupId(e.target.value)}
+                value={groupId || groupName}
+                onChange={e => handleGroupSelect(e.target.value)}
                 className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm appearance-none"
               >
-                <option value="">Unassigned</option>
-                {groups?.map(g => (
-                  <option key={g.id} value={g.id}>{g.name}</option>
-                ))}
+                <option value="">Sin asignar</option>
+                <optgroup label="Grupos Existentes">
+                  {groups?.map(g => (
+                    <option key={g.id} value={g.id}>{g.name}</option>
+                  ))}
+                </optgroup>
+                {suggestedGroups.length > 0 && (
+                  <optgroup label="Categorías Sugeridas">
+                    {suggestedGroups.map(sg => (
+                      <option key={sg} value={sg}>{sg}</option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </div>
           </div>
 
           <div className="flex flex-col relative">
-            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Dietary Restrictions</label>
+            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Restricciones Alimenticias</label>
             <input 
               type="text" 
               value={diet}
               onChange={e => setDiet(e.target.value)}
               className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm"
-              placeholder="e.g. Vegan, Gluten-free"
+              placeholder="Ej. Vegano, Sin Gluten"
             />
-          </div>
-
-          <div className="p-4 bg-[var(--color-secondary-fixed)]/30 rounded-lg border border-[var(--color-secondary-fixed)]/50">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={plusOne}
-                onChange={e => setPlusOne(e.target.checked)}
-                className="w-4 h-4 text-[var(--color-secondary)] rounded focus:ring-[var(--color-secondary)]" 
-              />
-              <span className="text-sm font-semibold text-[var(--color-on-secondary-fixed-variant)]">Allow Plus One</span>
-            </label>
           </div>
           
           <div className="flex flex-col relative">
-            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Private Notes</label>
+            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Notas Privadas</label>
             <textarea 
               rows="4"
               value={notes}
               onChange={e => setNotes(e.target.value)}
               className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm resize-none"
-              placeholder="Internal notes about this guest..."
+              placeholder="Notas internas sobre este invitado..."
             ></textarea>
           </div>
 
@@ -233,7 +230,7 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
               disabled={loading}
               className="w-full primary-gradient text-white px-8 py-3.5 rounded-md font-semibold text-sm hover:opacity-90 transition-opacity ambient-shadow disabled:opacity-50"
             >
-              {loading ? 'Saving...' : (guest ? 'Save Changes' : 'Add Guest')}
+              {loading ? 'Guardando...' : (guest ? 'Guardar Cambios' : 'Agregar Invitado')}
             </button>
           </div>
         </form>

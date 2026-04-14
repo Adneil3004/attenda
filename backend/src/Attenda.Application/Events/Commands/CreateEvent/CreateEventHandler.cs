@@ -55,7 +55,9 @@ public class CreateEventHandler : IRequestHandler<CreateEventCommand, Guid>
             request.ReligiousAddress,
             request.VenueAddress,
             request.CapacityTier,
-            request.GuestLimit);
+            request.GuestLimit,
+            null, // imageUrl is handled separately in Controller for now
+            request.IsBusiness);
 
         Console.WriteLine($"[CREATE EVENT] Name: {@event.Name}, Venue: {@event.VenueAddress}, Tier: {@event.CapacityTier}, Date: {@event.Date.StartDate}");
         _eventRepository.Add(@event);

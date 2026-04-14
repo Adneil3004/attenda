@@ -20,6 +20,7 @@ public class EventRepository : IEventRepository
             .Include(e => e.GuestGroups)
             .Include(e => e.TaskItems)
             .Include(e => e.CheckIns)
+            .Include(e => e.Tables)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
@@ -30,6 +31,7 @@ public class EventRepository : IEventRepository
             .Include(e => e.GuestGroups)
             .Include(e => e.TaskItems)
             .Include(e => e.CheckIns)
+            .Include(e => e.Tables)
             .Where(e => e.OrganizerId == organizerId)
             .OrderByDescending(e => e.Date.StartDate)
             .ToListAsync(cancellationToken);

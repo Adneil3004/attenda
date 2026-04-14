@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { apiClient } from '../../lib/api';
+import { apiClient, ensureHttps } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
 import ConfirmModal from '../../components/ConfirmModal';
 
@@ -26,23 +26,10 @@ const EditEvent = () => {
     religiousAddress: '',
     venueAddress: '',
     imageUrl: '',
+    isBusiness: false,
     status: 'Active'
   });
 
-  const eventTypeMapping = {
-    'Boda': 'Wedding',
-    'XV Años': 'XV Years',
-    'Graduación': 'Graduation',
-    'Corporativo': 'Corporate',
-    'Baby Shower': 'Baby Shower',
-    'Cumpleaños': 'Birthday',
-    'Bautizo': 'Baptism',
-    'Otro': 'Other'
-  };
-
-  const reverseMapping = Object.fromEntries(
-    Object.entries(eventTypeMapping).map(([key, value]) => [value, key])
-  );
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -54,26 +41,31 @@ const EditEvent = () => {
         ]);
 
         if (types) {
-          const mappedTypes = types.map(t => eventTypeMapping[t] || t);
-          setEventTypes(mappedTypes);
+          setEventTypes(types);
         }
 
         if (eventData) {
           localStorage.setItem('activeEventId', eventData.id);
-          const mappedType = eventTypeMapping[eventData.eventType] || eventData.eventType || '';
-          const isOther = mappedType !== '' && !Object.values(eventTypeMapping).includes(mappedType);
+          const eventType = eventData.eventType || '';
+          
+          // Define which types are considered "Social" vs "Empresa"
+          const socialTypes = ['Boda', 'XV Años', 'Bautizo', 'Cumpleaños', 'Baby Shower'];
+          const businessTypes = ['Graduación', 'Fin de año', 'Aniversario', 'Congreso', 'Lanzamiento de Producto', 'Inauguración', 'Workshop / Capacitación'];
+          
+          const isOther = eventType !== '' && !socialTypes.includes(eventType) && !businessTypes.includes(eventType);
           
           setFormData({
             name: eventData.name || '',
             description: eventData.description || '',
             startDate: eventData.eventDate ? new Date(eventData.eventDate).toISOString().slice(0, 16) : '',
-            endDate: '', 
-            eventType: isOther ? 'Other' : mappedType,
+            endDate: eventData.endDate ? new Date(eventData.endDate).toISOString().slice(0, 16) : '', 
+            eventType: isOther ? 'Otro' : eventType,
             celebrants: eventData.celebrants?.length > 0 ? eventData.celebrants : [''],
             organizerName: eventData.organizerName || '',
             religiousAddress: eventData.religiousAddress || '',
             venueAddress: eventData.locationName || '',
             imageUrl: eventData.imageUrl || '',
+            isBusiness: eventData.isBusiness,
             status: eventData.status || 'Active'
           });
 
@@ -95,7 +87,7 @@ const EditEvent = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'eventType') {
-      setIsOtherType(value === 'Other');
+      setIsOtherType(value === 'Otro');
       if (value !== 'Other') setCustomType('');
     }
     setFormData({ ...formData, [name]: value });
@@ -120,20 +112,25 @@ const EditEvent = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      const payloadType = isOtherType ? customType : (reverseMapping[formData.eventType] || formData.eventType);
+      const payloadType = isOtherType ? customType : formData.eventType;
       
+      // Ensure dates are sent with Z for UTC consistency
+      const formattedStartDate = formData.startDate ? (formData.startDate.includes('Z') ? formData.startDate : `${formData.startDate}:00Z`) : null;
+      const formattedEndDate = formData.endDate ? (formData.endDate.includes('Z') ? formData.endDate : `${formData.endDate}:00Z`) : null;
+
       await apiClient.put(`/events/${id}`, {
         id: id,
         name: formData.name,
         description: formData.description,
-        startDate: formData.startDate,
-        endDate: formData.endDate || null,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
         eventType: payloadType,
         celebrants: formData.celebrants.filter(c => c.trim() !== ''),
         organizerName: formData.organizerName,
         religiousAddress: formData.religiousAddress,
         venueAddress: formData.venueAddress,
-        imageUrl: formData.imageUrl
+        imageUrl: formData.imageUrl,
+        isBusiness: formData.isBusiness
       });
       navigate(`/dashboard?eventId=${id}`);
     } catch (err) {
@@ -327,7 +324,59 @@ const EditEvent = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-gray-400 ml-1">Event Category</label>
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-gray-400 ml-1">Categoría del Evento</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const socialTypes = ['Boda', 'XV Años', 'Bautizo', 'Cumpleaños', 'Baby Shower'];
+                    const isCurrentSocial = socialTypes.includes(formData.eventType);
+                    setFormData({ 
+                      ...formData, 
+                      isBusiness: false, 
+                      eventType: isCurrentSocial ? formData.eventType : 'Boda' 
+                    });
+                    if (!isCurrentSocial) setIsOtherType(false);
+                  }}
+                  className={`py-3 px-4 rounded-xl border-2 text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                    !formData.isBusiness
+                      ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)] dark:text-white'
+                      : 'border-slate-100 dark:border-gray-700 text-slate-400 dark:text-gray-500 hover:border-[var(--color-primary)]/30'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                  Social
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const businessTypes = ['Graduación', 'Fin de año', 'Aniversario', 'Congreso', 'Lanzamiento de Producto', 'Inauguración', 'Workshop / Capacitación'];
+                    const isCurrentBusiness = businessTypes.includes(formData.eventType);
+                    setFormData({ 
+                      ...formData, 
+                      isBusiness: true, 
+                      eventType: isCurrentBusiness ? formData.eventType : 'Graduación' 
+                    });
+                    if (!isCurrentBusiness) setIsOtherType(false);
+                  }}
+                  className={`py-3 px-4 rounded-xl border-2 text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                    formData.isBusiness
+                      ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)] dark:text-white'
+                      : 'border-slate-100 dark:border-gray-700 text-slate-400 dark:text-gray-500 hover:border-[var(--color-primary)]/30'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  Empresa
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-gray-400 ml-1">Event Type</label>
               <div className="space-y-3">
                 <div className="relative">
                   <select
@@ -338,9 +387,25 @@ const EditEvent = () => {
                     required
                   >
                     <option value="">Select Type...</option>
-                    {eventTypes.map(type => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
+                    {!formData.isBusiness ? (
+                      <>
+                        <option value="Boda">Boda</option>
+                        <option value="XV Años">XV Años</option>
+                        <option value="Bautizo">Bautizo</option>
+                        <option value="Cumpleaños">Cumpleaños</option>
+                        <option value="Baby Shower">Baby Shower</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Graduación">Graduación</option>
+                        <option value="Fin de año">Fin de año</option>
+                        <option value="Aniversario">Aniversario</option>
+                        <option value="Congreso">Congreso</option>
+                        <option value="Lanzamiento de Producto">Lanzamiento de Producto</option>
+                        <option value="Inauguración">Inauguración</option>
+                        <option value="Workshop / Capacitación">Workshop / Capacitación</option>
+                      </>
+                    )}
                     <option value="Other">Other (Specify)</option>
                   </select>
                   <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -429,7 +494,7 @@ const EditEvent = () => {
             <div className="flex justify-center p-2">
               {formData.imageUrl ? (
                 <div className="relative w-full aspect-[16/10] rounded-[2rem] overflow-hidden border-[10px] border-white dark:border-gray-800 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] group">
-                  <img src={formData.imageUrl} alt="Event Preview" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                  <img src={ensureHttps(formData.imageUrl)} alt="Event Preview" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60"></div>
                   <div className="absolute bottom-4 left-6 right-6">
                     <p className="text-[8px] font-black text-white/50 uppercase tracking-[0.2em] mb-1">Preview</p>

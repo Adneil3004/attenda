@@ -33,12 +33,13 @@ const CreateEvent = () => {
   // ── Step 1 form state ──
   const [eventName, setEventName] = useState('');
   const [festejados, setFestejados] = useState(['']);
-  const [eventType, setEventType] = useState('Wedding');
+  const [eventType, setEventType] = useState('Boda');
   const [organizerName, setOrganizerName] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [religiousAddress, setReligiousAddress] = useState('');
   const [venueAddress, setVenueAddress] = useState('');
   const [tier, setTier] = useState('Premium');
+  const [isBusiness, setIsBusiness] = useState(false);
   const [errors, setErrors] = useState({});
 
   // ── Step 2: Card input (raw — never sent to backend) ──
@@ -128,6 +129,7 @@ const CreateEvent = () => {
         venueAddress,
         capacityTier: tier.toUpperCase(),
         guestLimit: tier === 'Free' ? 50 : tier === 'Premium' ? 150 : 250,
+        isBusiness,
         // Only the token and safe metadata reach the server — never the PAN
         cardToken: tokenData?.token ?? null,
         cardLast4: tokenData?.last4 ?? null,
@@ -322,19 +324,75 @@ const CreateEvent = () => {
               {/* Column B — Logistics */}
               <div className="space-y-8">
                 <h3 className="text-lg font-headline font-semibold text-[var(--color-primary)] border-b border-[var(--color-outline-variant)]/10 pb-2">
-                  Logistics
+                  Configuración
                 </h3>
 
-                <div className="space-y-1.5">
-                  <FieldLabel>Event Type</FieldLabel>
+                <div className="space-y-3">
+                  <FieldLabel>Categoría del Evento</FieldLabel>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsBusiness(false);
+                        setEventType('Boda');
+                      }}
+                      className={`py-3 px-4 rounded-lg border-2 text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                        !isBusiness
+                          ? 'border-[var(--color-secondary)] bg-[var(--color-secondary)]/10 text-[var(--color-secondary)]'
+                          : 'border-[var(--color-outline-variant)]/30 text-[var(--color-on-surface-variant)] hover:border-[var(--color-secondary)]/50'
+                      }`}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                      Social
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsBusiness(true);
+                        setEventType('Graduación');
+                      }}
+                      className={`py-3 px-4 rounded-lg border-2 text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                        isBusiness
+                          ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
+                          : 'border-[var(--color-outline-variant)]/30 text-[var(--color-on-surface-variant)] hover:border-[var(--color-primary)]/50'
+                      }`}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      Empresa
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 pt-2">
+                  <FieldLabel>Event Type / Celebración</FieldLabel>
                   <select
                     value={eventType}
                     onChange={(e) => { setEventType(e.target.value); if (errors.eventType) setErrors({ ...errors, eventType: null }); }}
                     className={InputClass(errors.eventType)}
                   >
-                    {['Wedding', 'Quinceañera', 'Corporate', 'Birthday', 'Gala', 'Other'].map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
+                    {!isBusiness ? (
+                      <>
+                        <option value="Boda">Boda</option>
+                        <option value="XV Años">XV Años</option>
+                        <option value="Bautizo">Bautizo</option>
+                        <option value="Cumpleaños">Cumpleaños</option>
+                        <option value="Baby Shower">Baby Shower</option>
+                        <option value="Otro">Otro</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Graduación">Graduación</option>
+                        <option value="Fin de año">Fin de año</option>
+                        <option value="Aniversario">Aniversario</option>
+                        <option value="Congreso">Congreso</option>
+                        <option value="Lanzamiento de Producto">Lanzamiento de Producto</option>
+                        <option value="Otro">Otro</option>
+                      </>
+                    )}
                   </select>
                   <InlineError msg={errors.eventType} />
                 </div>

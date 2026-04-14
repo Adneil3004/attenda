@@ -12,10 +12,17 @@ const TableCard = ({ table, guests, onRemoveGuest, onDeleteTable, onEditTable })
     data: { type: 'table', tableId: table.id }
   });
 
-  const currentGuests = guests.filter(g => table.guestIds.includes(g.id));
+  // Backend returns 'guests' as array of objects, but we need guest IDs for some logic
+  // The guests array from backend: [{ id, firstName, lastName, rsvpStatus }, ...]
+  const currentGuests = table.guests || [];
+  const guestIds = currentGuests.map(g => g.id);
   const fillPercentage = (currentGuests.length / table.capacity) * 100;
   const isFull = currentGuests.length >= table.capacity;
-  const isVIP = table.name.toLowerCase().includes('founders') || table.name.toLowerCase().includes('vip');
+  
+  // VIP detection: either by name or by priority field
+  const isVIP = table.name.toLowerCase().includes('founders') || 
+                table.name.toLowerCase().includes('vip') || 
+                table.priority === 'VIP';
   const isDark = isVIP;
 
   const getProgressColor = () => {

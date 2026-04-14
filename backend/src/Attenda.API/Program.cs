@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Logging;
 using System.Text;
 using Attenda.Application;
@@ -135,7 +136,17 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Configure Forwarded Headers to handle HTTPS behind proxy (Render)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment())
 {
@@ -159,7 +170,7 @@ app.MapGet("/api/debug/guests", async (Attenda.Infrastructure.Persistence.AppDbC
                     FirstName = g.FirstName ?? "Anonymous",
                     LastName = g.LastName ?? "",
                     RsvpStatus = g.RsvpStatus.ToString(),
-                    g.PlusOne,
+                    PhoneNumber = g.PhoneNumber != null ? g.PhoneNumber.Value : "",
                     g.Notes
                 })
         );

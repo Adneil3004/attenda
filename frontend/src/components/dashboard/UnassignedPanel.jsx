@@ -2,7 +2,7 @@ import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import GuestChip from './GuestChip';
 
-const UnassignedPanel = ({ guests, onAutoFill }) => {
+const UnassignedPanel = ({ guests }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: 'unassigned',
     data: { type: 'unassigned' }
@@ -10,20 +10,20 @@ const UnassignedPanel = ({ guests, onAutoFill }) => {
 
   return (
     <div className={`
-      h-full flex flex-col bg-[var(--color-card-bg)] rounded-2xl ambient-shadow border border-[var(--color-card-border)]
-      ${isOver ? 'ring-2 ring-[var(--color-primary)] ring-offset-2' : ''}
+      h-full flex flex-col bg-white dark:bg-[#1a1b1e] rounded-[1.5rem] shadow-sm border border-gray-200 dark:border-white/10 overflow-hidden
+      ${isOver ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}
     `}>
       {/* Header */}
-      <div className="p-4 border-b border-[var(--color-card-border)]">
+      <div className="px-5 py-4 border-b border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-lg">📋</span>
-            <h2 className="text-base font-bold text-[var(--color-primary)]">
-              Unassigned Guests
+            <span className="text-xl">📋</span>
+            <h2 className="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-tight">
+              Guest List
             </h2>
           </div>
-          <span className="px-2.5 py-1 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-full text-xs font-semibold">
-            {guests.length} remaining
+          <span className="px-2 py-0.5 bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-400 rounded-full text-[10px] font-black uppercase tracking-tight">
+            {guests.length} Items
           </span>
         </div>
       </div>
@@ -60,20 +60,6 @@ const UnassignedPanel = ({ guests, onAutoFill }) => {
         )}
       </div>
 
-      {/* Auto-Fill Button */}
-      {guests.length > 0 && (
-        <div className="p-4 border-t border-[var(--color-card-border)]">
-          <button
-            onClick={onAutoFill}
-            className="w-full py-3 px-4 bg-[#030712] text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all shadow-lg shadow-black/10"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            Auto-Fill Remaining
-          </button>
-        </div>
-      )}
     </div>
   );
 };

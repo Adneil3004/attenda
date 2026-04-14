@@ -67,7 +67,7 @@ public class GuestsController : ControllerBase
         var command = new ImportGuestsCommand(request.EventId, request.Guests, userId);
         await _mediator.Send(command);
 
-        return Ok();
+        return NoContent();
     }
 
     [HttpPost]
@@ -83,11 +83,11 @@ public class GuestsController : ControllerBase
             request.EventId,
             request.FirstName,
             request.LastName,
-            request.Email,
+            request.PhoneNumber,
             request.RsvpStatus,
             request.GuestGroupId,
+            request.GroupName,
             request.DietaryRestrictions,
-            request.PlusOne,
             request.Notes,
             userId);
 
@@ -110,17 +110,17 @@ public class GuestsController : ControllerBase
             guestId,
             request.FirstName,
             request.LastName,
-            request.Email,
+            request.PhoneNumber,
             request.RsvpStatus,
             request.GuestGroupId,
+            request.GroupName,
             request.DietaryRestrictions,
-            request.PlusOne,
             request.Notes,
             userId);
 
         await _mediator.Send(command);
 
-        return Ok();
+        return NoContent();
     }
 
     [HttpDelete("batch")]
@@ -160,19 +160,19 @@ public record CreateGuestRequest(
     Guid EventId,
     string FirstName,
     string LastName,
-    string Email,
+    string PhoneNumber,
     string RsvpStatus,
     Guid? GuestGroupId,
+    string? GroupName,
     List<string> DietaryRestrictions,
-    bool PlusOne,
     string? Notes);
 public record UpdateGuestRequest(
     Guid EventId,
     string FirstName,
     string LastName,
-    string Email,
+    string PhoneNumber,
     string RsvpStatus,
     Guid? GuestGroupId,
+    string? GroupName,
     List<string> DietaryRestrictions,
-    bool PlusOne,
     string? Notes);

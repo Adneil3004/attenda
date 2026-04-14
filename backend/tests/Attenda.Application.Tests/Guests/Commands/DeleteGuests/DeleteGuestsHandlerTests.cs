@@ -37,7 +37,7 @@ public class DeleteGuestsHandlerTests
 
         // Add dummy guests to the event internally if possible, or just mock the call to remove them
         // In our case, the Event object is real, but the repository is mocked.
-        @event.AddGuest("John", "Doe", EmailAddress.Create("john@example.com"));
+        @event.AddGuest("John", "Doe", PhoneNumber.Create("+1234567890"));
         
         var guestIds = new List<Guid> { guestId1, guestId2 };
         var command = new DeleteGuestsCommand(eventId, guestIds, organizerId);

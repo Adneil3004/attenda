@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import StatCard from '../../components/dashboard/StatCard';
-import { apiClient } from '../../lib/api';
+import { apiClient, ensureHttps } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 
 const Overview = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { eventId: urlEventId } = useParams();
   const { user } = useAuth();
   const { isDark } = useTheme();
   const isDarkMode = isDark;
@@ -19,11 +19,18 @@ const Overview = () => {
     confirmed: 0,
     pending: 0,
     declined: 0,
-    attendanceRate: 0
+    attendanceRate: 0,
+    totalTables: 0,
+    seatingCapacity: 0,
+    seatedGuests: 0,
+    fullTables: 0,
+    availableTables: 0
   });
   
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0 });
+  const [activities, setActivities] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,9 +38,8 @@ const Overview = () => {
       setLoading(true);
 
       try {
-        const urlId = searchParams.get('eventId');
         const storedId = localStorage.getItem('activeEventId');
-        const effectiveId = urlId || storedId;
+        const effectiveId = urlEventId || storedId;
 
         const endpoint = effectiveId ? `/events/${effectiveId}` : '/events/dashboard';
         const dashData = await apiClient.get(endpoint);
@@ -54,12 +60,17 @@ const Overview = () => {
           }
 
           setMetrics({
-            total: dashData.totalGuests,
-            attendance: dashData.totalCheckedIn,
-            confirmed: dashData.confirmedCount,
-            declined: dashData.declinedCount,
-            pending: dashData.pendingCount,
-            attendanceRate: dashData.totalGuests > 0 ? (dashData.totalCheckedIn / dashData.totalGuests) * 100 : 0,
+            total: dashData.totalGuests ?? 0,
+            attendance: dashData.totalCheckedIn ?? 0,
+            confirmed: dashData.confirmedCount ?? 0,
+            declined: dashData.declinedCount ?? 0,
+            pending: dashData.pendingCount ?? 0,
+            attendanceRate: dashData.totalGuests > 0 ? ((dashData.totalCheckedIn ?? 0) / dashData.totalGuests) * 100 : 0,
+            totalTables: dashData.totalTables ?? 0,
+            seatingCapacity: dashData.totalSeatingCapacity ?? 0,
+            seatedGuests: dashData.seatedGuestsCount ?? 0,
+            fullTables: dashData.fullTablesCount ?? 0,
+            availableTables: dashData.availableTablesCount ?? 0
           });
 
           const eventDate = new Date(dashData.eventDate);
@@ -73,17 +84,37 @@ const Overview = () => {
           } else {
             setCountdown({ days: 0, hours: 0 });
           }
+
+          // Fetch recent guests for the event and convert to activities
+          if (dashData.id) {
+            try {
+              const guestsData = await apiClient.get(`/Guests/event/${dashData.id}`);
+              // Convert guests to activity format
+              const guestActivities = (guestsData || []).slice(0, 10).map((guest, index) => ({
+                id: guest?.id || `guest-${index}`,
+                type: 'guest',
+                title: `${String(guest?.firstName || 'Invitado')} ${String(guest?.lastName || '')}`,
+                status: guest?.rsvpStatus || 'Unknown',
+                time: index * 5 // Just for display, we'll use relative time
+              }));
+              setActivities(guestActivities);
+            } catch (guestErr) {
+              console.error('Error fetching guests:', guestErr);
+            }
+          }
         }
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
+        setError(err.message || 'Failed to load dashboard');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [user, searchParams]);
+  }, [user, urlEventId]);
 
+  // Handle loading state
   if (loading) {
     return (
       <div className="flex-1 w-full h-[calc(100vh-8rem)] flex items-center justify-center">
@@ -91,6 +122,21 @@ const Overview = () => {
           <div className="w-12 h-12 bg-[var(--color-surface-container-high)] rounded-full mb-4"></div>
           <div className="h-4 w-32 bg-[var(--color-surface-container-high)] rounded"></div>
         </div>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-10">
+        <p className="text-red-500 font-medium mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-gray-100 rounded-lg font-medium"
+        >
+          Reintentar
+        </button>
       </div>
     );
   }
@@ -133,7 +179,7 @@ const Overview = () => {
           
           <div className="w-full md:w-2/5 relative h-64 md:h-auto bg-[#f1f5f9]" style={isDarkMode ? { background: 'transparent' } : {}}>
             <img 
-              src={activeEvent?.imageUrl || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop'} 
+              src={ensureHttps(activeEvent?.imageUrl) || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop'} 
               alt="Event Header" 
               className="w-full h-full object-cover transition-transform duration-[20s] hover:scale-110" 
             />
@@ -245,7 +291,7 @@ const Overview = () => {
       </div>
 
       {/* ─── Metric Cards ─── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard 
           label="Sincronizados" 
           value={metrics.total.toString()} 
@@ -267,15 +313,51 @@ const Overview = () => {
           color="#f59e0b" 
         />
         <StatCard 
-          label="Eficiencia" 
-          value={`${Math.round(metrics.attendanceRate)}%`} 
-          icon="pulse" 
-          color="#7c3aed"
-          trend="Real-time" 
+          label="Declinados" 
+          value={metrics.declined.toString()} 
+          icon="cancel" 
+          color="#ef4444"
+          trend={metrics.total > 0 ? `${Math.round((metrics.declined/metrics.total)*100)}%` : '0%'} 
         />
       </div>
 
-      {/* ─── Secondary Grid ─── */}
+      {/* ─── Tables Management Row ─── */}
+      <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
+        <span className="w-10 h-[1px] bg-slate-200"></span>
+        Logística de Mesas
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <StatCard 
+          label="Mesas Creadas" 
+          value={metrics.totalTables} 
+          icon="table" 
+          color="#3b82f6"
+          trend="Inventario" 
+        />
+        <StatCard 
+          label="Mesas Disponibles" 
+          value={metrics.availableTables} 
+          icon="check" 
+          color="#10b981"
+          trend="Con lugar" 
+        />
+        <StatCard 
+          label="Mesas Llenas" 
+          value={metrics.fullTables} 
+          icon="clock" 
+          color="#f59e0b"
+          trend="Al 100%" 
+        />
+        <StatCard 
+          label="Ocupación" 
+          value={`${metrics.seatedGuests}/${metrics.seatingCapacity}`} 
+          icon="guests" 
+          color="#7c3aed"
+          trend={metrics.seatingCapacity > 0 ? `${Math.round((metrics.seatedGuests/metrics.seatingCapacity)*100)}%` : '0%'} 
+        />
+      </div>
+
+      {/* ─── Activity Feed ─── */}
       <div className="grid grid-cols-12 gap-6">
         {/* Concierge Support */}
         <div className="col-span-12 lg:col-span-4 bg-[#21263c] rounded-[2.5rem] p-12 flex flex-col justify-between relative overflow-hidden group min-h-[420px] border border-white/5">
@@ -298,33 +380,46 @@ const Overview = () => {
         </div>
 
         {/* Activity Feed */}
-        <div className="col-span-12 lg:col-span-8 bg-white border border-slate-100 rounded-[2.5rem] p-12 ambient-shadow">
-          <div className="flex justify-between items-center mb-10">
+        <div className="col-span-12 lg:col-span-8 bg-white border border-slate-100 rounded-[2rem] p-6 ambient-shadow">
+          <div className="flex justify-between items-center mb-4">
             <div>
-              <h3 className="text-2xl font-headline font-black text-[var(--color-primary)] uppercase tracking-tight">Registro de Actividad</h3>
-              <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-1">Monitoreo de Sincronización</p>
+              <h3 className="text-xl font-headline font-black text-[var(--color-primary)] uppercase tracking-tight">Registro de Actividad</h3>
+              <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-0.5">Monitoreo en vivo</p>
             </div>
-            <div className="flex items-center gap-3 px-4 py-2 bg-green-50 rounded-full border border-green-100">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-100">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              <span className="text-[10px] font-black text-green-600 uppercase tracking-widest leading-none">Canal Live</span>
+              <span className="text-[9px] font-black text-green-600 uppercase tracking-widest leading-none">Live</span>
             </div>
           </div>
           
-          <div className="space-y-6">
-             {[1, 2, 3].map((i) => (
-               <div key={i} className="group flex items-center gap-6 p-6 rounded-[1.5rem] hover:bg-slate-50 transition-all cursor-pointer border border-transparent hover:border-slate-100">
-                 <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-[var(--color-primary)] group-hover:bg-white group-hover:shadow-md transition-all">
-                   {i}
-                 </div>
-                 <div className="flex-1">
-                   <p className="text-sm font-black text-slate-700">Protocolo de Asistencia #{i*128} Confirmado</p>
-                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 opacity-60">Hace {i*8} minutos · Nodo Sincronizado</p>
-                 </div>
-                 <div className="text-green-500 opacity-20 group-hover:opacity-100 transition-opacity">
-                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                 </div>
-               </div>
-             ))}
+          <div className="space-y-2">
+            {Array.isArray(activities) && activities.length > 0 ? (
+              activities.map((activity, index) => (
+                <div key={activity?.id || `activity-${index}`} className="group flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all cursor-pointer border border-transparent hover:border-slate-100">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-sm text-[var(--color-primary)] group-hover:bg-white group-hover:shadow-md transition-all">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-base font-bold text-slate-700">
+                      {activity?.title || 'Actividad'}
+                    </p>
+                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                      {activity?.status || 'Sincronizado'}
+                    </p>
+                  </div>
+                  <div className={`opacity-40 group-hover:opacity-100 transition-opacity ${
+                    String(activity?.status) === 'Confirmed' ? 'text-green-500' : 
+                    String(activity?.status) === 'Pending' ? 'text-amber-500' : 'text-gray-400'
+                  }`}>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-6 text-slate-400">
+                <p className="text-sm font-medium">No hay actividad registrada</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

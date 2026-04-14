@@ -30,7 +30,8 @@ public class GetUserEventsQueryHandler : IRequestHandler<GetUserEventsQuery, Lis
                 e.Guests.Count,
                 e.Status.ToString(),
                 e.CapacityTier,
-                e.ImageUrl))
+                e.ImageUrl,
+                e.IsBusiness))
             .ToList();
     }
 }

@@ -6,10 +6,10 @@ public record CreateGuestCommand(
     Guid EventId,
     string FirstName,
     string LastName,
-    string Email,
+    string PhoneNumber,
     string RsvpStatus,
     Guid? GuestGroupId,
+    string? GroupName,
     List<string> DietaryRestrictions,
-    bool PlusOne,
     string? Notes,
     Guid UserId) : IRequest<Guid>;

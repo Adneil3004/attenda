@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { tasksApi } from '../../lib/tasks';
 
-const TaskDrawer = ({ isOpen, onClose, task, onUpdate, onDelete }) => {
+const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
@@ -34,7 +34,8 @@ const TaskDrawer = ({ isOpen, onClose, task, onUpdate, onDelete }) => {
         title: formData.title,
         description: formData.description,
         priority: formData.priority,
-        dueDate: formData.dueDate || null
+        dueDate: formData.dueDate || null,
+        eventId
       });
       onUpdate(updated);
     } catch (error) {
@@ -52,7 +53,7 @@ const TaskDrawer = ({ isOpen, onClose, task, onUpdate, onDelete }) => {
 
     setIsDeleting(true);
     try {
-      await tasksApi.delete(task.id);
+      await tasksApi.delete(task.id, eventId);
       onDelete(task.id);
     } catch (error) {
       console.error('Failed to delete task:', error);
@@ -65,7 +66,7 @@ const TaskDrawer = ({ isOpen, onClose, task, onUpdate, onDelete }) => {
     if (!task?.id) return;
     
     try {
-      const updated = await tasksApi.updateStatus(task.id, newStatus);
+      const updated = await tasksApi.updateStatus(task.id, newStatus, eventId);
       onUpdate(updated);
     } catch (error) {
       console.error('Failed to update status:', error);
@@ -78,22 +79,22 @@ const TaskDrawer = ({ isOpen, onClose, task, onUpdate, onDelete }) => {
   return (
     <>
       <div 
-        className="fixed inset-0 bg-white/30 backdrop-blur-md z-40 animate-in fade-in duration-300"
+        className="fixed inset-0 bg-[var(--color-primary)]/10 dark:bg-black/40 backdrop-blur-sm z-40 animate-in fade-in duration-300"
         onClick={onClose}
       />
       
-      <div className="fixed top-0 right-0 h-full w-[440px] bg-white z-50 shadow-2xl border-l border-[var(--color-outline-variant)]/20 animate-in slide-in-from-right duration-300 flex flex-col">
+      <div className="fixed top-0 right-0 h-full w-[440px] bg-[var(--color-surface-container-lowest)] z-50 shadow-2xl border-l border-[var(--color-outline-variant)]/20 animate-in slide-in-from-right duration-300 flex flex-col">
         
         <div className="flex items-center justify-between p-6 border-b border-[var(--color-outline-variant)]/10">
           <div className="flex gap-2">
             <span className="px-2.5 py-1 rounded bg-[var(--color-surface-container-low)] text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-widest">
               Task
             </span>
-            <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest ${
-              task?.priority === 'Urgent' ? 'bg-red-50 text-red-600 border border-red-200 animate-pulse' : 
-              task?.priority === 'High' ? 'bg-orange-50 text-orange-600 border border-orange-200' :
-              task?.priority === 'Medium' ? 'bg-blue-50 text-blue-600 border border-blue-200' :
-              'bg-slate-50 text-slate-500 border border-slate-200'
+            <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border ${
+              task?.priority === 'Urgent' ? 'bg-red-500/10 text-red-500 border-red-500/20 animate-pulse' : 
+              task?.priority === 'High' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
+              task?.priority === 'Medium' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+              'bg-[var(--color-surface-container-low)] text-[var(--color-text-muted)] border-[var(--color-outline-variant)]/20'
             }`}>
               {task?.priority || 'Medium'}
             </span>
@@ -128,7 +129,7 @@ const TaskDrawer = ({ isOpen, onClose, task, onUpdate, onDelete }) => {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-[var(--color-outline-variant)]/20 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface-container-lowest)] border border-[var(--color-outline-variant)]/20 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all text-[var(--color-primary)]"
                 />
               </div>
               <div>
@@ -136,7 +137,7 @@ const TaskDrawer = ({ isOpen, onClose, task, onUpdate, onDelete }) => {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-[var(--color-outline-variant)]/20 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface-container-lowest)] border border-[var(--color-outline-variant)]/20 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all resize-none text-[var(--color-on-surface-variant)]"
                   rows={4}
                 />
               </div>
@@ -146,7 +147,7 @@ const TaskDrawer = ({ isOpen, onClose, task, onUpdate, onDelete }) => {
                   <select
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-[var(--color-outline-variant)]/20 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all font-bold text-xs"
+                    className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface-container-lowest)] border border-[var(--color-outline-variant)]/20 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all font-bold text-xs text-[var(--color-primary)]"
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -167,7 +168,7 @@ const TaskDrawer = ({ isOpen, onClose, task, onUpdate, onDelete }) => {
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest border border-[var(--color-outline-variant)]/20 hover:bg-gray-50 transition-all"
+                  className="flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest border border-[var(--color-outline-variant)]/20 hover:bg-[var(--color-surface-container-low)] transition-all text-[var(--color-on-surface-variant)]"
                 >
                   Cancel
                 </button>
@@ -191,7 +192,7 @@ const TaskDrawer = ({ isOpen, onClose, task, onUpdate, onDelete }) => {
                     <select
                       value={task?.status || 'To Do'}
                       onChange={(e) => handleStatusChange(e.target.value)}
-                      className="px-3 py-2 rounded-lg border border-[var(--color-outline-variant)]/20 text-xs font-bold uppercase tracking-widest bg-white"
+                      className="px-3 py-2 rounded-lg border border-[var(--color-outline-variant)]/20 text-xs font-bold uppercase tracking-widest bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)]"
                     >
                       <option value="To Do">To Do</option>
                       <option value="In Progress">In Progress</option>

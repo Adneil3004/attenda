@@ -59,7 +59,8 @@ public class GetEventOverviewHandler : IRequestHandler<GetEventOverviewQuery, Ev
             PendingGuests = pendingGuests,
             DeclinedGuests = declinedGuests,
             ProgressPercentage = CalculateProgressPercentage(@event.CreatedAt, @event.Date.StartDate),
-            ImageUrl = @event.ImageUrl
+            ImageUrl = @event.ImageUrl,
+            IsBusiness = @event.IsBusiness
         };
 
     }

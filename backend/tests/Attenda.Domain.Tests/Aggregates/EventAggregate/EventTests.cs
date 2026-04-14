@@ -17,7 +17,7 @@ public class EventTests
             EventDate.Create(DateTime.UtcNow.AddDays(1)),
             organizerId);
 
-        var guest = @event.AddGuest("John", "Doe", EmailAddress.Create("john@example.com"));
+        var guest = @event.AddGuest("John", "Doe", PhoneNumber.Create("+1234567890"));
         @event.RecordCheckIn(guest.Id, "Scanner1");
 
         Assert.Single(@event.Guests);
@@ -42,8 +42,8 @@ public class EventTests
             EventDate.Create(DateTime.UtcNow.AddDays(1)),
             organizerId);
 
-        var guest1 = @event.AddGuest("John", "Doe", EmailAddress.Create("john@example.com"));
-        var guest2 = @event.AddGuest("Jane", "Doe", EmailAddress.Create("jane@example.com"));
+        var guest1 = @event.AddGuest("John", "Doe", PhoneNumber.Create("+1234567890"));
+        var guest2 = @event.AddGuest("Jane", "Doe", PhoneNumber.Create("+0987654321"));
         
         @event.RecordCheckIn(guest1.Id, "Scanner1");
         @event.RecordCheckIn(guest2.Id, "Scanner1");

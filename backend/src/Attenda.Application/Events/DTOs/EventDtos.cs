@@ -8,11 +8,13 @@ public record EventDto(
     DateTime? EndDate,
     string Status,
     Guid OrganizerId,
-    string? ImageUrl);
+    string? ImageUrl,
+    bool IsBusiness);
 
 public record EventSummaryDto(
     Guid Id,
     string Name,
     DateTime StartDate,
     int GuestCount,
-    int ConfirmedCount);
+    int ConfirmedCount,
+    bool IsBusiness);

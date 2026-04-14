@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiClient } from '../../lib/api';
+import { apiClient, ensureHttps } from '../../lib/api';
 import ConfirmModal from '../../components/ConfirmModal';
 
 const MyEvents = () => {
@@ -25,7 +25,7 @@ const MyEvents = () => {
 
   const handleManage = (eventId) => {
     localStorage.setItem('activeEventId', eventId);
-    navigate(`/dashboard?eventId=${eventId}`);
+    navigate(`/dashboard/${eventId}`);
   };
 
   const handleEdit = (eventId) => {
@@ -124,7 +124,7 @@ const MyEvents = () => {
                 {/* Image/Status Overlay */}
                 <div className="relative h-56 overflow-hidden bg-slate-100 dark:bg-gray-900">
                   <img 
-                    src={event.imageUrl || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop'} 
+                    src={ensureHttps(event.imageUrl) || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop'} 
                     alt={event.name} 
                     className="w-full h-full object-cover transition-transform duration-[10s] group-hover:scale-110"
                   />

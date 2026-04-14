@@ -35,13 +35,28 @@ public class CreateGuestHandler : IRequestHandler<CreateGuestCommand, Guid>
             .Select(dr => DietaryRestriction.Create(dr))
             .ToList();
 
+        Guid? groupId = request.GuestGroupId;
+        if (groupId == null && !string.IsNullOrWhiteSpace(request.GroupName))
+        {
+            var group = @event.GuestGroups.FirstOrDefault(g => g.Name.Equals(request.GroupName, StringComparison.OrdinalIgnoreCase));
+            if (group == null)
+            {
+                @event.AddGuestGroup(request.GroupName);
+                // Save immediately so the new group gets an ID before creating the guest
+                _eventRepository.Update(@event);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                
+                group = @event.GuestGroups.First(g => g.Name.Equals(request.GroupName, StringComparison.OrdinalIgnoreCase));
+            }
+            groupId = group.Id;
+        }
+
         var guest = @event.AddGuest(
             request.FirstName,
             request.LastName,
-            EmailAddress.Create(request.Email),
-            request.GuestGroupId,
+            PhoneNumber.Create(request.PhoneNumber),
+            groupId,
             dietaryRestrictions,
-            request.PlusOne,
             request.Notes
         );
 
