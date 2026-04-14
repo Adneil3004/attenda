@@ -9,4 +9,5 @@ public record EventListDto(
     int GuestCount,
     string Status,
     string CapacityTier,
-    string? ImageUrl);
+    string? ImageUrl,
+    bool IsBusiness);

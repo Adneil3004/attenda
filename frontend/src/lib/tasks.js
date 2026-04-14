@@ -65,32 +65,24 @@ const getActiveEventId = () => {
 };
 
 export const tasksApi = {
-  // Get all tasks for the active event
-  async getAll() {
-    const eventId = getActiveEventId();
-    console.log('[tasksApi] Fetching tasks for eventId:', eventId);
-    
+  // Get all tasks for an event
+  async getAll(eventId) {
     if (!eventId) {
-      console.warn('[tasksApi] No active event ID found in localStorage');
+      console.warn('[tasksApi] No eventId provided to getAll');
       return [];
     }
     
+    console.log('[tasksApi] Fetching tasks for eventId:', eventId);
     const tasks = await apiClient.get(`/tasks?eventId=${eventId}`);
-    console.log('[tasksApi] Fetched tasks:', tasks?.length || 0);
     return tasks.map(toFrontendTask);
   },
 
   // Create a new task
-  async create({ title, description, priority, dueDate }) {
-    const eventId = getActiveEventId();
-    console.log('[tasksApi] Creating task for eventId:', eventId, { title, priority });
-
-    if (!eventId) {
-      throw new Error('No active event selected');
-    }
+  async create({ title, description, priority, dueDate, eventId }) {
+    if (!eventId) throw new Error('No eventId provided to create task');
 
     const formattedDueDate = dueDate ? new Date(`${dueDate}T00:00:00Z`).toISOString() : null;
-    const backendPriority = priority in PRIORITY_REVERSE ? PRIORITY_REVERSE[priority] : 1; // Default to 1 (Medium)
+    const backendPriority = priority in PRIORITY_REVERSE ? PRIORITY_REVERSE[priority] : 1; 
     
     const result = await apiClient.post('/tasks', {
       eventId,
@@ -100,13 +92,12 @@ export const tasksApi = {
       dueDate: formattedDueDate
     });
     
-    console.log('[tasksApi] Task created successfully:', result?.id);
     return toFrontendTask(result);
   },
 
-  // Update a task (edit details)
+  // Update a task
   async update(taskId, { title, description, priority, dueDate, eventId }) {
-    console.log('[tasksApi] Updating task:', { taskId, eventId, priority });
+    if (!eventId) throw new Error('No eventId provided to update task');
     
     const formattedDueDate = dueDate ? new Date(`${dueDate}T00:00:00Z`).toISOString() : null;
     const backendPriority = priority in PRIORITY_REVERSE ? PRIORITY_REVERSE[priority] : (parseInt(priority, 10) || 1);
@@ -122,22 +113,15 @@ export const tasksApi = {
   },
 
   // Delete a task
-  async delete(taskId) {
-    const eventId = getActiveEventId();
-    console.log('[tasksApi] Deleting task:', { taskId, eventId });
-    if (!eventId) {
-      throw new Error('No active event selected');
-    }
+  async delete(taskId, eventId) {
+    if (!eventId) throw new Error('No eventId provided to delete task');
 
     return await apiClient.delete(`/tasks/${taskId}`, { eventId, taskId });
   },
 
-  // Update task status (for drag & drop)
-  async updateStatus(taskId, newStatus) {
-    const eventId = getActiveEventId();
-    if (!eventId) {
-      throw new Error('No active event selected');
-    }
+  // Update task status
+  async updateStatus(taskId, newStatus, eventId) {
+    if (!eventId) throw new Error('No eventId provided to update task status');
 
     const backendStatus = STATUS_REVERSE[newStatus] || 'Pending';
     

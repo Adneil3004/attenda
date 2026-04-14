@@ -12,5 +12,6 @@ public class EventOverviewDto
     public int DeclinedGuests { get; set; }
     public int ProgressPercentage { get; set; }
     public string? ImageUrl { get; set; }
+    public bool IsBusiness { get; set; }
 }
 

@@ -32,7 +32,12 @@ export const apiClient = {
       throw new Error(error.message || `Error: ${response.status}`);
     }
 
-    return response.json();
+    // Handle empty responses
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return null;
+    }
+
+    return response.json().catch(() => null);
   },
 
   async post(endpoint, body) {
@@ -61,7 +66,12 @@ export const apiClient = {
         throw new Error(error.message || `Error: ${response.status}`);
     }
 
-    return response.json();
+    // Handle empty responses (204 No Content or content-length: 0)
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+        return null;
+    }
+
+    return response.json().catch(() => null);
   },
 
   async put(endpoint, body) {
@@ -82,7 +92,12 @@ export const apiClient = {
         throw new Error(error.message || `Error: ${response.status}`);
     }
 
-    return response.json();
+    // Handle empty responses
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+        return null;
+    }
+
+    return response.json().catch(() => null);
   },
 
   async patch(endpoint, body) {
@@ -103,7 +118,12 @@ export const apiClient = {
         throw new Error(error.message || `Error: ${response.status}`);
     }
 
-    return response.json();
+    // Handle empty responses
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+        return null;
+    }
+
+    return response.json().catch(() => null);
   },
 
   async delete(endpoint, body) {
@@ -124,7 +144,11 @@ export const apiClient = {
         throw new Error(error.message || `Error: ${response.status}`);
     }
 
-    if (response.status === 204) return null;
+    // Handle empty responses
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return null;
+    }
+
     return response.json().catch(() => null);
   },
 
@@ -144,8 +168,15 @@ export const apiClient = {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
-      throw new Error(error.message || `Error: ${response.status}`);
+      const errorText = await response.text();
+      let errorMessage = 'Upload failed';
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.message || errorMessage;
+      } catch {
+        errorMessage = errorText || `Error: ${response.status}`;
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json();

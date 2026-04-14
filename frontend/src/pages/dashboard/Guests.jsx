@@ -4,8 +4,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import GuestDrawer from '../../components/dashboard/GuestDrawer';
 import ConfirmationModal from '../../components/dashboard/ConfirmationModal';
 import { apiClient } from '../../lib/api';
+import { useParams } from 'react-router-dom';
 
 const Guests = () => {
+  const { eventId } = useParams();
   const { user, session } = useAuth();
   
   // States
@@ -38,35 +40,32 @@ const Guests = () => {
     loading: false
   });
 
+
+  const fetchEventDetails = useCallback(async () => {
+    if (!eventId) return;
+    try {
+      const eventData = await apiClient.get(`/events/${eventId}`);
+      setActiveEvent(eventData);
+    } catch (err) {
+      console.error('Error fetching event details:', err);
+    }
+  }, [eventId]);
+
   const fetchData = useCallback(async () => {
-    if (!user) return;
+    if (!user || !eventId) return;
     setLoading(true);
     setErrorMsg('');
 
     try {
-      // 1. Fetch user's event (keeping supabase for event itself for now as it's just one call, but we can migrate later)
-      const { data: eventsData, error: eventError } = await supabase
-        .from('events')
-        .select('*')
-        .eq('organizer_id', user.id)
-        .limit(1)
-        .single();
-        
-      if (eventError && eventError.code !== 'PGRST116') throw eventError;
-
-      if (!eventsData) {
-        setLoading(false);
-        return; // No events
-      }
-      
-      setActiveEvent(eventsData);
+      // 1. Ensure we have event details
+      await fetchEventDetails();
       
       // 2. Fetch Groups for this event from Backend
-      const groupsData = await apiClient.get(`/Groups/event/${eventsData.id}`);
+      const groupsData = await apiClient.get(`/Groups/event/${eventId}`);
       setGroups(groupsData || []);
 
       // 3. Fetch Guests for this event from Backend
-      const guestsData = await apiClient.get(`/Guests/event/${eventsData.id}`);
+      const guestsData = await apiClient.get(`/Guests/event/${eventId}`);
       setGuests(guestsData || []);
       
     } catch (err) {
@@ -75,7 +74,7 @@ const Guests = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, session]);
+  }, [user, session, eventId, fetchEventDetails]);
 
   useEffect(() => {
     fetchData();
@@ -208,8 +207,8 @@ const Guests = () => {
 
   // Download CSV Template - Resilient Method
   const handleDownloadTemplate = () => {
-    const headers = ['FirstName', 'LastName', 'Email', 'GroupName', 'DietaryRestrictions', 'PlusOne', 'Notes'];
-    const row = ['John', 'Doe', 'john@example.com', 'Family', 'Vegetarian;Gluten-Free', 'FALSE', 'Allergic to peanuts'];
+    const headers = ['FirstName', 'LastName', 'PhoneNumber', 'GroupName', 'DietaryRestrictions', 'Notes'];
+    const row = ['John', 'Doe', '+12345678900', 'Family', 'Vegetarian;Gluten-Free', 'Allergic to peanuts'];
     const csvString = headers.join(',') + "\n" + row.join(',');
     
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8' });
@@ -257,11 +256,10 @@ const Guests = () => {
           newGuests.push({
             firstName: cols[0] || '',
             lastName: cols[1] || '',
-            email: cols[2] || '',
+            phoneNumber: cols[2] || '',
             groupName: cols[3] || null,
             dietaryRestrictions: cols[4] ? cols[4].split(';').map(s => s.trim()).filter(s => s) : [],
-            plusOne: cols[5]?.toLowerCase() === 'true',
-            notes: cols[6] || null
+            notes: cols[5] || null
           });
         }
       }
@@ -430,92 +428,89 @@ const Guests = () => {
         )}
 
         {/* The No-Divider Table */}
-        <div className="bg-[var(--color-surface-container-lowest)] rounded-xl ambient-shadow overflow-hidden flex-1 flex flex-col border border-gray-100">
-          {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-[var(--color-surface-container-high)] border-b border-[var(--color-outline-variant)]/20 text-[11px] font-black uppercase tracking-widest text-[var(--color-primary)] items-center">
-            <div className="col-span-1 flex justify-center">
-              <input 
-                type="checkbox" 
-                checked={isAllSelected}
-                onChange={toggleSelectAll}
-                className="w-4 h-4 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] cursor-pointer"
-              />
-            </div>
-            <div className="col-span-3 md:col-span-2">Guest Name</div>
-            <div className="col-span-4 md:col-span-2">Status</div>
-            <div className="hidden md:block col-span-2">Group</div>
-            <div className="hidden lg:block col-span-2">Dietary</div>
-            <div className="hidden lg:block col-span-2 text-center">Plus One</div>
-            <div className="col-span-2 md:col-span-1 text-right pr-2">Actions</div>
-          </div>
-          
-          {/* Table Body */}
+        {/* The No-Divider Table Container */}
+        <div className="bg-[var(--color-surface-container-lowest)] rounded-xl ambient-shadow flex-1 flex flex-col border border-gray-100 overflow-hidden">
           <div className="flex-1 overflow-auto">
-            {loading ? (
-              <div className="p-8 text-center text-sm text-gray-500">Loading guests...</div>
-            ) : filteredGuests.length === 0 ? (
-              <div className="p-12 text-center text-sm text-gray-400 font-semibold bg-gray-50/50 h-full flex flex-col justify-center items-center">
-                <svg className="w-12 h-12 mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                No guests found. Get started by adding someone manually or importing a CSV.
-              </div>
-            ) : (
-              filteredGuests.map((guest, index) => (
-                <div 
-                  key={guest.id} 
-                  className={`grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors group cursor-pointer ${
-                    selectedGuestIds.has(guest.id) 
-                      ? 'bg-[var(--color-primary)]/[0.03] border-l-4 border-[var(--color-primary)]' 
-                      : index % 2 === 0 ? 'bg-[var(--color-surface-container-lowest)] border-l-4 border-transparent' : 'bg-[var(--color-surface-container-low)]/30 hover:bg-[var(--color-surface-container-low)] border-l-4 border-transparent'
-                  }`}
-                  onClick={() => openDrawer(guest)}
-                >
-                  <div className="col-span-1 flex justify-center" onClick={e => e.stopPropagation()}>
-                    <input 
-                      type="checkbox" 
-                      checked={selectedGuestIds.has(guest.id)}
-                      onChange={() => toggleSelectGuest(guest.id)}
-                      className="w-4 h-4 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] cursor-pointer"
-                    />
-                  </div>
-                  <div className="col-span-3 md:col-span-2">
-                    <p className="font-semibold text-[var(--color-primary)] text-sm">{guest.firstName} {guest.lastName}</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">{guest.email}</p>
-                  </div>
-                  <div className="col-span-4 md:col-span-2">{getStatusBadge(guest.rsvpStatus)}</div>
-                  <div className="hidden md:block col-span-2 text-sm text-[var(--color-on-surface-variant)]">{guest.groupName || '—'}</div>
-                  <div className="hidden lg:block col-span-2 text-sm text-[var(--color-on-surface-variant)] truncate">{guest.dietaryRestrictions?.join(', ') || '—'}</div>
-                  <div className="hidden lg:block col-span-2 text-center">
-                    {guest.plusOne ? (
-                      <span className="text-[var(--color-secondary)] font-bold text-xs uppercase tracking-widest">Yes</span>
-                    ) : (
-                      <span className="text-[var(--color-outline-variant)] font-bold text-xs uppercase tracking-widest">No</span>
-                    )}
-                  </div>
-                  <div className="col-span-2 md:col-span-1 text-right flex items-center justify-end gap-1 pr-1">
-                    <button 
-                      className="text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] p-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => { e.stopPropagation(); openDrawer(guest); }}
-                      title="Edit Guest"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </button>
-                    <button 
-                      className="text-red-300 hover:text-red-600 p-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => { e.stopPropagation(); handleDeleteSingle(guest); }}
-                      title="Delete Guest"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
+            <div className="min-w-[850px]">
+              {/* Table Header */}
+              <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-[var(--color-surface-container-high)] border-b border-[var(--color-outline-variant)]/20 text-[11px] font-black uppercase tracking-widest text-[var(--color-primary)] items-center sticky top-0 z-10">
+                <div className="col-span-1 flex justify-center">
+                  <input 
+                    type="checkbox" 
+                    checked={isAllSelected}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] cursor-pointer"
+                  />
                 </div>
-              ))
-            )}
+                <div className="col-span-6 md:col-span-4 lg:col-span-3">Guest Name</div>
+                <div className="col-span-2">Status</div>
+                <div className="hidden md:block col-span-2">Group</div>
+                <div className="hidden lg:block col-span-2">Dietary</div>
+                <div className="col-span-3 md:col-span-3 lg:col-span-2 text-center">Acciones</div>
+              </div>
+              
+              {/* Table Body Content */}
+              <div className="divide-y divide-gray-50">
+                {loading ? (
+                  <div className="p-8 text-center text-sm text-gray-500">Loading guests...</div>
+                ) : filteredGuests.length === 0 ? (
+                  <div className="p-12 text-center text-sm text-gray-400 font-semibold bg-gray-50/50 h-full flex flex-col justify-center items-center min-h-[300px]">
+                    <svg className="w-12 h-12 mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    No guests found. Get started by adding someone manually or importing a CSV.
+                  </div>
+                ) : (
+                  filteredGuests.map((guest, index) => (
+                    <div 
+                      key={guest.id} 
+                      className={`grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors group cursor-pointer ${
+                        selectedGuestIds.has(guest.id) 
+                          ? 'bg-[var(--color-primary)]/[0.03] border-l-4 border-[var(--color-primary)]' 
+                          : index % 2 === 0 ? 'bg-[var(--color-surface-container-lowest)] border-l-4 border-transparent' : 'bg-[var(--color-surface-container-low)]/30 hover:bg-[var(--color-surface-container-low)] border-l-4 border-transparent'
+                      }`}
+                      onClick={() => openDrawer(guest)}
+                    >
+                      <div className="col-span-1 flex justify-center" onClick={e => e.stopPropagation()}>
+                        <input 
+                          type="checkbox" 
+                          checked={selectedGuestIds.has(guest.id)}
+                          onChange={() => toggleSelectGuest(guest.id)}
+                          className="w-4 h-4 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] cursor-pointer"
+                        />
+                      </div>
+                      <div className="col-span-6 md:col-span-4 lg:col-span-3">
+                        <p className="font-semibold text-[var(--color-primary)] text-sm">{guest.firstName} {guest.lastName}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{guest.phoneNumber}</p>
+                      </div>
+                      <div className="col-span-2">{getStatusBadge(guest.rsvpStatus)}</div>
+                      <div className="hidden md:block col-span-2 text-sm text-[var(--color-on-surface-variant)]">{guest.groupName || '—'}</div>
+                      <div className="hidden lg:block col-span-2 text-sm text-[var(--color-on-surface-variant)] truncate">{guest.dietaryRestrictions?.join(', ') || '—'}</div>
+                      <div className="col-span-3 md:col-span-3 lg:col-span-2 flex items-center justify-center gap-2">
+                        <button 
+                          className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-[var(--color-primary)] hover:text-white transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                          onClick={(e) => { e.stopPropagation(); openDrawer(guest); }}
+                          title="Editar Invitado"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button 
+                          className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-50 text-red-300 hover:bg-red-500 hover:text-white transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                          onClick={(e) => { e.stopPropagation(); handleDeleteSingle(guest); }}
+                          title="Eliminar Invitado"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

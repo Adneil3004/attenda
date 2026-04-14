@@ -37,7 +37,8 @@ Unified response for the statistics dashboard:
   "confirmedGuests": 45,
   "pendingGuests": 90,
   "declinedGuests": 15,
-  "progressPercentage": 35
+  "progressPercentage": 35,
+  "efficiency": 95
 }
 ```
 

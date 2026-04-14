@@ -54,9 +54,23 @@ The application uses **Tailwind CSS v4** for styling:
 - **Micro-interactions**: Framer Motion is used for smooth modal entries and toolbars.
 - **Mobile-First**: Fully optimized for mobile devices through the `MobileBottomNav`.
 
-## Backend Integration
-- **Centralized API**: The frontend no longer uses direct Supabase SDK calls for business logic. It maps complex actions to MediatR commands in the .NET API via the `apiClient`.
-- **Bearer Authentication**: Authentication headers are automatically injected into backend requests using the Supabase `access_token`.
+## Theme Support & Dark Mode
+The dashboard supports a high-fidelity **Dark Mode** integrated directly via CSS variables.
+
+### 1. Style Tokens (`dashboard-theme.css`)
+Developers MUST use theme tokens for all surface, text, and border colors to ensure theme compatibility:
+- **Surfaces**: `var(--color-surface-container-lowest)` (panels), `var(--color-surface-container-low)` (hover/secondary).
+- **Text**: `var(--color-primary)` (primary text), `var(--color-secondary)` (supporting text).
+- **Overlays**: Use `bg-[var(--color-primary)]/10 dark:bg-black/40 backdrop-blur-sm` for modal/drawer backdrops.
+
+### 2. Priority & Status Badges
+To maintain a premium look in dark mode, avoid solid high-contrast backgrounds. Instead, use semi-transparent utility combinations:
+- **Red/High**: `bg-red-500/10 text-red-500`
+- **Orange/Mid**: `bg-orange-500/10 text-orange-500`
+- **Blue/Low**: `bg-blue-500/10 text-blue-500`
+
+### 3. Usage Pattern
+The `ThemeContext` adds the `.dark` class to the HTML root. Components should be styled using CSS variables that automatically swap values based on this class.
 
 ---
 *For details on the database and infrastructure services, see [ARCHITECTURE_AUTH.md](./ARCHITECTURE_AUTH.md).*

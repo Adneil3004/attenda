@@ -44,8 +44,7 @@ public class UpdateGuestHandler : IRequestHandler<UpdateGuestCommand, Unit>
         guest.UpdateDetails(
             request.FirstName,
             request.LastName,
-            EmailAddress.Create(request.Email),
-            request.PlusOne,
+            PhoneNumber.Create(request.PhoneNumber),
             request.Notes,
             dietaryRestrictions
         );
@@ -55,7 +54,19 @@ public class UpdateGuestHandler : IRequestHandler<UpdateGuestCommand, Unit>
             guest.UpdateRsvpStatus(status);
         }
 
-        guest.MoveToGroup(request.GuestGroupId);
+        Guid? groupId = request.GuestGroupId;
+        if (groupId == null && !string.IsNullOrWhiteSpace(request.GroupName))
+        {
+            var group = @event.GuestGroups.FirstOrDefault(g => g.Name.Equals(request.GroupName, StringComparison.OrdinalIgnoreCase));
+            if (group == null)
+            {
+                @event.AddGuestGroup(request.GroupName);
+                group = @event.GuestGroups.First(g => g.Name.Equals(request.GroupName, StringComparison.OrdinalIgnoreCase));
+            }
+            groupId = group.Id;
+        }
+
+        guest.MoveToGroup(groupId);
 
         _eventRepository.Update(@event);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

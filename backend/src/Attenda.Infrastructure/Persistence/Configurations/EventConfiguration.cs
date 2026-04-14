@@ -72,8 +72,16 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
             .HasForeignKey("event_id")
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasMany(e => e.Tables)
+            .WithOne()
+            .HasForeignKey("event_id")
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Access private collections
         var navigation = builder.Metadata.FindNavigation(nameof(Event.Guests));
         navigation?.SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        var tablesNav = builder.Metadata.FindNavigation(nameof(Event.Tables));
+        tablesNav?.SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

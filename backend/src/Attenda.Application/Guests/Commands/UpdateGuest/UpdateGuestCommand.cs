@@ -7,10 +7,10 @@ public record UpdateGuestCommand(
     Guid GuestId,
     string FirstName,
     string LastName,
-    string Email,
+    string PhoneNumber,
     string RsvpStatus,
     Guid? GuestGroupId,
+    string? GroupName,
     List<string> DietaryRestrictions,
-    bool PlusOne,
     string? Notes,
     Guid UserId) : IRequest<Unit>;
