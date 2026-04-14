@@ -19,9 +19,16 @@ public class EventDashboardDto
     public string? OrganizerName { get; set; }
     public string? ReligiousAddress { get; set; }
     public DateTime EventDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public bool IsBusiness { get; set; }
     public string LocationName { get; set; } = string.Empty;
     public string CapacityTier { get; set; } = string.Empty;
     public string? ImageUrl { get; set; }
+    public int TotalTables { get; set; }
+    public int TotalSeatingCapacity { get; set; }
+    public int SeatedGuestsCount { get; set; }
+    public int AvailableTablesCount { get; set; }
+    public int FullTablesCount { get; set; }
     public List<TaskItemDto> Tasks { get; set; } = new();
 }
 

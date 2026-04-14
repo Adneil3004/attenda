@@ -170,7 +170,7 @@ app.MapGet("/api/debug/guests", async (Attenda.Infrastructure.Persistence.AppDbC
                     FirstName = g.FirstName ?? "Anonymous",
                     LastName = g.LastName ?? "",
                     RsvpStatus = g.RsvpStatus.ToString(),
-                    g.PlusOne,
+                    PhoneNumber = g.PhoneNumber != null ? g.PhoneNumber.Value : "",
                     g.Notes
                 })
         );

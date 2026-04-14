@@ -29,6 +29,12 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+        // Supabase Client & Storage
+        var supabaseUrl = configuration["Supabase:Url"];
+        var supabaseKey = configuration["Supabase:Key"];
+        services.AddSingleton(provider => new Supabase.Client(supabaseUrl!, supabaseKey!));
+        services.AddScoped<IImageStorageService, SupabaseStorageService>();
+
         return services;
     }
 }

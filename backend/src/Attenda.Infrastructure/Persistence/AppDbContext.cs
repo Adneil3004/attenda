@@ -18,6 +18,7 @@ public class AppDbContext : DbContext, IUnitOfWork
     public DbSet<GuestGroup> GuestGroups => Set<GuestGroup>();
     public DbSet<CheckIn> CheckIns => Set<CheckIn>();
     public DbSet<TaskItem> TaskItems => Set<TaskItem>();
+    public DbSet<Table> Tables => Set<Table>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

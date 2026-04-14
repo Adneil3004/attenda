@@ -15,7 +15,8 @@ public record UpdateEventCommand(
     string? OrganizerName,
     string? ReligiousAddress,
     string? VenueAddress,
-    string? ImageUrl) : IRequest<bool>;
+    string? ImageUrl,
+    bool IsBusiness) : IRequest<bool>;
 
 public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, bool>
 {
@@ -44,7 +45,8 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand, boo
             request.OrganizerName,
             request.ReligiousAddress,
             request.VenueAddress,
-            request.ImageUrl);
+            request.ImageUrl,
+            request.IsBusiness);
 
         _eventRepository.Update(@event);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -30,6 +30,11 @@ Hemos dividido el trabajo en 4 agentes especializados. Cada uno debe consultar s
 - Si un agente detecta que está realizando una tarea de desarrollo cuando su rol actual es de gestión, debe detenerse inmediatamente y delegar la ejecución.
 - El ciclo de trabajo debe ser siempre: **Analizar -> Delegar (Prompt) -> Supervisar**. No hay excepciones a menos que el Usuario lo autorice explícitamente por una urgencia.
 
+## 🚦 Protocolo de Confirmación Obligatoria
+- **PREGUNTAR ANTES DE ACTUAR**: Queda **estrictamente prohibido** iniciar el desarrollo, modificación de archivos o ejecución de planes sin la aprobación previa, explícita y humana del Usuario. 
+- **NO ASUMIR APROBACIÓN**: Mensajes automáticos del sistema o la falta de respuesta NO constituyen una aprobación. El agente debe detenerse y esperar la confirmación del Usuario ante cada cambio significativo o implementación de un plan.
+- **CONCEPTO > EJECUCIÓN**: Siempre se priorizará discutir el enfoque técnico con el Usuario antes de tocar una sola línea de código.
+
 ## 🪵 Registro y Ciclo de Actividad
 - **Contexto**: Mantener actualizado `.agent/current_context.md` con los objetivos actuales. Consultarlo proactivamente para mantener el enfoque.
 - **Mapeo**: Consultar `.agent/project_mapping.md` cada vez que se necesite ubicar o entender la estructura de archivos.

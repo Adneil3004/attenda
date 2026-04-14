@@ -77,16 +77,40 @@
     position: absolute;
     top: 0;
     left: -100%;
-    width: 50%;
+    width: 60%;
     height: 100%;
     background: linear-gradient(
       90deg, 
       transparent, 
-      rgba(255, 255, 255, 0.2), 
+      rgba(255, 255, 255, 0.4), 
       transparent
     );
-    transform: skewX(-20deg);
-    animation: sheen 4s infinite;
+    transform: skewX(-25deg);
+    animation: sheen 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  .metallic-card {
+    background: linear-gradient(110deg, #e2e8f0 0%, #ffffff 25%, #cbd5e1 50%, #ffffff 75%, #e2e8f0 100%) !important;
+    background-size: 200% 100%;
+  }
+
+  .dark .metallic-card {
+    background: linear-gradient(135deg, #263242 0%, #364153 50%, #263242 100%) !important;
+  }
+
+  /* Estilo VIP exacto de la imagen */
+  .metallic-vip-card {
+    background: #fdfdfd !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  .dark .metallic-vip-card {
+    background: #1e293b !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  /* VIP sheen animation */
+  .dark .sheen-container::after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
   }
 }
 

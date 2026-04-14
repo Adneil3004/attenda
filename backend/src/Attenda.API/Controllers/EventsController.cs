@@ -4,6 +4,7 @@ using Attenda.Application.Events.Commands.CreateEvent;
 using Attenda.Application.Events.Commands.DeleteEvent;
 using Attenda.Application.Events.Commands.ToggleEventStatus;
 using Attenda.Application.Events.Queries.GetEventDashboard;
+using Attenda.Application.Common.Interfaces;
 using Attenda.Domain.Interfaces;
 
 
@@ -22,12 +23,14 @@ public class EventsController : ControllerBase
     private readonly IMediator _mediator;
     private readonly IEventRepository _eventRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IImageStorageService _imageStorageService;
 
-    public EventsController(IMediator mediator, IEventRepository eventRepository, IUnitOfWork unitOfWork)
+    public EventsController(IMediator mediator, IEventRepository eventRepository, IUnitOfWork unitOfWork, IImageStorageService imageStorageService)
     {
         _mediator = mediator;
         _eventRepository = eventRepository;
         _unitOfWork = unitOfWork;
+        _imageStorageService = imageStorageService;
     }
 
     public record ToggleStatusRequest(bool Disable);
@@ -69,11 +72,16 @@ public class EventsController : ControllerBase
         {
             "Boda",
             "XV Años",
-            "Graduación",
-            "Corporativo",
-            "Baby Shower",
-            "Cumpleaños",
             "Bautizo",
+            "Cumpleaños",
+            "Baby Shower",
+            "Graduación",
+            "Fin de año",
+            "Aniversario",
+            "Congreso",
+            "Lanzamiento de Producto",
+            "Inauguración",
+            "Workshop / Capacitación",
             "Otro"
         };
         
@@ -150,30 +158,32 @@ public class EventsController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded");
 
-        // Advanced validation: Extension and Size
+        // Simple validation: Extension and Size
         var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         
         if (!allowedExtensions.Contains(extension))
             return BadRequest("Invalid file type. Only JPG, PNG, and WEBP are allowed.");
 
-        if (file.Length > 5 * 1024 * 1024) // 5MB limit
-            return BadRequest("File too large. Maximum size is 5MB.");
+        // We can handle larger files now because we resize them on the server
+        if (file.Length > 10 * 1024 * 1024) // 10MB limit
+            return BadRequest("File too large. Maximum size is 10MB.");
 
-        var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-        if (!Directory.Exists(uploadsPath))
-            Directory.CreateDirectory(uploadsPath);
-
-        var fileName = $"{id}_{DateTime.UtcNow.Ticks}{extension}";
-        var filePath = Path.Combine(uploadsPath, fileName);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
+        string imageUrl;
+        try
         {
-            await file.CopyToAsync(stream);
+            using (var stream = file.OpenReadStream())
+            {
+                // The service handles resizing, compression to < 1MB and upload to Supabase
+                imageUrl = await _imageStorageService.UploadImageAsync(stream, file.FileName, HttpContext.RequestAborted);
+            }
+        }
+        catch (Exception ex)
+        {
+            // IMPORTANT: Return the actual error message so the frontend can display it for diagnostics
+            return StatusCode(500, new { message = "Error processing or uploading image", details = ex.Message });
         }
 
-        var imageUrl = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
-        
         var @event = await _eventRepository.GetByIdAsync(id, HttpContext.RequestAborted);
         if (@event == null) return NotFound();
 
@@ -186,7 +196,8 @@ public class EventsController : ControllerBase
             @event.OrganizerName,
             @event.ReligiousAddress,
             @event.VenueAddress,
-            imageUrl
+            imageUrl,
+            @event.IsBusiness
         );
 
         _eventRepository.Update(@event);

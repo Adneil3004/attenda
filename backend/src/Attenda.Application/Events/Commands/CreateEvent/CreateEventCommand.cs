@@ -19,4 +19,5 @@ public record CreateEventCommand(
     // Payment method — optional. Assumes the token was already obtained from Stripe on the frontend.
     string? CardToken = null,
     string? CardLast4 = null,
-    string? CardBrand = null) : IRequest<Guid>;
+    string? CardBrand = null,
+    bool IsBusiness = false) : IRequest<Guid>;

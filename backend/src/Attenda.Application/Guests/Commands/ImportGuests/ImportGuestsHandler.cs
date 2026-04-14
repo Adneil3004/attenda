@@ -52,10 +52,9 @@ public class ImportGuestsHandler : IRequestHandler<ImportGuestsCommand, Unit>
             @event.AddGuest(
                 guestDto.FirstName,
                 guestDto.LastName,
-                EmailAddress.Create(guestDto.Email),
+                PhoneNumber.Create(guestDto.PhoneNumber),
                 groupId,
                 dietaryRestrictions,
-                guestDto.PlusOne,
                 guestDto.Notes
             );
         }

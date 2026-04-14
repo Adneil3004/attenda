@@ -18,6 +18,7 @@ public class Event : AggregateRoot
     public string? ReligiousAddress { get; private set; }
     public string? VenueAddress { get; private set; }
     public string? ImageUrl { get; private set; }
+    public bool IsBusiness { get; private set; }
     public string CapacityTier { get; private set; } = "FREE";
     public int GuestLimit { get; private set; } = 20;
     public DateTime CreatedAt { get; private set; }
@@ -34,9 +35,12 @@ public class Event : AggregateRoot
     private readonly List<TaskItem> _taskItems = new();
     public IReadOnlyCollection<TaskItem> TaskItems => _taskItems.AsReadOnly();
 
+    private readonly List<Table> _tables = new();
+    public IReadOnlyCollection<Table> Tables => _tables.AsReadOnly();
+
     private Event() : base() { Name = null!; CapacityTier = null!; } // Required by EF Core
 
-    private Event(string name, string? description, EventDate date, Guid organizerId, string? eventType = null, string[]? celebrants = null, string? organizerName = null, string? religiousAddress = null, string? venueAddress = null, string capacityTier = "FREE", int guestLimit = 20, string? imageUrl = null) : base()
+    private Event(string name, string? description, EventDate date, Guid organizerId, string? eventType = null, string[]? celebrants = null, string? organizerName = null, string? religiousAddress = null, string? venueAddress = null, string capacityTier = "FREE", int guestLimit = 20, string? imageUrl = null, bool isBusiness = false) : base()
     {
         Name = name;
         Description = description;
@@ -50,13 +54,14 @@ public class Event : AggregateRoot
         VenueAddress = venueAddress;
         CapacityTier = capacityTier;
         GuestLimit = guestLimit;
+        IsBusiness = isBusiness;
         ImageUrl = imageUrl;
         CreatedAt = DateTime.UtcNow;
     }
 
-    public static Event Create(string name, string? description, EventDate date, Guid organizerId, string? eventType = null, string[]? celebrants = null, string? organizerName = null, string? religiousAddress = null, string? venueAddress = null, string capacityTier = "FREE", int guestLimit = 20, string? imageUrl = null)
+    public static Event Create(string name, string? description, EventDate date, Guid organizerId, string? eventType = null, string[]? celebrants = null, string? organizerName = null, string? religiousAddress = null, string? venueAddress = null, string capacityTier = "FREE", int guestLimit = 20, string? imageUrl = null, bool isBusiness = false)
     {
-        var @event = new Event(name, description, date, organizerId, eventType, celebrants, organizerName, religiousAddress, venueAddress, capacityTier, guestLimit, imageUrl);
+        var @event = new Event(name, description, date, organizerId, eventType, celebrants, organizerName, religiousAddress, venueAddress, capacityTier, guestLimit, imageUrl, isBusiness);
         // Add EventCreated domain event here if needed
         return @event;
     }
@@ -70,7 +75,8 @@ public class Event : AggregateRoot
         string? organizerName, 
         string? religiousAddress, 
         string? venueAddress, 
-        string? imageUrl)
+        string? imageUrl,
+        bool isBusiness)
     {
         Name = name;
         Description = description;
@@ -81,20 +87,21 @@ public class Event : AggregateRoot
         ReligiousAddress = religiousAddress;
         VenueAddress = venueAddress;
         ImageUrl = imageUrl;
+        IsBusiness = isBusiness;
     }
 
 
     public void SetStatus(EventStatus status) => Status = status;
 
-    public Guest AddGuest(string firstName, string lastName, EmailAddress email, Guid? groupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, bool plusOne = false, string? notes = null)
+    public Guest AddGuest(string firstName, string lastName, PhoneNumber phoneNumber, Guid? groupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, string? notes = null)
     {
         if (_guests.Count >= GuestLimit)
             throw new InvalidOperationException($"Guest limit of {GuestLimit} reached for this {CapacityTier} event.");
 
-        if (_guests.Any(g => g.Email != null && g.Email.Value == email.Value))
-            throw new InvalidOperationException($"Guest with email {email} already exists in this event.");
+        if (_guests.Any(g => g.PhoneNumber != null && g.PhoneNumber.Value == phoneNumber.Value))
+            throw new InvalidOperationException($"Guest with phone number {phoneNumber} already exists in this event.");
 
-        var guest = Guest.Create(firstName, lastName, email, groupId, dietaryRestrictions, plusOne, notes);
+        var guest = Guest.Create(firstName, lastName, phoneNumber, groupId, dietaryRestrictions, notes);
         _guests.Add(guest);
         return guest;
     }
@@ -168,5 +175,67 @@ public class Event : AggregateRoot
     {
         _guests.Clear();
         _checkIns.Clear();
+    }
+
+    // ─── Table Management ────────────────────────────────────────────────────
+
+    public Table AddTable(string name, int capacity, TablePriority priority)
+    {
+        var table = Table.Create(name, capacity, priority);
+        _tables.Add(table);
+        return table;
+    }
+
+    public void UpdateTable(Guid tableId, string name, int capacity, TablePriority priority)
+    {
+        var table = _tables.FirstOrDefault(t => t.Id == tableId)
+            ?? throw new KeyNotFoundException($"Mesa {tableId} no encontrada.");
+
+        // Si la nueva capacidad es menor que los invitados ya asignados, rechazar.
+        var occupants = _guests.Count(g => g.TableId == tableId);
+        if (capacity < occupants)
+            throw new InvalidOperationException(
+                $"No se puede reducir la capacidad a {capacity}. La mesa ya tiene {occupants} invitados asignados.");
+
+        table.UpdateDetails(name, capacity, priority);
+    }
+
+    public void RemoveTable(Guid tableId)
+    {
+        var table = _tables.FirstOrDefault(t => t.Id == tableId)
+            ?? throw new KeyNotFoundException($"Mesa {tableId} no encontrada.");
+
+        // Liberar todos los invitados asignados a esta mesa (no se eliminan del evento).
+        foreach (var guest in _guests.Where(g => g.TableId == tableId))
+            guest.RemoveFromTable();
+
+        _tables.Remove(table);
+    }
+
+    public void AssignGuestToTable(Guid guestId, Guid tableId)
+    {
+        var guest = _guests.FirstOrDefault(g => g.Id == guestId)
+            ?? throw new KeyNotFoundException($"Invitado {guestId} no encontrado.");
+
+        var table = _tables.FirstOrDefault(t => t.Id == tableId)
+            ?? throw new KeyNotFoundException($"Mesa {tableId} no encontrada.");
+
+        // Hard limit: verificar capacidad antes de asignar.
+        var occupants = _guests.Count(g => g.TableId == tableId);
+        if (occupants >= table.Capacity)
+            throw new InvalidOperationException(
+                $"La mesa '{table.Name}' está llena ({table.Capacity}/{table.Capacity}).");
+
+        // Si ya tenía mesa, quitarlo de la anterior.
+        guest.RemoveFromTable();
+        guest.AssignToTable(tableId);
+    }
+
+    public void UnassignGuestFromTable(Guid guestId)
+    {
+        var guest = _guests.FirstOrDefault(g => g.Id == guestId)
+            ?? throw new KeyNotFoundException($"Invitado {guestId} no encontrado.");
+
+        guest.RemoveFromTable();
     }
 }

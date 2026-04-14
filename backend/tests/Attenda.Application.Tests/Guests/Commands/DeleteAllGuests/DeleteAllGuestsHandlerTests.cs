@@ -33,7 +33,7 @@ public class DeleteAllGuestsHandlerTests
             EventDate.Create(DateTime.UtcNow.AddDays(1)),
             organizerId);
 
-        @event.AddGuest("John", "Doe", EmailAddress.Create("john@example.com"));
+        @event.AddGuest("John", "Doe", PhoneNumber.Create("+1234567890"));
         
         var command = new DeleteAllGuestsCommand(eventId, organizerId);
 

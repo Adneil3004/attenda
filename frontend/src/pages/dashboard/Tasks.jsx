@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   DndContext,
   KeyboardSensor,
@@ -104,10 +105,10 @@ const SortableTaskCard = ({ task, onClick }) => {
 // ─── Base Card Component ───
 const TaskCard = ({ task, isLayoutOverlay }) => {
   const priorityConfig = {
-    'Urgent': { color: 'var(--color-error)', label: 'Urgent', bg: 'bg-red-50', text: 'text-red-700', pulse: true },
-    'High': { color: '#f97316', label: 'High', bg: 'bg-orange-50', text: 'text-orange-700', pulse: false },
-    'Medium': { color: 'var(--color-primary)', label: 'Medium', bg: 'bg-blue-50', text: 'text-blue-700', pulse: false },
-    'Low': { color: '#94a3b8', label: 'Low', bg: 'bg-slate-50', text: 'text-slate-600', pulse: false }
+    'Urgent': { color: 'var(--color-error)', label: 'Urgent', bg: 'bg-red-500/10', text: 'text-red-500', pulse: true },
+    'High': { color: '#f97316', label: 'High', bg: 'bg-orange-500/10', text: 'text-orange-500', pulse: false },
+    'Medium': { color: 'var(--color-primary)', label: 'Medium', bg: 'bg-blue-500/10', text: 'text-blue-500', pulse: false },
+    'Low': { color: '#94a3b8', label: 'Low', bg: 'bg-slate-500/10', text: 'text-slate-400', pulse: false }
   };
 
   const config = priorityConfig[task.priority] || priorityConfig['Medium'];
@@ -215,73 +216,84 @@ const NewTaskModal = ({ isOpen, onClose, onSubmit, loading }) => {
 
   return (
     <>
-      <div className="fixed inset-0 bg-white/30 backdrop-blur-md z-40" onClick={onClose} />
+      <div className="fixed inset-0 bg-[var(--color-primary)]/10 dark:bg-black/60 backdrop-blur-sm z-40" onClick={onClose} />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-[var(--color-outline-variant)]/20">
-          <div className="p-6 border-b border-[var(--color-outline-variant)]/10">
-            <h2 className="text-xl font-bold text-[var(--color-primary)]">New Task</h2>
-          </div>
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <div className="bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl w-full max-w-md border border-gray-100 dark:border-gray-700 animate-in zoom-in-95 duration-200">
+          <div className="px-8 py-6 border-b border-gray-50 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
             <div>
-              <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Title</label>
+              <h2 className="text-xl font-bold text-[var(--color-primary)] dark:text-white">New Task</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Create a new task</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300 transition-all active:scale-90"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <form onSubmit={handleSubmit} className="px-8 py-8 space-y-6">
+            <div>
+              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Title</label>
               <input
                 type="text"
                 value={title}
                 onChange={handleTitleChange}
-                className={`w-full px-4 py-3 rounded-xl border focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all ${errors.title ? 'border-red-500 ring-2 ring-red-500/20' : 'border-[var(--color-outline-variant)]/20'}`}
+                className={`w-full px-5 py-4 rounded-2xl border bg-gray-50 dark:bg-gray-800 text-[var(--color-primary)] dark:text-white font-semibold placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-all ${errors.title ? 'border-red-400 ring-4 ring-red-50 dark:ring-red-900/30' : 'border-transparent focus:bg-white dark:focus:bg-gray-700 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10'}`}
                 placeholder="Task title"
                 required
               />
-              {errors.title && <p className="text-[10px] text-red-500 mt-1">{errors.title}</p>}
+              {errors.title && <p className="text-xs text-red-500 mt-2 font-bold flex items-center gap-1">{errors.title}</p>}
             </div>
             <div>
-              <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Description</label>
+              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Description</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-[var(--color-outline-variant)]/20 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all resize-none"
+                className="w-full px-5 py-4 rounded-2xl border bg-gray-50 dark:bg-gray-800 border-transparent text-[var(--color-primary)] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-gray-700 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all resize-none"
                 rows={3}
                 placeholder="Task description (optional)"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Priority</label>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Priority</label>
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-[var(--color-outline-variant)]/20 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all font-bold text-xs"
+                  className="w-full px-5 py-4 rounded-2xl border bg-gray-50 dark:bg-gray-800 border-transparent text-[var(--color-primary)] dark:text-white font-bold text-xs outline-none transition-all"
                 >
-                  <option value="Low" className="text-slate-500 font-bold">Low</option>
-                  <option value="Medium" className="text-blue-600 font-bold">Medium</option>
-                  <option value="High" className="text-orange-600 font-bold">High</option>
-                  <option value="Urgent" className="text-red-600 font-bold font-black">Urgent</option>
+                  <option value="Low" className="dark:bg-gray-800">Low</option>
+                  <option value="Medium" className="dark:bg-gray-800">Medium</option>
+                  <option value="High" className="dark:bg-gray-800">High</option>
+                  <option value="Urgent" className="dark:bg-gray-800">Urgent</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Due Date</label>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Due Date</label>
                 <input
                   type="date"
                   value={dueDate}
                   onChange={handleDateChange}
                   min={today}
-                  className={`w-full px-4 py-3 rounded-xl border focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all ${errors.dueDate ? 'border-red-500 ring-2 ring-red-500/20' : 'border-[var(--color-outline-variant)]/20'}`}
+                  className={`w-full px-5 py-4 rounded-2xl border bg-gray-50 dark:bg-gray-800 text-[var(--color-primary)] dark:text-white font-semibold outline-none transition-all ${errors.dueDate ? 'border-red-400 ring-4 ring-red-50 dark:ring-red-900/30' : 'border-transparent focus:bg-white dark:focus:bg-gray-700 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10'}`}
                 />
-                {errors.dueDate && <p className="text-[10px] text-red-500 mt-1">{errors.dueDate}</p>}
+                {errors.dueDate && <p className="text-xs text-red-500 mt-2 font-bold flex items-center gap-1">{errors.dueDate}</p>}
               </div>
             </div>
             <div className="flex gap-3 pt-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest border border-[var(--color-outline-variant)]/20 hover:bg-gray-50 transition-all"
+                className="flex-1 py-4 rounded-2xl text-sm font-bold uppercase tracking-widest border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-gray-600 dark:text-gray-400"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading || !title.trim()}
-                className="flex-1 py-3 bg-[var(--color-primary)] text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-4 bg-[#030712] text-white rounded-2xl text-sm font-bold uppercase tracking-widest shadow-xl shadow-gray-200 dark:shadow-gray-900 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Creating...' : 'Create Task'}
               </button>
@@ -295,6 +307,7 @@ const NewTaskModal = ({ isOpen, onClose, onSubmit, loading }) => {
 
 // ─── Main Tasks Dashboard ───
 const Tasks = () => {
+  const { eventId } = useParams();
   const [tasks, setTasks] = useState([]);
   const [activeTask, setActiveTask] = useState(null);
   const [selectedTaskForDrawer, setSelectedTaskForDrawer] = useState(null);
@@ -311,23 +324,21 @@ const Tasks = () => {
   const loadTasks = useCallback(async () => {
     try {
       setLoading(true);
-      const eventId = localStorage.getItem('activeEventId');
-      console.log('[TasksBoard] Loading tasks for event:', eventId);
       
       if (!eventId) {
-        console.warn('[TasksBoard] No active event ID found in localStorage');
+        console.warn('[TasksBoard] No event ID found in URL');
         setTasks([]);
         return;
       }
 
-      const loadedTasks = await tasksApi.getAll();
+      const loadedTasks = await tasksApi.getAll(eventId);
       setTasks(loadedTasks);
     } catch (error) {
       console.error('Failed to load tasks:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [eventId]);
 
   useEffect(() => {
     loadTasks();
@@ -363,7 +374,7 @@ const Tasks = () => {
 
       // Call API
       try {
-        await tasksApi.updateStatus(activeId, newStatus);
+        await tasksApi.updateStatus(activeId, newStatus, eventId);
       } catch (error) {
         console.error('Failed to update task status:', error);
         // Revert on error
@@ -375,11 +386,7 @@ const Tasks = () => {
   const handleCreateTask = async (taskData) => {
     setCreating(true);
     try {
-      const eventId = localStorage.getItem('activeEventId');
-      if (!eventId) {
-        alert('Please select an event first from "My Events"');
-        return;
-      }
+      if (!eventId) throw new Error('No active event selected.');
       
       const newTask = await tasksApi.create({ ...taskData, eventId });
       setTasks([...tasks, newTask]);
@@ -409,7 +416,9 @@ const Tasks = () => {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl lg:text-3xl font-bold text-[var(--color-primary)] font-headline tracking-tight">Event Task Management</h1>
             <span className="bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-[9px] font-black px-2 py-0.5 rounded-md border border-[var(--color-primary)]/10">
-              ID: {localStorage.getItem('activeEventId')?.slice(0, 8)}...
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)] opacity-60">
+                ID: {eventId?.slice(0, 8)}...
+              </p>
             </span>
           </div>
           <p className="text-sm text-[var(--color-on-surface-variant)] mt-2">Manage logistics, vendors, and timelines in one place.</p>
@@ -465,6 +474,7 @@ const Tasks = () => {
         isOpen={!!selectedTaskForDrawer} 
         onClose={() => setSelectedTaskForDrawer(null)} 
         task={selectedTaskForDrawer}
+        eventId={eventId}
         onUpdate={handleTaskUpdated}
         onDelete={handleTaskDeleted}
       />

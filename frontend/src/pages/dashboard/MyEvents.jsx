@@ -25,7 +25,7 @@ const MyEvents = () => {
 
   const handleManage = (eventId) => {
     localStorage.setItem('activeEventId', eventId);
-    navigate(`/dashboard?eventId=${eventId}`);
+    navigate(`/dashboard/${eventId}`);
   };
 
   const handleEdit = (eventId) => {

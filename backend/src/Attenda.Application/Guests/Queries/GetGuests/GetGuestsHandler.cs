@@ -32,12 +32,11 @@ public class GetGuestsHandler : IRequestHandler<GetGuestsQuery, List<GuestDto>>
             g.Id,
             g.FirstName,
             g.LastName,
-            g.Email?.Value ?? string.Empty,
+            g.PhoneNumber.Value,
             g.RsvpStatus.ToString(),
             g.GuestGroupId,
             @event.GuestGroups.FirstOrDefault(group => group.Id == g.GuestGroupId)?.Name,
             g.DietaryRestrictions.Select(dr => dr.Name).ToList(),
-            g.PlusOne,
             g.Notes
         )).ToList();
     }

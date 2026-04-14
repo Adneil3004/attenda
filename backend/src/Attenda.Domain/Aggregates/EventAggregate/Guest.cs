@@ -8,23 +8,23 @@ public class Guest : Entity
 {
     public string FirstName { get; private set; }
     public string LastName { get; private set; }
-    public EmailAddress Email { get; private set; }
+    public PhoneNumber PhoneNumber { get; private set; }
     public RsvpStatus RsvpStatus { get; private set; }
     public RsvpToken RsvpToken { get; private set; }
     public Guid? GuestGroupId { get; private set; }
+    public Guid? TableId { get; private set; }
     
     private readonly List<DietaryRestriction> _dietaryRestrictions = new();
     public IReadOnlyCollection<DietaryRestriction> DietaryRestrictions => _dietaryRestrictions.AsReadOnly();
-    public bool PlusOne { get; private set; }
     public string? Notes { get; private set; }
 
-    private Guest() : base() { FirstName = null!; LastName = null!; Email = null!; RsvpToken = null!; } // Required by EF Core
+    private Guest() : base() { FirstName = null!; LastName = null!; PhoneNumber = null!; RsvpToken = null!; } // Required by EF Core
 
-    private Guest(string firstName, string lastName, EmailAddress email, Guid? guestGroupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, bool plusOne = false, string? notes = null) : base()
+    private Guest(string firstName, string lastName, PhoneNumber phoneNumber, Guid? guestGroupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, string? notes = null) : base()
     {
         FirstName = firstName;
         LastName = lastName;
-        Email = email;
+        PhoneNumber = phoneNumber;
         GuestGroupId = guestGroupId;
         RsvpStatus = RsvpStatus.Pending;
         RsvpToken = RsvpToken.Create();
@@ -32,26 +32,31 @@ public class Guest : Entity
         {
             _dietaryRestrictions.AddRange(dietaryRestrictions);
         }
-        PlusOne = plusOne;
         Notes = notes;
     }
 
-    public static Guest Create(string firstName, string lastName, EmailAddress email, Guid? guestGroupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, bool plusOne = false, string? notes = null)
-        => new(firstName, lastName, email, guestGroupId, dietaryRestrictions, plusOne, notes);
+    public static Guest Create(string firstName, string lastName, PhoneNumber phoneNumber, Guid? guestGroupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, string? notes = null)
+        => new(firstName, lastName, phoneNumber, guestGroupId, dietaryRestrictions, notes);
 
     public void UpdateRsvpStatus(RsvpStatus status)
     {
         RsvpStatus = status;
+
+        // Regla de Negocio: Si el invitado declina, liberar su asiento automáticamente.
+        if (status == RsvpStatus.Declined)
+            RemoveFromTable();
     }
+
+    public void AssignToTable(Guid tableId) => TableId = tableId;
+    public void RemoveFromTable() => TableId = null;
 
     public void MoveToGroup(Guid? groupId) => GuestGroupId = groupId;
 
-    public void UpdateDetails(string firstName, string lastName, EmailAddress email, bool plusOne, string? notes, IEnumerable<DietaryRestriction>? dietaryRestrictions)
+    public void UpdateDetails(string firstName, string lastName, PhoneNumber phoneNumber, string? notes, IEnumerable<DietaryRestriction>? dietaryRestrictions)
     {
         FirstName = firstName;
         LastName = lastName;
-        Email = email;
-        PlusOne = plusOne;
+        PhoneNumber = phoneNumber;
         Notes = notes;
         
         _dietaryRestrictions.Clear();
@@ -61,3 +66,4 @@ public class Guest : Entity
         }
     }
 }
+
