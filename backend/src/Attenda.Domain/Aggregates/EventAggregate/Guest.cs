@@ -11,6 +11,7 @@ public class Guest : Entity
     public PhoneNumber PhoneNumber { get; private set; }
     public RsvpStatus RsvpStatus { get; private set; }
     public RsvpToken RsvpToken { get; private set; }
+    public int PlusOnes { get; private set; } = 0;
     public Guid? GuestGroupId { get; private set; }
     public Guid? TableId { get; private set; }
     
@@ -20,11 +21,12 @@ public class Guest : Entity
 
     private Guest() : base() { FirstName = null!; LastName = null!; PhoneNumber = null!; RsvpToken = null!; } // Required by EF Core
 
-    private Guest(string firstName, string lastName, PhoneNumber phoneNumber, Guid? guestGroupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, string? notes = null) : base()
+    private Guest(string firstName, string lastName, PhoneNumber phoneNumber, int plusOnes = 0, Guid? guestGroupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, string? notes = null) : base()
     {
         FirstName = firstName;
         LastName = lastName;
         PhoneNumber = phoneNumber;
+        PlusOnes = plusOnes;
         GuestGroupId = guestGroupId;
         RsvpStatus = RsvpStatus.Pending;
         RsvpToken = RsvpToken.Create();
@@ -35,8 +37,8 @@ public class Guest : Entity
         Notes = notes;
     }
 
-    public static Guest Create(string firstName, string lastName, PhoneNumber phoneNumber, Guid? guestGroupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, string? notes = null)
-        => new(firstName, lastName, phoneNumber, guestGroupId, dietaryRestrictions, notes);
+    public static Guest Create(string firstName, string lastName, PhoneNumber phoneNumber, int plusOnes = 0, Guid? guestGroupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, string? notes = null)
+        => new(firstName, lastName, phoneNumber, plusOnes, guestGroupId, dietaryRestrictions, notes);
 
     public void UpdateRsvpStatus(RsvpStatus status)
     {
@@ -49,6 +51,13 @@ public class Guest : Entity
 
     public void AssignToTable(Guid tableId) => TableId = tableId;
     public void RemoveFromTable() => TableId = null;
+    
+    public void UpdatePlusOnes(int plusOnes)
+    {
+        if (plusOnes < 0)
+            throw new ArgumentException("PlusOnes no puede ser negativo");
+        PlusOnes = plusOnes;
+    }
 
     public void MoveToGroup(Guid? groupId) => GuestGroupId = groupId;
 

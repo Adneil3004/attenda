@@ -53,6 +53,7 @@ public class ImportGuestsHandler : IRequestHandler<ImportGuestsCommand, Unit>
                 guestDto.FirstName,
                 guestDto.LastName,
                 PhoneNumber.Create(guestDto.PhoneNumber),
+                0, // Default plusOnes to 0 for imports
                 groupId,
                 dietaryRestrictions,
                 guestDto.Notes

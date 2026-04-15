@@ -5,6 +5,7 @@ public record GuestDto(
     string FirstName,
     string LastName,
     string PhoneNumber,
+    int PlusOnes,
     string RsvpStatus,
     Guid? GuestGroupId,
     string? GroupName,
@@ -15,6 +16,7 @@ public record GuestDetailsDto(
     Guid Id,
     string FullName,
     string PhoneNumber,
+    int PlusOnes,
     string RsvpStatus,
     string? GroupName,
     bool CheckedIn);
@@ -27,6 +29,7 @@ public record GuestImportDto(
     string FirstName,
     string LastName,
     string PhoneNumber,
+    int PlusOnes,
     string? GroupName,
     List<string>? DietaryRestrictions,
     string? Notes);

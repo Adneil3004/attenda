@@ -13,13 +13,40 @@ class Program
             using var conn = new NpgsqlConnection(connectionString);
             conn.Open();
             
-            Console.WriteLine("User details:");
-            using (var cmd = new NpgsqlCommand("SELECT id, email FROM profiles", conn))
+            Console.WriteLine("=== Tables in database ===");
+            using (var cmd = new NpgsqlCommand(@"
+                SELECT table_schema, table_name 
+                FROM information_schema.tables 
+                WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
+                ORDER BY table_schema, table_name", conn))
             using (var reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
                 {
-                    Console.WriteLine($"- ID: {reader.GetGuid(0)}, Email: {reader.GetString(1)}");
+                    Console.WriteLine($"  {reader.GetString(0)}.{reader.GetString(1)}");
+                }
+            }
+
+            Console.WriteLine("\n=== Adding plus_ones column ===");
+            using (var cmd = new NpgsqlCommand(@"
+                ALTER TABLE public.guests 
+                ADD COLUMN IF NOT EXISTS plus_ones INTEGER DEFAULT 0", conn))
+            {
+                cmd.ExecuteNonQuery();
+                Console.WriteLine("  plus_ones column added!");
+            }
+
+            Console.WriteLine("\n=== Verify guest columns now ===");
+            using (var cmd = new NpgsqlCommand(@"
+                SELECT column_name, data_type 
+                FROM information_schema.columns 
+                WHERE table_name = 'guests' 
+                ORDER BY ordinal_position", conn))
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    Console.WriteLine($"  {reader.GetString(0)}: {reader.GetString(1)}");
                 }
             }
         }

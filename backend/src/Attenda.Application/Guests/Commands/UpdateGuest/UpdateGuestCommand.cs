@@ -8,6 +8,7 @@ public record UpdateGuestCommand(
     string FirstName,
     string LastName,
     string PhoneNumber,
+    int PlusOnes,
     string RsvpStatus,
     Guid? GuestGroupId,
     string? GroupName,

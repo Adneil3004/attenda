@@ -19,6 +19,7 @@ public class AppDbContext : DbContext, IUnitOfWork
     public DbSet<CheckIn> CheckIns => Set<CheckIn>();
     public DbSet<TaskItem> TaskItems => Set<TaskItem>();
     public DbSet<Table> Tables => Set<Table>();
+    public DbSet<Attenda.Domain.Aggregates.PaymentPackage> PaymentPackages => Set<Attenda.Domain.Aggregates.PaymentPackage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

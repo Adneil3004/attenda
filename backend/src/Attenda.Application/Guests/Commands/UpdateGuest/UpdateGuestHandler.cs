@@ -49,6 +49,8 @@ public class UpdateGuestHandler : IRequestHandler<UpdateGuestCommand, Unit>
             dietaryRestrictions
         );
 
+        guest.UpdatePlusOnes(request.PlusOnes);
+
         if (Enum.TryParse<RsvpStatus>(request.RsvpStatus, out var status))
         {
             guest.UpdateRsvpStatus(status);

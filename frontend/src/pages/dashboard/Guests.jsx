@@ -40,6 +40,11 @@ const Guests = () => {
     loading: false
   });
 
+  // Calculate total guests including plusOnes
+  const totalGuests = useMemo(() => {
+    return guests.reduce((sum, guest) => sum + (guest.plusOnes || 0), 0) + guests.length;
+  }, [guests]);
+
 
   const fetchEventDetails = useCallback(async () => {
     if (!eventId) return;
@@ -266,9 +271,10 @@ const Guests = () => {
 
       if (newGuests.length === 0) return;
 
-      // Ensure limit is respected
-      if (guests.length + newGuests.length > activeEvent.guest_limit) {
-        alert(`Cannot import ${newGuests.length} guests. Your ${activeEvent.capacity_tier} plan limits you to ${activeEvent.guest_limit} total guests.`);
+      // Ensure limit is respected (count each plus their plusOnes)
+      const totalNewGuests = newGuests.reduce((sum, g) => sum + 1 + (g.plusOnes || 0), 0);
+      if (totalGuests + totalNewGuests > activeEvent.guest_limit) {
+        alert(`Cannot import ${newGuests.length} guests (${totalNewGuests} total espacios). Tu plan ${activeEvent.capacity_tier} te permite hasta ${activeEvent.guest_limit} lugares.`);
         return;
       }
 
@@ -299,8 +305,8 @@ const Guests = () => {
             <h1 className="text-3xl font-bold text-[var(--color-primary)]">Guest List</h1>
             <p className="text-[var(--color-on-surface-variant)] text-sm mt-1">Manage RSVPs, groups, and dietary needs.</p>
             {activeEvent && (
-              <p className="text-xs font-semibold text-[var(--color-secondary)] mt-2">
-                Event: {activeEvent.name} ({guests.length} / {activeEvent.guest_limit} allowed)
+              <p className={`text-xs font-semibold mt-2 ${totalGuests > activeEvent.guest_limit ? 'text-red-600' : 'text-[var(--color-secondary)]'}`}>
+                Event: {activeEvent.name} ({totalGuests} / {activeEvent.guest_limit} lugares usados)
               </p>
             )}
           </div>
@@ -368,7 +374,7 @@ const Guests = () => {
               {/* Add Guest Button */}
               <button 
                 onClick={() => openDrawer()}
-                disabled={activeEvent && guests.length >= activeEvent.guest_limit}
+                disabled={activeEvent && totalGuests >= activeEvent.guest_limit}
                 className="bg-[var(--color-primary)] text-white px-4 sm:px-5 py-2.5 rounded-md text-xs sm:text-sm font-semibold hover:bg-opacity-90 transition-colors ambient-shadow flex items-center gap-2 ml-1 disabled:opacity-50"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
