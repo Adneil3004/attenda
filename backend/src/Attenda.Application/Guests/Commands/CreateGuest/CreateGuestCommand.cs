@@ -7,6 +7,7 @@ public record CreateGuestCommand(
     string FirstName,
     string LastName,
     string PhoneNumber,
+    int PlusOnes,
     string RsvpStatus,
     Guid? GuestGroupId,
     string? GroupName,

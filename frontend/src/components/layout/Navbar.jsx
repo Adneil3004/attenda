@@ -13,23 +13,23 @@ const Navbar = () => {
   }, [location.pathname]);
 
   return (
-    <header className="sticky top-0 z-50 glass-panel border-b ghost-border">
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <Link to={user ? "/dashboard" : "/"} className="text-2xl font-bold tracking-tight text-[var(--color-primary)] relative z-50">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <Link to={user ? "/dashboard" : "/"} className="text-xl font-bold tracking-tight text-[var(--color-primary)] relative z-50">
           Attenda.
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex gap-8 items-center">
-          <Link to="/" className={`text-sm font-semibold transition-colors ${location.pathname === '/' ? 'text-[var(--color-primary)]' : 'hover:text-[var(--color-primary)] text-[var(--color-on-surface-variant)]'}`}>Home</Link>
-          <Link to="/about" className={`text-sm font-semibold transition-colors ${location.pathname === '/about' ? 'text-[var(--color-primary)]' : 'hover:text-[var(--color-primary)] text-[var(--color-on-surface-variant)]'}`}>About Us</Link>
-          <Link to="/pricing" className={`text-sm font-semibold transition-colors ${location.pathname === '/pricing' ? 'text-[var(--color-primary)]' : 'hover:text-[var(--color-primary)] text-[var(--color-on-surface-variant)]'}`}>Pricing</Link>
-          <Link to="/contact" className={`text-sm font-semibold transition-colors ${location.pathname === '/contact' ? 'text-[var(--color-primary)]' : 'hover:text-[var(--color-primary)] text-[var(--color-on-surface-variant)]'}`}>Contact</Link>
+        <nav className="hidden md:flex gap-7 items-center">
+          <Link to="/" className={`text-[13px] font-medium transition-colors ${location.pathname === '/' ? 'text-[var(--color-primary)]' : 'hover:text-[var(--color-primary)] text-gray-500'}`}>Home</Link>
+          <Link to="/about" className={`text-[13px] font-medium transition-colors ${location.pathname === '/about' ? 'text-[var(--color-primary)]' : 'hover:text-[var(--color-primary)] text-gray-500'}`}>About Us</Link>
+          <Link to="/pricing" className={`text-[13px] font-medium transition-colors ${location.pathname === '/pricing' ? 'text-[var(--color-primary)]' : 'hover:text-[var(--color-primary)] text-gray-500'}`}>Pricing</Link>
+          <Link to="/contact" className={`text-[13px] font-medium transition-colors ${location.pathname === '/contact' ? 'text-[var(--color-primary)]' : 'hover:text-[var(--color-primary)] text-gray-500'}`}>Contact</Link>
         </nav>
         
         <div className="hidden md:flex items-center gap-4">
-          <Link to="/login" className="text-sm font-semibold text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] uppercase tracking-wider transition-colors">Log In</Link>
-          <Link to="/register" className="primary-gradient text-white px-5 py-2.5 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity ambient-shadow">
+          <Link to="/login" className="text-[13px] font-medium text-gray-500 hover:text-[var(--color-primary)] uppercase tracking-wider transition-colors">Log In</Link>
+          <Link to="/register" className="primary-gradient text-white px-4 py-2 rounded-lg text-[13px] font-semibold hover:opacity-90 transition-opacity shadow-sm">
             Get Started
           </Link>
         </div>
@@ -52,21 +52,21 @@ const Navbar = () => {
 
       {/* Mobile Slide-down Menu */}
       <div 
-        className={`md:hidden absolute top-0 left-0 w-full bg-[var(--color-surface-container-lowest)] border-b ghost-border ambient-shadow transition-transform duration-300 ease-in-out transform ${
+        className={`md:hidden absolute top-0 left-0 w-full bg-white border-b border-gray-100 shadow-lg transition-transform duration-300 ease-in-out transform ${
           isMobileMenuOpen ? 'translate-y-0' : '-translate-y-full'
-        } -z-10 pt-24 pb-8 px-6`}
+        } -z-10 pt-20 pb-8 px-6`}
       >
-        <nav className="flex flex-col gap-6">
-          <Link to="/" className={`text-xl font-bold ${location.pathname === '/' ? 'text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)]'}`}>Home</Link>
-          <Link to="/about" className={`text-xl font-bold ${location.pathname === '/about' ? 'text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)]'}`}>About Us</Link>
-          <Link to="/pricing" className={`text-xl font-bold ${location.pathname === '/pricing' ? 'text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)]'}`}>Pricing</Link>
-          <Link to="/contact" className={`text-xl font-bold ${location.pathname === '/contact' ? 'text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)]'}`}>Contact</Link>
+        <nav className="flex flex-col gap-5">
+          <Link to="/" className={`text-lg font-semibold ${location.pathname === '/' ? 'text-[var(--color-primary)]' : 'text-gray-600'}`}>Home</Link>
+          <Link to="/about" className={`text-lg font-semibold ${location.pathname === '/about' ? 'text-[var(--color-primary)]' : 'text-gray-600'}`}>About Us</Link>
+          <Link to="/pricing" className={`text-lg font-semibold ${location.pathname === '/pricing' ? 'text-[var(--color-primary)]' : 'text-gray-600'}`}>Pricing</Link>
+          <Link to="/contact" className={`text-lg font-semibold ${location.pathname === '/contact' ? 'text-[var(--color-primary)]' : 'text-gray-600'}`}>Contact</Link>
           
-          <div className="w-full h-px bg-[var(--color-outline-variant)] opacity-20 my-2"></div>
+          <div className="w-full h-px bg-gray-100 my-2"></div>
           
-          <div className="flex flex-col gap-4">
-            <Link to="/login" className="text-lg font-bold text-[var(--color-primary)] w-full py-3 text-left">Log In</Link>
-            <Link to="/register" className="primary-gradient text-white px-5 py-4 rounded-md text-base font-semibold hover:opacity-90 transition-opacity ambient-shadow text-center">
+          <div className="flex flex-col gap-3">
+            <Link to="/login" className="text-base font-semibold text-gray-600 w-full py-2 text-left">Log In</Link>
+            <Link to="/register" className="primary-gradient text-white px-5 py-3 rounded-lg text-base font-semibold hover:opacity-90 transition-opacity shadow-sm text-center">
               Get Started
             </Link>
           </div>

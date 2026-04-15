@@ -33,6 +33,7 @@ public class GetGuestsHandler : IRequestHandler<GetGuestsQuery, List<GuestDto>>
             g.FirstName,
             g.LastName,
             g.PhoneNumber.Value,
+            g.PlusOnes,
             g.RsvpStatus.ToString(),
             g.GuestGroupId,
             @event.GuestGroups.FirstOrDefault(group => group.Id == g.GuestGroupId)?.Name,
