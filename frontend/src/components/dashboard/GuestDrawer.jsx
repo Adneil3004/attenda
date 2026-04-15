@@ -5,27 +5,26 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Form state
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [plusOnes, setPlusOnes] = useState(0);
   const [status, setStatus] = useState('Pending');
   const [groupId, setGroupId] = useState('');
-  const [groupName, setGroupName] = useState(''); // New state for custom/suggested group names
+  const [groupName, setGroupName] = useState('');
   const [diet, setDiet] = useState('');
   const [notes, setNotes] = useState('');
 
   const socialGroups = ['Familia', 'Padrinos', 'Amigos', 'Compañeros de trabajo', 'Otros'];
   const corporateGroups = ['Directivos', 'Gerentes', 'Empleados', 'Proveedores', 'Clientes', 'Otros'];
-  
   const suggestedGroups = activeEvent?.isBusiness ? corporateGroups : socialGroups;
 
-  // Hydrate form when guest changes
   useEffect(() => {
     if (guest) {
       setFirstName(guest.firstName || '');
       setLastName(guest.lastName || '');
       setPhoneNumber(guest.phoneNumber || '');
+      setPlusOnes(guest.plusOnes || 0);
       setStatus(guest.rsvpStatus || 'Pending');
       setGroupId(guest.guestGroupId || '');
       setGroupName(guest.groupName || '');
@@ -35,6 +34,7 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
       setFirstName('');
       setLastName('');
       setPhoneNumber('');
+      setPlusOnes(0);
       setStatus('Pending');
       setGroupId('');
       setGroupName('');
@@ -56,12 +56,13 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
 
     const guestData = {
       eventId: activeEvent.id,
-      firstName: firstName,
+      firstName,
       lastName: lastName || '',
       phoneNumber: phoneNumber || '',
+      plusOnes,
       rsvpStatus: status,
       guestGroupId: groupId || null,
-      groupName: groupId ? null : (groupName || null), // Send groupName only if no specific groupId is selected
+      groupName: groupId ? null : (groupName || null),
       dietaryRestrictions: diet ? diet.split(',').map(s => s.trim()).filter(s => s) : [],
       notes: notes || ''
     };
@@ -72,8 +73,7 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
       } else {
         await apiClient.post('/Guests', guestData);
       }
-
-      onClose(); // Will trigger fetch on parent
+      onClose();
     } catch (err) {
       setErrorMsg(err.message || 'Failed to save guest data.');
     } finally {
@@ -82,7 +82,6 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
   };
 
   const handleGroupSelect = (val) => {
-    // If it matches an existing group ID
     const existingGroup = groups?.find(g => g.id === val);
     if (existingGroup) {
       setGroupId(val);
@@ -95,13 +94,10 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
 
   return (
     <>
-      {/* Backdrop */}
       <div 
         className={`fixed inset-0 bg-[var(--color-primary)]/20 backdrop-blur-sm z-40 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
-      
-      {/* Drawer Panel */}
       <div 
         className={`fixed inset-y-0 right-0 w-full max-w-md bg-[var(--color-surface)] shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
@@ -123,7 +119,6 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
         <div className="w-full h-px bg-[var(--color-outline-variant)] opacity-20"></div>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-8 py-6 space-y-6">
-          
           {errorMsg && (
             <div className="p-3 rounded-md bg-red-50 text-red-600 text-xs font-bold border border-red-200">
               {errorMsg}
@@ -131,7 +126,7 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
           )}
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col relative">
+            <div className="flex flex-col">
               <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Nombre *</label>
               <input 
                 type="text" 
@@ -142,7 +137,7 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
                 placeholder="Nombre"
               />
             </div>
-            <div className="flex flex-col relative">
+            <div className="flex flex-col">
               <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Apellido</label>
               <input 
                 type="text" 
@@ -154,7 +149,7 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
             </div>
           </div>
 
-          <div className="flex flex-col relative">
+          <div className="flex flex-col">
             <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Número de Teléfono</label>
             <input 
               type="tel" 
@@ -166,7 +161,7 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
           </div>
           
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col relative">
+            <div className="flex flex-col">
               <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Estado RSVP</label>
               <select 
                 value={status}
@@ -178,31 +173,43 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
                 <option value="Declined">Declinado</option>
               </select>
             </div>
-            <div className="flex flex-col relative">
-              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Grupo</label>
-              <select 
-                value={groupId || groupName}
-                onChange={e => handleGroupSelect(e.target.value)}
-                className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm appearance-none"
-              >
-                <option value="">Sin asignar</option>
-                <optgroup label="Grupos Existentes">
-                  {groups?.map(g => (
-                    <option key={g.id} value={g.id}>{g.name}</option>
-                  ))}
-                </optgroup>
-                {suggestedGroups.length > 0 && (
-                  <optgroup label="Categorías Sugeridas">
-                    {suggestedGroups.map(sg => (
-                      <option key={sg} value={sg}>{sg}</option>
-                    ))}
-                  </optgroup>
-                )}
-              </select>
+            <div className="flex flex-col">
+              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Acompañantes</label>
+              <input 
+                type="number" 
+                min="0"
+                max="10"
+                value={plusOnes}
+                onChange={e => setPlusOnes(parseInt(e.target.value) || 0)}
+                className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm"
+              />
             </div>
           </div>
 
-          <div className="flex flex-col relative">
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Grupo</label>
+            <select 
+              value={groupId || groupName}
+              onChange={e => handleGroupSelect(e.target.value)}
+              className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm appearance-none"
+            >
+              <option value="">Sin asignar</option>
+              <optgroup label="Grupos Existentes">
+                {groups?.map(g => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                ))}
+              </optgroup>
+              {suggestedGroups.length > 0 && (
+                <optgroup label="Categorías Sugeridas">
+                  {suggestedGroups.map(sg => (
+                    <option key={sg} value={sg}>{sg}</option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
+          </div>
+
+          <div className="flex flex-col">
             <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Restricciones Alimenticias</label>
             <input 
               type="text" 
@@ -213,7 +220,7 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
             />
           </div>
           
-          <div className="flex flex-col relative">
+          <div className="flex flex-col">
             <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Notas Privadas</label>
             <textarea 
               rows="4"

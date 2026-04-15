@@ -21,7 +21,12 @@ public class Event : AggregateRoot
     public bool IsBusiness { get; private set; }
     public string CapacityTier { get; private set; } = "FREE";
     public int GuestLimit { get; private set; } = 20;
+    public int TotalPlusOnes => _guests.Sum(g => g.PlusOnes);
+    public int TotalGuests => _guests.Count + TotalPlusOnes;
+    public bool HasReachedLimit => TotalGuests >= GuestLimit;
     public DateTime CreatedAt { get; private set; }
+    
+    public RsvpConfiguration? RsvpConfig { get; private set; }
 
     private readonly List<Guest> _guests = new();
     public IReadOnlyCollection<Guest> Guests => _guests.AsReadOnly();
@@ -93,15 +98,21 @@ public class Event : AggregateRoot
 
     public void SetStatus(EventStatus status) => Status = status;
 
-    public Guest AddGuest(string firstName, string lastName, PhoneNumber phoneNumber, Guid? groupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, string? notes = null)
+    public void UpdateRsvpConfiguration(RsvpConfiguration config)
     {
-        if (_guests.Count >= GuestLimit)
-            throw new InvalidOperationException($"Guest limit of {GuestLimit} reached for this {CapacityTier} event.");
+        RsvpConfig = config;
+    }
+
+    public Guest AddGuest(string firstName, string lastName, PhoneNumber phoneNumber, int plusOnes = 0, Guid? groupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, string? notes = null)
+    {
+        var projectedTotal = _guests.Count + TotalPlusOnes + 1 + plusOnes;
+        if (projectedTotal > GuestLimit)
+            throw new InvalidOperationException($"Cannot add guest. This would exceed the limit of {GuestLimit} guests (current: {TotalGuests}, with plus-ones: {plusOnes}).");
 
         if (_guests.Any(g => g.PhoneNumber != null && g.PhoneNumber.Value == phoneNumber.Value))
             throw new InvalidOperationException($"Guest with phone number {phoneNumber} already exists in this event.");
 
-        var guest = Guest.Create(firstName, lastName, phoneNumber, groupId, dietaryRestrictions, notes);
+        var guest = Guest.Create(firstName, lastName, phoneNumber, plusOnes, groupId, dietaryRestrictions, notes);
         _guests.Add(guest);
         return guest;
     }

@@ -55,6 +55,7 @@ public class CreateGuestHandler : IRequestHandler<CreateGuestCommand, Guid>
             request.FirstName,
             request.LastName,
             PhoneNumber.Create(request.PhoneNumber),
+            request.PlusOnes,
             groupId,
             dietaryRestrictions,
             request.Notes

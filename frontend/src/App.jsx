@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import RsvpPage from './pages/RsvpPage';
 
 import DashboardLayout from './components/dashboard/DashboardLayout';
 import Overview from './pages/dashboard/Overview';
@@ -18,6 +19,7 @@ import CreateEvent from './pages/dashboard/CreateEvent';
 import MyEvents from './pages/dashboard/MyEvents';
 import EditEvent from './pages/dashboard/EditEvent';
 import TableLayout from './pages/dashboard/TableLayout';
+import RsvpDesigner from './pages/dashboard/RsvpDesigner';
 
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
@@ -35,6 +37,9 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          
+          {/* Public RSVP Page - No authentication required */}
+          <Route path="/rsvp/:eventId" element={<RsvpPage />} />
         </Route>
 
         {/* Protected Dashboard Pages */}
@@ -55,6 +60,7 @@ function App() {
           <Route path="edit-event/:id" element={<EditEvent />} />
           <Route path="my-events" element={<MyEvents />} />
           <Route path="table-layout/:eventId" element={<TableLayout />} />
+          <Route path="rsvp-designer/:eventId" element={<RsvpDesigner />} />
         </Route>
       </Routes>
     </BrowserRouter>

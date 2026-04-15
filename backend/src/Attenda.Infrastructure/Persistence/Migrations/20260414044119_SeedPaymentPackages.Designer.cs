@@ -3,6 +3,7 @@ using System;
 using Attenda.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Attenda.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260414044119_SeedPaymentPackages")]
+    partial class SeedPaymentPackages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,10 +165,6 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("phone_number");
-
-                    b.Property<int>("PlusOnes")
-                        .HasColumnType("integer")
-                        .HasColumnName("plus_ones");
 
                     b.Property<string>("RsvpStatus")
                         .IsRequired()
@@ -506,57 +505,8 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                                 .HasConstraintName("fk_events_events_id");
                         });
 
-                    b.OwnsOne("Attenda.Domain.ValueObjects.RsvpConfiguration", "RsvpConfig", b1 =>
-                        {
-                            b1.Property<Guid>("EventId")
-                                .HasColumnType("uuid")
-                                .HasColumnName("id");
-
-                            b1.Property<bool>("AllowDietaryRequirements")
-                                .HasColumnType("boolean")
-                                .HasColumnName("rsvp_allow_dietary_requirements");
-
-                            b1.Property<string>("ColorTheme")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("rsvp_color_theme");
-
-                            b1.Property<string>("HeaderImageUrl")
-                                .HasColumnType("text")
-                                .HasColumnName("rsvp_header_image_url");
-
-                            b1.Property<string>("Headline")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("rsvp_headline");
-
-                            b1.Property<string>("Message")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("rsvp_message");
-
-                            b1.Property<bool>("RequireAttendanceTracking")
-                                .HasColumnType("boolean")
-                                .HasColumnName("rsvp_require_attendance_tracking");
-
-                            b1.Property<string>("TypographyTheme")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("rsvp_typography_theme");
-
-                            b1.HasKey("EventId");
-
-                            b1.ToTable("events");
-
-                            b1.WithOwner()
-                                .HasForeignKey("EventId")
-                                .HasConstraintName("fk_events_events_id");
-                        });
-
                     b.Navigation("Date")
                         .IsRequired();
-
-                    b.Navigation("RsvpConfig");
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.Guest", b =>

@@ -34,6 +34,11 @@
   --color-success-container: #064e3b;
   --color-accent: #a78bfa;
   --color-on-primary: #00020a;
+
+  /* RGB equivalents for transparency effects */
+  --color-primary-rgb: 167, 139, 250;
+  --color-surface-container-lowest-rgb: 26, 26, 26;
+  --color-outline-variant-rgb: 75, 85, 99;
 }
 
 /* Light Theme (Dashboard defaults) */
@@ -51,6 +56,11 @@
   --color-success-container: #ecfdf5;
   --color-accent: #4f46e5;
   --color-on-primary: #ffffff;
+
+  /* RGB equivalents for transparency effects */
+  --color-primary-rgb: 79, 70, 229;
+  --color-surface-container-lowest-rgb: 255, 255, 255;
+  --color-outline-variant-rgb: 229, 231, 235;
 }
 
 /* Sheen animations */

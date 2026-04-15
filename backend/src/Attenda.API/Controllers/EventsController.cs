@@ -4,6 +4,8 @@ using Attenda.Application.Events.Commands.CreateEvent;
 using Attenda.Application.Events.Commands.DeleteEvent;
 using Attenda.Application.Events.Commands.ToggleEventStatus;
 using Attenda.Application.Events.Queries.GetEventDashboard;
+using Attenda.Application.Events.Commands.UpdateRsvpConfig;
+using Attenda.Application.Events.Queries.GetRsvpConfig;
 using Attenda.Application.Common.Interfaces;
 using Attenda.Domain.Interfaces;
 
@@ -203,6 +205,81 @@ public class EventsController : ControllerBase
         _eventRepository.Update(@event);
         await _unitOfWork.SaveChangesAsync(HttpContext.RequestAborted);
         
+        return Ok(new { imageUrl });
+    }
+    [HttpPut("{id}/rsvp-config")]
+    public async Task<IActionResult> UpdateRsvpConfig(Guid id, [FromBody] Attenda.Application.Events.Commands.UpdateRsvpConfig.UpdateRsvpConfigCommand commandFromBody)
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdString, out var userId))
+            return Unauthorized();
+
+        if (id != commandFromBody.EventId)
+            return BadRequest("ID mismatch");
+
+        var result = await _mediator.Send(commandFromBody);
+        
+        if (!result) 
+            return NotFound();
+        
+        return Ok();
+    }
+
+    [HttpGet("{id}/rsvp-config")]
+    public async Task<IActionResult> GetRsvpConfigInternal(Guid id)
+    {
+        try
+        {
+            var query = new GetRsvpConfigQuery(id);
+            var result = await _mediator.Send(query);
+            Console.WriteLine($"[GetRsvpConfigInternal] result: {System.Text.Json.JsonSerializer.Serialize(result)}");
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { error = "Event not found" });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[GetRsvpConfigInternal] Error: {ex.Message}");
+            throw;
+        }
+    }
+
+    [HttpPost("{id}/rsvp-image")]
+    public async Task<IActionResult> UploadRsvpImage(Guid id, [FromForm] IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded");
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        
+        if (!allowedExtensions.Contains(extension))
+            return BadRequest("Invalid file type. Only JPG, PNG, and WEBP are allowed.");
+
+        if (file.Length > 5 * 1024 * 1024) // 5MB limit user constraint
+            return BadRequest("File too large. Maximum size is 5MB.");
+
+        string imageUrl;
+        try
+        {
+            using (var stream = file.OpenReadStream())
+            {
+                // UploadImageAsync already compresses and resizes image to < 1MB under the hood
+                imageUrl = await _imageStorageService.UploadImageAsync(stream, $"rsvp_{id}_{file.FileName}", HttpContext.RequestAborted);
+            }
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error processing or uploading image", details = ex.Message });
+        }
+
+        // We only save the image to the storage, the frontend will then call PUT /rsvp-config to actually link it
+        // OR we can update it immediately here if the event exists
+        var @event = await _eventRepository.GetByIdAsync(id, HttpContext.RequestAborted);
+        if (@event == null) return NotFound();
+
         return Ok(new { imageUrl });
     }
 }
