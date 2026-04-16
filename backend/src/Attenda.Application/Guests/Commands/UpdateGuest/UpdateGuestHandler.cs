@@ -41,21 +41,6 @@ public class UpdateGuestHandler : IRequestHandler<UpdateGuestCommand, Unit>
             .Select(dr => DietaryRestriction.Create(dr))
             .ToList();
 
-        guest.UpdateDetails(
-            request.FirstName,
-            request.LastName,
-            PhoneNumber.Create(request.PhoneNumber),
-            request.Notes,
-            dietaryRestrictions
-        );
-
-        guest.UpdatePlusOnes(request.PlusOnes);
-
-        if (Enum.TryParse<RsvpStatus>(request.RsvpStatus, out var status))
-        {
-            guest.UpdateRsvpStatus(status);
-        }
-
         Guid? groupId = request.GuestGroupId;
         if (groupId == null && !string.IsNullOrWhiteSpace(request.GroupName))
         {
@@ -66,6 +51,23 @@ public class UpdateGuestHandler : IRequestHandler<UpdateGuestCommand, Unit>
                 group = @event.GuestGroups.First(g => g.Name.Equals(request.GroupName, StringComparison.OrdinalIgnoreCase));
             }
             groupId = group.Id;
+        }
+
+        guest.UpdateDetails(
+            request.FirstName,
+            request.LastName,
+            PhoneNumber.Create(request.PhoneNumber),
+            request.Extras,
+            groupId,
+            dietaryRestrictions,
+            request.PrivateNotes
+        );
+
+        guest.UpdatePlusOnes(request.PlusOnes);
+
+        if (Enum.TryParse<RsvpStatus>(request.RsvpStatus, out var status))
+        {
+            guest.UpdateRsvpStatus(status);
         }
 
         guest.MoveToGroup(groupId);

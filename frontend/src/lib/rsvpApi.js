@@ -26,28 +26,17 @@ export const rsvpApi = {
     return await apiClient.uploadImage(`/events/${eventId}/rsvp-image`, imageFile);
   },
 
-  // Anonymous endpoint - no auth required
   fetchRsvpConfig: async (eventId) => {
-    const url = ensureHttps(`${BACKEND_URL}/events/${eventId}/rsvp-config`);
-    console.log('[fetchRsvpConfig] Requesting:', url);
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    return await apiClient.get(`/events/${eventId}/rsvp-config`);
+  },
 
-    console.log('[fetchRsvpConfig] Response status:', response.status);
-    
-    if (!response.ok) {
-      const text = await response.text();
-      console.error('[fetchRsvpConfig] Error response:', text);
-      throw new Error(`Error ${response.status}: ${text || 'An error occurred'}`);
-    }
+  // Public guest flow
+  fetchGuestByToken: async (token) => {
+    return await apiClient.get(`/rsvp/${token}`);
+  },
 
-    const data = await response.json();
-    console.log('[fetchRsvpConfig] Data received:', data);
-    return data;
+  confirmRsvp: async (payload) => {
+    // Payload: { token, status, plusOnes: [{ firstName, phoneNumber }] }
+    return await apiClient.post(`/rsvp/confirm`, payload);
   }
 };

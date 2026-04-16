@@ -39,7 +39,7 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           
           {/* Public RSVP Page - No authentication required */}
-          <Route path="/rsvp/:eventId" element={<RsvpPage />} />
+          <Route path="/rsvp" element={<RsvpPage />} />
         </Route>
 
         {/* Protected Dashboard Pages */}

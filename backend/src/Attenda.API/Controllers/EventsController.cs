@@ -226,6 +226,7 @@ public class EventsController : ControllerBase
     }
 
     [HttpGet("{id}/rsvp-config")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetRsvpConfigInternal(Guid id)
     {
         try

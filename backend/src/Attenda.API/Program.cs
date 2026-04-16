@@ -158,49 +158,6 @@ if (app.Environment.IsDevelopment())
 // Welcome Endpoint
 app.MapGet("/", () => Results.Ok(new { message = "Attenda API is running 🚀", environment = app.Environment.EnvironmentName, version = "1.0.0" }));
 
-// Debug Endpoint - Get All Guests (Bypass Auth & Domain Validation)
-app.MapGet("/api/debug/guests", async (Attenda.Infrastructure.Persistence.AppDbContext dbContext) =>
-{
-    try
-    {
-        // Projecting to a simple dynamic object with null checks to avoid mapping errors
-        var guestList = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
-            dbContext.Set<Attenda.Domain.Aggregates.EventAggregate.Guest>()
-                .Select(g => new {
-                    g.Id,
-                    FirstName = g.FirstName ?? "Anonymous",
-                    LastName = g.LastName ?? "",
-                    RsvpStatus = g.RsvpStatus.ToString(),
-                    PhoneNumber = g.PhoneNumber != null ? g.PhoneNumber.Value : "",
-                    g.Notes
-                })
-        );
-        return Results.Ok(guestList);
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem($"Database Error: {ex.Message}");
-    }
-});
-
-// Debug Endpoint - DB Connectivity Check
-app.MapGet("/api/debug/db-health", async (Attenda.Infrastructure.Persistence.AppDbContext dbContext) =>
-{
-    try
-    {
-        var canConnect = await dbContext.Database.CanConnectAsync();
-        if (!canConnect) return Results.Problem("Cannot connect to database. Check your connection string and password.");
-        
-        // Use the correct namespace for Guest entity and ensure EntityFrameworkCore is used
-        var guestCount = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.CountAsync(dbContext.Set<Attenda.Domain.Aggregates.EventAggregate.Guest>());
-        return Results.Ok(new { status = "Healthy", message = "Connected to Supabase DB", count = guestCount });
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem($"Database Error: {ex.Message}");
-    }
-});
-
 app.UseStaticFiles();
 app.UseCors("AllowAll");
 app.UseAuthentication();

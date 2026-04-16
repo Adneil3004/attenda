@@ -14,4 +14,6 @@ public record UpdateGuestCommand(
     string? GroupName,
     List<string> DietaryRestrictions,
     string? Notes,
+    int Extras,
+    string? PrivateNotes,
     Guid UserId) : IRequest<Unit>;

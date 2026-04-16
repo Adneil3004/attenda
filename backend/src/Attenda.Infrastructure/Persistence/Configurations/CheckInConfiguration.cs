@@ -27,7 +27,6 @@ public class CheckInConfiguration : IEntityTypeConfiguration<CheckIn>
             .OnDelete(DeleteBehavior.Cascade);
 
         // Relación con Event (Cascade Delete)
-        // Nota: El Evento también tiene una colección de CheckIns configurada en EventConfiguration
         builder.HasOne<Event>()
             .WithMany(e => e.CheckIns)
             .HasForeignKey("event_id")

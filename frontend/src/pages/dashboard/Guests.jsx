@@ -4,10 +4,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import GuestDrawer from '../../components/dashboard/GuestDrawer';
 import ConfirmationModal from '../../components/dashboard/ConfirmationModal';
 import { apiClient } from '../../lib/api';
-import { useParams } from 'react-router-dom';
+import { rsvpApi } from '../../lib/rsvpApi';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const Guests = () => {
   const { eventId } = useParams();
+  const navigate = useNavigate();
   const { user, session } = useAuth();
   
   // States
@@ -16,6 +18,10 @@ const Guests = () => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
+  const [hasRsvpConfig, setHasRsvpConfig] = useState(false);
+  const [checkingRsvp, setCheckingRsvp] = useState(true);
+  const [notification, setNotification] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Drawer state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -58,32 +64,56 @@ const Guests = () => {
 
   const fetchData = useCallback(async () => {
     if (!user || !eventId) return;
-    setLoading(true);
+    
+    // Only show full loading the very first time
+    const isFirstLoad = !activeEvent && guests.length === 0;
+    if (isFirstLoad) {
+      setLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
+    
     setErrorMsg('');
 
     try {
-      // 1. Ensure we have event details
-      await fetchEventDetails();
-      
-      // 2. Fetch Groups for this event from Backend
-      const groupsData = await apiClient.get(`/Groups/event/${eventId}`);
-      setGroups(groupsData || []);
+      // Parallelize all data fetching
+      const [eventData, groupsData, guestsData, rsvpConfig] = await Promise.all([
+        apiClient.get(`/events/${eventId}`),
+        apiClient.get(`/Groups/event/${eventId}`),
+        apiClient.get(`/Guests/event/${eventId}`),
+        rsvpApi.fetchRsvpConfig(eventId).catch(() => null)
+      ]);
 
-      // 3. Fetch Guests for this event from Backend
-      const guestsData = await apiClient.get(`/Guests/event/${eventId}`);
+      if (eventData) setActiveEvent(eventData);
+      setGroups(groupsData || []);
       setGuests(guestsData || []);
+      
+      if (rsvpConfig) {
+        setHasRsvpConfig(rsvpConfig.isConfigured || false);
+      } else {
+        setHasRsvpConfig(false);
+      }
       
     } catch (err) {
       setErrorMsg(err.message || 'Failed to load guest data.');
       console.error(err);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
+      setCheckingRsvp(false);
     }
-  }, [user, session, eventId, fetchEventDetails]);
+  }, [user, eventId]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+  
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   const openDrawer = (guest = null) => {
     setSelectedGuest(guest);
@@ -298,6 +328,20 @@ const Guests = () => {
 
   return (
     <>
+      {notification && (
+        <div className={`fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 duration-300 p-4 rounded-xl shadow-2xl flex items-center gap-3 border ${
+          notification.type === 'success' ? 'bg-[#19b359] border-[#1a9a4e] text-white' : 
+          notification.type === 'warning' ? 'bg-[#f5a623] border-[#d98d1a] text-white' : 
+          'bg-gray-800 border-gray-700 text-white'
+        }`}>
+          {notification.type === 'success' ? (
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+          ) : (
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+          )}
+          <p className="text-sm font-bold pr-2">{notification.message}</p>
+        </div>
+      )}
       <div className="flex flex-col h-full w-full">
         {/* Header & Controls */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -371,6 +415,25 @@ const Guests = () => {
                 <input type="file" accept=".csv" className="hidden" onChange={handleImportCSV} />
               </label>
 
+              {/* Enviar Invitaciones Button */}
+              <button 
+                onClick={() => {
+                  if (!hasRsvpConfig) {
+                    setNotification({ type: 'warning', message: 'Primero debés crear el diseño del RSVP' });
+                    return;
+                  }
+                }}
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-md text-xs font-bold transition-all ambient-shadow ${
+                  !hasRsvpConfig ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#4B6BFB] text-white hover:bg-opacity-90'
+                }`}
+                title={hasRsvpConfig ? "Enviar link de registro a todos los invitados" : "Configurá primero el RSVP en el Designer"}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+                <span className="hidden lg:inline">Enviar Invitaciones</span>
+              </button>
+
               {/* Add Guest Button */}
               <button 
                 onClick={() => openDrawer()}
@@ -437,8 +500,26 @@ const Guests = () => {
         {/* The No-Divider Table Container */}
         <div className="bg-[var(--color-surface-container-lowest)] rounded-xl ambient-shadow flex-1 flex flex-col border border-gray-100 overflow-hidden">
           <div className="flex-1 overflow-auto">
-            <div className="min-w-[850px]">
-              {/* Table Header */}
+            <div className={`primary-card overflow-hidden transition-all duration-300 ${isRefreshing ? 'ring-1 ring-[var(--color-secondary)]' : ''}`}>
+              {/* Header con indicadores */}
+              <div className="flex justify-between items-center px-6 py-4 border-b border-gray-50 bg-gray-50/30">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-[var(--color-primary)] uppercase tracking-wider">Lista Principal</span>
+                  {isRefreshing && (
+                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[var(--color-secondary)]/10 text-[var(--color-secondary)] text-[10px] font-bold animate-pulse">
+                      <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      ACTUALIZANDO...
+                    </span>
+                  )}
+                </div>
+                <div className="text-[10px] font-semibold text-gray-400">
+                  {filteredGuests.length} de {guests.length} invitados mostrados
+                </div>
+              </div>
+
+              {/* Table Header Section */}
               <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-[var(--color-surface-container-high)] border-b border-[var(--color-outline-variant)]/20 text-[11px] font-black uppercase tracking-widest text-[var(--color-primary)] items-center sticky top-0 z-10">
                 <div className="col-span-1 flex justify-center">
                   <input 
@@ -448,10 +529,11 @@ const Guests = () => {
                     className="w-4 h-4 rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] cursor-pointer"
                   />
                 </div>
-                <div className="col-span-6 md:col-span-4 lg:col-span-3">Guest Name</div>
-                <div className="col-span-2">Status</div>
-                <div className="hidden md:block col-span-2">Group</div>
-                <div className="hidden lg:block col-span-2">Dietary</div>
+                <div className="col-span-6 md:col-span-4 lg:col-span-3">Invitado</div>
+                <div className="hidden sm:block col-span-1 text-center">Extras</div>
+                <div className="col-span-2">Estado</div>
+                <div className="hidden md:block col-span-2">Grupo</div>
+                <div className="hidden lg:block col-span-1">Dietary</div>
                 <div className="col-span-3 md:col-span-3 lg:col-span-2 text-center">Acciones</div>
               </div>
               
@@ -489,12 +571,46 @@ const Guests = () => {
                         <p className="font-semibold text-[var(--color-primary)] text-sm">{guest.firstName} {guest.lastName}</p>
                         <p className="text-[10px] text-gray-400 mt-0.5">{guest.phoneNumber}</p>
                       </div>
+                      <div className="hidden sm:block col-span-1 text-center">
+                        <span className={`text-xs font-bold ${guest.plusOnes > 0 ? 'text-[var(--color-secondary)]' : 'text-gray-300'}`}>
+                          +{guest.plusOnes}
+                        </span>
+                      </div>
                       <div className="col-span-2">{getStatusBadge(guest.rsvpStatus)}</div>
                       <div className="hidden md:block col-span-2 text-sm text-[var(--color-on-surface-variant)]">{guest.groupName || '—'}</div>
-                      <div className="hidden lg:block col-span-2 text-sm text-[var(--color-on-surface-variant)] truncate">{guest.dietaryRestrictions?.join(', ') || '—'}</div>
-                      <div className="col-span-3 md:col-span-3 lg:col-span-2 flex items-center justify-center gap-2">
+                      <div className="hidden lg:block col-span-1 text-sm text-[var(--color-on-surface-variant)] truncate">{guest.dietaryRestrictions?.join(', ') || '—'}</div>
+                      <div className="col-span-3 md:col-span-3 lg:col-span-2 flex items-center justify-center gap-1.5">
                         <button 
-                          className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-[var(--color-primary)] hover:text-white transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-300 shadow-sm ${
+                            !hasRsvpConfig ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white'
+                          }`}
+                          onClick={async (e) => { 
+                            e.stopPropagation(); 
+                            if (!hasRsvpConfig) return;
+                            
+                            try {
+                              // 1. Log the invitation sent in backend
+                              await apiClient.post(`/Guests/event/${eventId}/guest/${guest.id}/log-invitation`);
+                              setNotification({ type: 'success', message: '¡Invitación registrada como enviada!' });
+                              
+                              // 2. Open RSVP link
+                              const rsvpUrl = `${window.location.origin}/rsvp?token=${guest.token}`;
+                              window.open(rsvpUrl, '_blank');
+                              
+                              // 3. Refresh list to show log in drawer if opened
+                              fetchData();
+                            } catch (err) {
+                              console.error('Error logging invitation:', err);
+                            }
+                          }}
+                          title={hasRsvpConfig ? "Enviar link de RSVP (Registra acción)" : "Configurá primero el RSVP"}
+                        >
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.659 1.432 5.631 1.433h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                          </svg>
+                        </button>
+                        <button 
+                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:bg-[var(--color-primary)] hover:text-white transition-all duration-300 shadow-sm"
                           onClick={(e) => { e.stopPropagation(); openDrawer(guest); }}
                           title="Editar Invitado"
                         >
@@ -503,7 +619,7 @@ const Guests = () => {
                           </svg>
                         </button>
                         <button 
-                          className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-50 text-red-300 hover:bg-red-500 hover:text-white transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-300 hover:bg-red-500 hover:text-white transition-all duration-300 shadow-sm"
                           onClick={(e) => { e.stopPropagation(); handleDeleteSingle(guest); }}
                           title="Eliminar Invitado"
                         >

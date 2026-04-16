@@ -3,6 +3,7 @@ using System;
 using Attenda.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Attenda.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260416044218_AddInvitationSentToGuests")]
+    partial class AddInvitationSentToGuests
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,7 +34,7 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CheckInTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("EventId")
+                    b.Property<Guid?>("EventId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("GuestId")
@@ -40,6 +43,9 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                     b.Property<string>("ScannedBy")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("event_id")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -398,8 +404,7 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                     b.HasOne("Attenda.Domain.Aggregates.EventAggregate.Event", null)
                         .WithMany("CheckIns")
                         .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Attenda.Domain.Aggregates.EventAggregate.Guest", null)
                         .WithMany()

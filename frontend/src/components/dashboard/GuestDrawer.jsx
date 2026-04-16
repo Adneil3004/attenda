@@ -13,7 +13,8 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
   const [groupId, setGroupId] = useState('');
   const [groupName, setGroupName] = useState('');
   const [diet, setDiet] = useState('');
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(''); // This maps to PrivateNotes
+  const [activityLog, setActivityLog] = useState([]); // This maps to Notes (JSON)
 
   const socialGroups = ['Familia', 'Padrinos', 'Amigos', 'Compañeros de trabajo', 'Otros'];
   const corporateGroups = ['Directivos', 'Gerentes', 'Empleados', 'Proveedores', 'Clientes', 'Otros'];
@@ -29,7 +30,18 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
       setGroupId(guest.guestGroupId || '');
       setGroupName(guest.groupName || '');
       setDiet(guest.dietaryRestrictions ? guest.dietaryRestrictions.join(', ') : '');
-      setNotes(guest.notes || '');
+      setNotes(guest.privateNotes || '');
+      
+      // Parse Activity Log
+      try {
+        if (guest.notes && (guest.notes.startsWith('[') || guest.notes.startsWith('{'))) {
+          setActivityLog(JSON.parse(guest.notes));
+        } else {
+          setActivityLog(guest.notes ? [{ at: new Date().toISOString(), action: 'legacy_note', detail: guest.notes }] : []);
+        }
+      } catch (e) {
+        setActivityLog([]);
+      }
     } else {
       setFirstName('');
       setLastName('');
@@ -64,7 +76,8 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
       guestGroupId: groupId || null,
       groupName: groupId ? null : (groupName || null),
       dietaryRestrictions: diet ? diet.split(',').map(s => s.trim()).filter(s => s) : [],
-      notes: notes || ''
+      privateNotes: notes || '',
+      notes: guest?.notes || '' // Keep logs intact
     };
 
     try {
@@ -223,13 +236,48 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
           <div className="flex flex-col">
             <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Notas Privadas</label>
             <textarea 
-              rows="4"
+              rows="3"
               value={notes}
               onChange={e => setNotes(e.target.value)}
               className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm resize-none"
               placeholder="Notas internas sobre este invitado..."
             ></textarea>
           </div>
+
+          {/* Activity Log Section */}
+          {guest && (
+            <div className="flex flex-col space-y-3 pt-2">
+              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] flex items-center gap-2">
+                <svg className="w-4 h-4 text-[var(--color-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Historial de Actividad
+              </label>
+              <div className="bg-gray-50/50 rounded-xl border border-gray-100 overflow-hidden">
+                {activityLog.length === 0 ? (
+                  <div className="px-4 py-6 text-center text-xs text-gray-400 italic">No hay actividad registrada aún.</div>
+                ) : (
+                  <div className="divide-y divide-gray-100 max-h-60 overflow-y-auto">
+                    {activityLog.sort((a,b) => new Date(b.at) - new Date(a.at)).map((log, i) => (
+                      <div key={i} className="px-4 py-3 flex flex-col gap-1 hover:bg-white transition-colors">
+                        <div className="flex justify-between items-start">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-secondary)]">
+                            {log.action.replace(/_/g, ' ')}
+                          </span>
+                          <span className="text-[9px] text-gray-400 font-medium">
+                            {new Date(log.at).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-600 leading-relaxed">
+                          {log.detail}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="pt-8 pb-4">
             <button 

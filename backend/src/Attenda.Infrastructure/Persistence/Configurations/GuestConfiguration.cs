@@ -13,6 +13,9 @@ public class GuestConfiguration : IEntityTypeConfiguration<Guest>
 
         builder.Property(g => g.FirstName).IsRequired().HasMaxLength(100);
         builder.Property(g => g.LastName).IsRequired().HasMaxLength(100);
+        builder.Property(g => g.InvitationSent)
+            .HasColumnName("invitation_sent")
+            .HasDefaultValue(false);
 
         builder.Property(g => g.PhoneNumber)
             .HasConversion(
@@ -31,7 +34,7 @@ public class GuestConfiguration : IEntityTypeConfiguration<Guest>
 
         // Índices de Rendimiento e Integridad
         builder.HasIndex(g => g.RsvpToken).IsUnique();
-        builder.HasIndex("event_id", "PhoneNumber").IsUnique();
+        builder.HasIndex(g => new { g.EventId, g.PhoneNumber }).IsUnique();
 
         builder.OwnsMany(g => g.DietaryRestrictions, a =>
         {
@@ -39,6 +42,9 @@ public class GuestConfiguration : IEntityTypeConfiguration<Guest>
             a.WithOwner().HasForeignKey("guest_id");
             a.Property(x => x.Name).HasColumnName("restriction_name");
         });
+
+        builder.Property(g => g.PrivateNotes)
+            .HasColumnName("private_notes");
 
         // Relación con GuestGroup (SetNull para evitar borrar invitados)
         builder.HasOne<GuestGroup>()

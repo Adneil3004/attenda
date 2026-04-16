@@ -3,6 +3,7 @@ using Attenda.Application.Guests.Commands.DeleteAllGuests;
 using Attenda.Application.Guests.Commands.DeleteGuests;
 using Attenda.Application.Guests.Commands.ImportGuests;
 using Attenda.Application.Guests.Commands.UpdateGuest;
+using Attenda.Application.Guests.Commands.LogInvitationSent;
 using Attenda.Application.Guests.Queries.GetGuests;
 using Attenda.Application.Guests.Queries.GetGuestGroups;
 using Attenda.Application.Guests.DTOs;
@@ -118,6 +119,8 @@ public class GuestsController : ControllerBase
             request.GroupName,
             request.DietaryRestrictions,
             request.Notes,
+            request.Extras,
+            request.PrivateNotes,
             userId);
 
         await _mediator.Send(command);
@@ -151,8 +154,17 @@ public class GuestsController : ControllerBase
 
         var command = new DeleteAllGuestsCommand(eventId, userId);
         await _mediator.Send(command);
-
         return NoContent();
+    }
+
+    [HttpPost("event/{eventId}/guest/{guestId}/log-invitation")]
+    public async Task<IActionResult> LogInvitationSent(Guid eventId, Guid guestId)
+    {
+        var command = new LogInvitationSentCommand(eventId, guestId);
+        var result = await _mediator.Send(command);
+
+        if (!result) return NotFound();
+        return Ok();
     }
 }
 
@@ -179,4 +191,6 @@ public record UpdateGuestRequest(
     Guid? GuestGroupId,
     string? GroupName,
     List<string> DietaryRestrictions,
-    string? Notes);
+    string? Notes,
+    string? PrivateNotes,
+    int Extras = 0);

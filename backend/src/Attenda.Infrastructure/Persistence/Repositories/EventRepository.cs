@@ -21,6 +21,16 @@ public class EventRepository : IEventRepository
             .Include(e => e.TaskItems)
             .Include(e => e.CheckIns)
             .Include(e => e.Tables)
+            .Include(e => e.RsvpConfig)
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+    }
+
+    public async Task<Event?> GetWithGuestsAndGroupsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Events
+            .AsNoTracking()
+            .Include(e => e.Guests)
+            .Include(e => e.GuestGroups)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
@@ -32,6 +42,7 @@ public class EventRepository : IEventRepository
             .Include(e => e.TaskItems)
             .Include(e => e.CheckIns)
             .Include(e => e.Tables)
+            .Include(e => e.RsvpConfig)
             .Where(e => e.OrganizerId == organizerId)
             .OrderByDescending(e => e.Date.StartDate)
             .ToListAsync(cancellationToken);
@@ -42,4 +53,14 @@ public class EventRepository : IEventRepository
     public void Update(Event @event) => _context.Events.Update(@event);
 
     public void Delete(Event @event) => _context.Events.Remove(@event);
+
+    public async Task<Guest?> GetGuestByTokenAsync(string token, CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(token, out var tokenGuid))
+            return null;
+            
+        // Use ToListAsync to avoid translation issues with RsvpToken.Value
+        var guests = await _context.Set<Guest>().ToListAsync(cancellationToken);
+        return guests.FirstOrDefault(g => g.RsvpToken.Value == tokenGuid);
+    }
 }

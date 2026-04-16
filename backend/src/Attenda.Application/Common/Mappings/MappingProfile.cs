@@ -17,6 +17,6 @@ public class MappingProfile : Profile
         CreateMap<Guest, GuestDto>()
             .ForMember(d => d.PhoneNumber, opt => opt.MapFrom(s => s.PhoneNumber != null ? s.PhoneNumber.Value : ""))
             .ForMember(d => d.RsvpStatus, opt => opt.MapFrom(s => s.RsvpStatus.ToString()))
-            .ForMember(d => d.DietaryRestrictions, opt => opt.MapFrom(s => s.DietaryRestrictions.Select(r => r.Name).ToList()));
+            .ForMember(d => d.Token, opt => opt.MapFrom(s => s.RsvpToken.Value));
     }
 }

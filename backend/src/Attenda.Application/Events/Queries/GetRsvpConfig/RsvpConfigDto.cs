@@ -7,6 +7,7 @@ public class RsvpConfigDto
     public DateTime EventDate { get; set; }
     public string VenueName { get; set; } = string.Empty;
     public RsvpConfigDetailsDto RsvpConfig { get; set; } = new();
+    public bool IsConfigured { get; set; }
 }
 
 public class RsvpConfigDetailsDto
