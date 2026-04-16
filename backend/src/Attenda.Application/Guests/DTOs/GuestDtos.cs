@@ -9,8 +9,9 @@ public record GuestDto(
     string RsvpStatus,
     Guid? GuestGroupId,
     string? GroupName,
-    List<string> DietaryRestrictions,
-    string? Notes);
+    string? Notes,
+    string? Token,
+    bool InvitationSent);
 
 public record GuestDetailsDto(
     Guid Id,
@@ -34,3 +35,21 @@ public record GuestImportDto(
     List<string>? DietaryRestrictions,
     string? Notes);
 
+public record GuestRsvpDto(
+    Guid Id,
+    Guid EventId,
+    string FirstName,
+    string LastName,
+    string? PhoneNumber,
+    int PlusOnes,
+    string RsvpStatus,
+    bool AlreadyResponded,
+    Guid? GuestGroupId,
+    string? RsvpHeadline,
+    string? RsvpMessage,
+    string? EventName,
+    string? EventDate,
+    string? VenueName,
+    string? ColorTheme,
+    string? TypographyTheme,
+    string? HeaderImageUrl);

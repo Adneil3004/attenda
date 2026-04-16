@@ -52,29 +52,31 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
 
         builder.OwnsOne(e => e.RsvpConfig, rsvp =>
         {
-            rsvp.Property(r => r.Headline).HasColumnName("rsvp_headline");
-            rsvp.Property(r => r.Message).HasColumnName("rsvp_message");
-            rsvp.Property(r => r.HeaderImageUrl).HasColumnName("rsvp_header_image_url");
-            rsvp.Property(r => r.RequireAttendanceTracking).HasColumnName("rsvp_require_attendance_tracking");
-            rsvp.Property(r => r.AllowDietaryRequirements).HasColumnName("rsvp_allow_dietary_requirements");
-            rsvp.Property(r => r.TypographyTheme).HasColumnName("rsvp_typography_theme");
-            rsvp.Property(r => r.ColorTheme).HasColumnName("rsvp_color_theme");
+            rsvp.ToTable("event_rsvp_configs");
+            rsvp.WithOwner().HasForeignKey("event_id");
+            rsvp.Property(r => r.Headline).HasColumnName("headline");
+            rsvp.Property(r => r.Message).HasColumnName("message");
+            rsvp.Property(r => r.HeaderImageUrl).HasColumnName("header_image_url");
+            rsvp.Property(r => r.RequireAttendanceTracking).HasColumnName("require_attendance_tracking");
+            rsvp.Property(r => r.AllowDietaryRequirements).HasColumnName("allow_dietary_requirements");
+            rsvp.Property(r => r.TypographyTheme).HasColumnName("typography_theme");
+            rsvp.Property(r => r.ColorTheme).HasColumnName("color_theme");
         });
 
 
         builder.HasMany(e => e.Guests)
             .WithOne()
-            .HasForeignKey("event_id")
+            .HasForeignKey("EventId")
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(e => e.GuestGroups)
             .WithOne()
-            .HasForeignKey("event_id")
+            .HasForeignKey("EventId")
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(e => e.TaskItems)
             .WithOne()
-            .HasForeignKey("event_id")
+            .HasForeignKey("EventId")
             .OnDelete(DeleteBehavior.Cascade);
 
 
@@ -85,7 +87,7 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
 
         builder.HasMany(e => e.Tables)
             .WithOne()
-            .HasForeignKey("event_id")
+            .HasForeignKey("EventId")
             .OnDelete(DeleteBehavior.Cascade);
 
         // Access private collections

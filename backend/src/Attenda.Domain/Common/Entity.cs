@@ -10,6 +10,7 @@ public abstract class Entity
 
     protected Entity()
     {
+        Id = Guid.NewGuid();
     }
 
     protected Entity(Guid id)

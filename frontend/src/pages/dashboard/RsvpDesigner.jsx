@@ -34,6 +34,14 @@ const RsvpDesigner = () => {
   });
 
   const [previewImage, setPreviewImage] = useState(null);
+  const [notification, setNotification] = useState(null);
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   useEffect(() => {
     const fetchRsvpConfig = async () => {
@@ -42,25 +50,15 @@ const RsvpDesigner = () => {
         const storedId = localStorage.getItem('activeEventId');
         const effectiveId = eventId || storedId;
         
-        console.log('[RsvpDesigner] eventId from params:', eventId);
-        console.log('[RsvpDesigner] activeEventId from localStorage:', storedId);
-        console.log('[RsvpDesigner] effectiveId:', effectiveId);
-        
         if (!effectiveId) {
-          console.log('[RsvpDesigner] No effectiveId, skipping fetch');
           setLoading(false);
           return;
         }
 
-        console.log('[RsvpDesigner] Fetching RSVP config...');
-        
         // Use authenticated endpoint - returns RsvpConfigDto with nested rsvpConfig
         const data = await apiClient.get(`/events/${effectiveId}/rsvp-config`);
         
-        console.log('[RsvpDesigner] Raw API response:', data);
-        
         if (data && data.rsvpConfig) {
-          console.log('[RsvpDesigner] Setting config from:', data.rsvpConfig);
           setConfig(prev => ({ 
             ...prev, 
             headline: data.rsvpConfig.headline ?? prev.headline,
@@ -74,11 +72,9 @@ const RsvpDesigner = () => {
           if (data.rsvpConfig.headerImageUrl) {
             setPreviewImage(data.rsvpConfig.headerImageUrl);
           }
-        } else {
-          console.log('[RsvpDesigner] No rsvpConfig in response, keeping defaults');
         }
       } catch (err) {
-        console.error("[RsvpDesigner] Failed to load RSVP config", err);
+        // Error is handled by caller, no need to log details
       } finally {
         setLoading(false);
       }
@@ -134,10 +130,13 @@ const RsvpDesigner = () => {
 
       await rsvpApi.saveRsvpConfig(effectiveId, finalConfig);
       setSelectedFile(null); // Clear selected file after successful save
-      alert('Configuración de RSVP guardada exitosamente!');
+      setNotification({ type: 'success', message: 'Configuración guardada exitosamente' });
     } catch (err) {
       console.error(err);
-      alert('Error guardando la configuración: ' + (err.response?.data?.message || err.message));
+      setNotification({ 
+        type: 'error', 
+        message: 'Error al guardar: ' + (err.response?.data?.message || err.message) 
+      });
     } finally {
       setSaving(false);
     }
@@ -294,30 +293,12 @@ const RsvpDesigner = () => {
 
           </div>
 
-          <div className="flex gap-3 mt-8">
-            {/* Preview Button */}
-            <button
-              onClick={() => {
-                const storedId = localStorage.getItem('activeEventId');
-                const effectiveId = eventId || storedId;
-                if (effectiveId) {
-                  window.open(`/attenda/rsvp/${effectiveId}?preview=true`, '_blank');
-                }
-              }}
-              className="flex-1 h-12 bg-transparent border-2 border-[var(--color-primary)] text-[var(--color-primary)] font-bold rounded-xl uppercase tracking-widest text-sm hover:bg-[var(--color-primary)] hover:text-white transition-all cursor-pointer flex items-center justify-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              Preview
-            </button>
-            
+          <div className="flex mt-8">
             {/* Publish Button */}
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 h-12 bg-[var(--color-primary)] text-white font-bold rounded-xl uppercase tracking-widest text-sm hover:brightness-110 transition-all shadow-lg active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full h-12 bg-[var(--color-primary)] text-white font-bold rounded-xl uppercase tracking-widest text-sm hover:brightness-110 transition-all shadow-lg active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
             >
               {saving ? 'Saving...' : 'Publish Changes'}
             </button>
@@ -407,6 +388,63 @@ const RsvpDesigner = () => {
           </div>
         </div>
       </div>
+
+      {/* PREMIUM NOTIFICATION COMPONENT */}
+      {notification && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] transition-all pointer-events-none">
+          <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl border shadow-2xl animate-toast-slide-up pointer-events-auto ${
+            notification.type === 'success' 
+              ? 'bg-emerald-600 border-emerald-500 text-white' 
+              : 'bg-rose-600 border-rose-500 text-white'
+          }`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+              notification.type === 'success' ? 'bg-white/20' : 'bg-white/20'
+            }`}>
+              {notification.type === 'success' ? (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
+            </div>
+            
+            <div className="flex flex-col pr-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70 leading-none mb-1">
+                {notification.type === 'success' ? 'Success' : 'Error'}
+              </span>
+              <span className="text-sm font-bold">
+                {notification.message}
+              </span>
+            </div>
+
+            <button 
+              onClick={() => setNotification(null)}
+              className="ml-2 w-6 h-6 flex items-center justify-center rounded-lg hover:bg-black/10 transition-colors"
+            >
+              <svg className="w-4 h-4 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Style for Animations */}
+      <style>
+        {`
+          @keyframes toast-slide-up {
+            0% { transform: translateY(100%); opacity: 0; }
+            40% { transform: translateY(-10px); opacity: 1; }
+            100% { transform: translateY(0); opacity: 1; }
+          }
+          .animate-toast-slide-up {
+            animation: toast-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
+        `}
+      </style>
     </div>
   );
 };

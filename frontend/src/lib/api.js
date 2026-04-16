@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5263/api';
+// Use environment variable, or fall back to relative URL (same host)
+const BACKEND_URL = import.meta.env.VITE_API_URL || '';
 
 /**
  * Ensures that URLs pointing to the backend use HTTPS in production environments
@@ -55,13 +56,9 @@ export const apiClient = {
 
     if (!response.ok) {
         const error = await response.json().catch(() => ({ message: 'An error occurred' }));
-        if (error.error || error.details) {
-            console.error('[apiClient] Error Details:', { 
-                status: response.status,
-                message: error.message,
-                error: error.error,
-                details: error.details
-            });
+        // Sanitized: only log user-friendly message, never internal details
+        if (import.meta.env.DEV) {
+            console.error('[apiClient]', error.message || `Request failed: ${response.status}`);
         }
         throw new Error(error.message || `Error: ${response.status}`);
     }

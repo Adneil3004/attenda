@@ -39,7 +39,8 @@ public class GetRsvpConfigQueryHandler : IRequestHandler<GetRsvpConfigQuery, Rsv
                 AllowDietaryRequirements = rsvpConfig?.AllowDietaryRequirements ?? false,
                 TypographyTheme = rsvpConfig?.TypographyTheme ?? "Serif",
                 ColorTheme = rsvpConfig?.ColorTheme ?? "Midnight"
-            }
+            },
+            IsConfigured = rsvpConfig != null
         };
     }
 }

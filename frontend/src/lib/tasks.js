@@ -68,11 +68,9 @@ export const tasksApi = {
   // Get all tasks for an event
   async getAll(eventId) {
     if (!eventId) {
-      console.warn('[tasksApi] No eventId provided to getAll');
       return [];
     }
     
-    console.log('[tasksApi] Fetching tasks for eventId:', eventId);
     const tasks = await apiClient.get(`/tasks?eventId=${eventId}`);
     return tasks.map(toFrontendTask);
   },

@@ -1,66 +1,57 @@
-# Attenda Skill Registry
+# 🦾 Attenda Skill Registry
 
-**Project**: attenda  
-**Generated**: 2026-04-13
+This registry maps file extensions and code contexts to specific project standards and skills.
 
-## User-Level Skills (from ~/.config/opencode/skills/)
+## Compact Rules
 
-Found in `~/.config/opencode/skills/` (user-level):
+### Backend Standards (backend/**/*.cs)
+- Follow **Clean Architecture** and **CQRS** patterns with MediatR.
+- Use `Result` pattern for Application Commands to handle success/failure explicitly.
+- **Domain Integrity**: Use Value Objects for validated properties; ensure entities are always in a valid state.
+- **Event Sourcing**: Use `Domain.Aggregates.EventAggregate` for the primary event source logic.
+- Documentation: [ARCHITECTURE.md](file:///Volumes/DHstorage/source/attenda/docs/ARCHITECTURE.md), [DOMAIN_MODELS.md](file:///Volumes/DHstorage/source/attenda/docs/DOMAIN_MODELS.md).
 
-| ID | Name | Trigger |
-|----|------|--------|
-| sdd-init | Spec-Driven Development init | "sdd init", "iniciar sdd" |
-| sdd-explore | Explore and investigate | /sdd-explore |
-| sdd-propose | Create change proposal | /sdd-new |
-| sdd-spec | Write specifications | /sdd-spec |
-| sdd-design | Technical design | /sdd-design |
-| sdd-tasks | Task breakdown | /sdd-tasks |
-| sdd-apply | Implement tasks | /sdd-apply |
-| sdd-verify | Verify implementation | /sdd-verify |
-| sdd-archive | Archive change | /sdd-archive |
-| sdd-onboard | SDD walkthrough | /sdd-onboard |
-| go-testing | Go testing patterns | Go tests, Bubbletea |
-| judgment-day | Adversarial review | "judgment day", "review adversarial" |
-| branch-pr | PR creation | PR creation |
-| issue-creation | Issue creation | Bug report, feature request |
-| skill-registry | Registry update | "update skills" |
-| skill-creator | Create new skill | "create skill" |
+### UI Standards (frontend/**/*.jsx, frontend/**/*.css)
+- **Concierge UI**: Vibrant colors, premium dark mode (high contrast), and fluid animations.
+- **Micro-interactions**: Use `framer-motion` for all transitions and hover effects.
+- **Data Ops**: Use the internal `apiClient` for all data operations; direct Supabase calls are ONLY for auth.
+- Documentation: [AESTHETICS.md](file:///Volumes/DHstorage/source/attenda/docs/AESTHETICS.md), [FRONTEND_GUIDE.md](file:///Volumes/DHstorage/source/attenda/docs/FRONTEND_GUIDE.md).
 
-## Project Conventions
-
-Found in project root:
-
-- `.agent/AGENTS.md` — Agent orchestration hub (Engram pattern)
-- `.agent/rules.md` — Agent rules and standards
-- `.agent/skills_index.md` — Skills index
-- `.agent/roles/` — Role-based tasks
-
-## Project Standards
-
-### Trigger-Based Skills (from .agent/AGENTS.md)
+## SDD Skills (Spec-Driven Development)
 
 | Trigger | Skill | Purpose |
-|---------|-------|---------|
-| Session start | agent_bootstrap.md | Prepare Managin role |
-| Backend modification | backend-architecture.md | Clean Architecture |
-| UI design | ui-concierge.md | Concierge aesthetics |
-| Task completion | agent_logs.md | Report to Director |
+|:--------|:------|:--------|
+| `sdd-init` | **sdd-init** | Initialize SDD context in project |
+| `sdd-explore` | **sdd-explore** | Investigate codebase before committing to change |
+| `sdd-propose` | **sdd-propose** | Create change proposals with intent and scope |
+| `sdd-spec` | **sdd-spec** | Write detailed specifications with scenarios |
+| `sdd-design` | **sdd-design** | Create technical design documents |
+| `sdd-tasks` | **sdd-tasks** | Break down specs into implementation tasks |
+| `sdd-apply` | **sdd-apply** | Implement tasks from SDD phase |
+| `sdd-verify` | **sdd-verify** | Validate implementation against specs |
+| `sdd-archive` | **sdd-archive** | Archive completed changes |
 
-### Compact Rules
+## User Skills
 
-**Frontend (React)**:
-- All visible text: **ENGLISH**
-- Use internal API for data (not Supabase directly)
-- Premium aesthetics: glassmorphism, smooth animations
+| Skill | Matcher | Purpose |
+|:------|:--------|:--------|
+| **dotnet-backend** | **code**: `backend/src/**/*.cs` | Clean Architecture & .NET Core services. |
+| **react-patterns** | **code**: `frontend/src/**/*.jsx` | Modern React patterns and best practices. |
+| **ui-concierge** | **task**: `ui-design` | Premium design and interactive refinement. |
 
-**Backend (.NET)**:
-- Clean Architecture + MediatR (CQRS)
-- Entity Framework Core + PostgreSQL
+## Project Rulesets
 
-**Testing**:
-- Backend: xUnit + NSubstitute
-- No TDD in frontend (no test runner)
+| File | Type | Purpose |
+|:-----|:-----|:--------|
+| **docs/ARCHITECTURE.md** | **context** | Global architectural blueprints. |
+| **openspec/config.yaml** | **config** | SDD configuration and testing capabilities. |
 
----
+## Testing Stack
 
-*This registry is mode-independent infrastructure. Re-generate with `skill-registry` skill when skills change.*
+| Layer | Tool | Command |
+|:------|:-----|:--------|
+| Unit (Backend) | xUnit + NSubstitute | `dotnet test` |
+| Coverage | Coverlet | `dotnet test /p:CollectCoverage=true` |
+| Frontend Lint | ESLint | `npm run lint` |
+| Type Check | TypeScript | `npx tsc --noEmit` |
+| Format | .NET Format | `dotnet format` |

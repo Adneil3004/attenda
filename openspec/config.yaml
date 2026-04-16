@@ -1,0 +1,73 @@
+# openspec/config.yaml
+schema: spec-driven
+
+context: |
+  Tech stack: .NET 8 (Clean Architecture) + React 19 (Vite 8)
+  Backend: Attenda.API + Attenda.Application + Attenda.Domain + Attenda.Infrastructure
+  Frontend: Vite + React + Tailwind CSS v4.2 + framer-motion
+  Database: PostgreSQL via Supabase
+  Auth: Supabase + JWT Bearer
+  CQRS: MediatR
+  Testing: xUnit + NSubstitute + Coverlet
+
+strict_tdd: false
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify affected modules/packages
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group tasks by phase (infrastructure, implementation, testing)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+  apply:
+    - Follow existing code patterns and conventions
+    - Backend: Clean Architecture + CQRS patterns
+    - Frontend: Internal apiClient for data ops, Supabase only for auth
+  verify:
+    - Run tests if test infrastructure exists
+    - Compare implementation against every spec scenario
+  archive:
+    - Warn before merging destructive deltas (large removals)
+
+testing:
+  detected: "2026-04-16"
+  test_runner:
+    command: "dotnet test"
+    framework: "xUnit 2.5.3"
+    mocking: "NSubstitute 5.3.0"
+    coverage: "Coverlet 6.0.0"
+  layers:
+    unit:
+      available: true
+      tool: "xUnit + NSubstitute"
+    integration:
+      available: false
+      note: "WebApplicationFactory not installed"
+    e2e:
+      available: false
+      note: "Not installed"
+  coverage:
+    available: true
+    command: "dotnet test /p:CollectCoverage=true"
+  quality:
+    linter_backend:
+      available: true
+      command: "dotnet format"
+      note: "Standard dotnet format"
+    linter_frontend:
+      available: true
+      command: "npm run lint"
+      tool: "eslint"
+    type_checker_frontend:
+      available: true
+      command: "npx tsc --noEmit"
+    formatter_frontend:
+      available: false
+      note: "prettier not installed"
