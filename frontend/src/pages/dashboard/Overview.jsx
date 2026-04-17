@@ -37,9 +37,17 @@ const Overview = () => {
       if (!user) return;
       setLoading(true);
 
+      const SYSTEM_KEYWORDS = ['create-event', 'my-events', 'table-layout', 'guests', 'tasks', 'settings', 'rsvp-designer', 'edit-event'];
+      const isValidId = (id) => id && !SYSTEM_KEYWORDS.includes(id);
+
       try {
         const storedId = localStorage.getItem('activeEventId');
-        const effectiveId = urlEventId || storedId;
+        
+        // Ensure we don't use system keywords as IDs
+        const cleanUrlId = isValidId(urlEventId) ? urlEventId : null;
+        const cleanStoredId = isValidId(storedId) ? storedId : null;
+        
+        const effectiveId = cleanUrlId || cleanStoredId;
 
         const endpoint = effectiveId ? `/events/${effectiveId}` : '/events/dashboard';
         const dashData = await apiClient.get(endpoint);
@@ -105,7 +113,22 @@ const Overview = () => {
         }
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
-        setError(err.message || 'Failed to load dashboard');
+        
+        // Handle stale event ID or no events (404)
+        if (err.message && err.message.includes('404')) {
+          const wasUsingSpecificId = !!(urlEventId || localStorage.getItem('activeEventId'));
+          localStorage.removeItem('activeEventId');
+
+          if (wasUsingSpecificId) {
+            // If we were trying a specific ID that failed, try the general dashboard (auto-picker)
+            window.location.reload(); // Hard reload is safer to clear all states
+          } else {
+            // If even the general dashboard 404s, it means there are NO events
+            navigate('/dashboard/create-event');
+          }
+        } else {
+          setError(err.message || 'Failed to load dashboard');
+        }
       } finally {
         setLoading(false);
       }
@@ -208,7 +231,9 @@ const Overview = () => {
                     <svg className="w-5 h-5 text-[var(--color-primary)]/50 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                   </div>
                   <span className="text-xs font-black text-[var(--color-primary)] dark:text-white uppercase tracking-wider">
-                    {activeEvent?.eventDate ? new Date(activeEvent.eventDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) : '---'}
+                    {activeEvent?.eventDate 
+                      ? `${new Date(activeEvent.eventDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}, ${new Date(activeEvent.eventDate).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false })} hrs`
+                      : '---'}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">

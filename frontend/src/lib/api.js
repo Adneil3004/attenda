@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 
-// Use environment variable, or fall back to relative URL (same host)
-const BACKEND_URL = import.meta.env.VITE_API_URL || '';
+// Use environment variable, default to localhost for dev
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5263/api';
 
 /**
  * Ensures that URLs pointing to the backend use HTTPS in production environments

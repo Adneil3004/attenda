@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { rsvpApi } from '../lib/rsvpApi';
 
 const THEMES = {
@@ -409,8 +409,8 @@ const RsvpPage = () => {
           )}
 
           {!isPreview && (
-            <div className="mt-16 text-center">
-              <p className="text-[10px] uppercase tracking-[0.2em] opacity-30" style={{ color: 'var(--rsvp-primary)' }}>
+            <div className="mt-8 text-center">
+              <p className="text-[8px] uppercase tracking-[0.15em] opacity-20" style={{ color: 'var(--rsvp-primary)' }}>
                 Powered by <span className="font-bold">Attenda</span>
               </p>
             </div>

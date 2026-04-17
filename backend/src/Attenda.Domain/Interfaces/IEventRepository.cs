@@ -11,4 +11,5 @@ public interface IEventRepository
     void Update(Event @event);
     void Delete(Event @event);
     Task<Guest?> GetGuestByTokenAsync(string token, CancellationToken cancellationToken = default);
+    Task<int> CountActiveEventsByTierAsync(Guid organizerId, string tier, CancellationToken cancellationToken = default);
 }

@@ -36,20 +36,37 @@ public class PaymentPackagesController : ControllerBase
             })
             .ToListAsync();
 
-        // Deserialize features for each package
-        var result = packages.Select(p => new 
-        {
-            p.Name,
-            p.Type,
-            p.Description,
-            p.GuestCount,
-            p.Price,
-            p.Currency,
-            p.HasDiscount,
-            p.DiscountPercentage,
-            Features = string.IsNullOrEmpty(p.FeaturesJson) 
-                ? new Dictionary<string, bool>() 
-                : JsonSerializer.Deserialize<Dictionary<string, bool>>(p.FeaturesJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+        // Deserialize features for each package - handle both bool and number values
+        var result = packages.Select(p => {
+            var featuresDict = new Dictionary<string, bool>();
+            if (!string.IsNullOrEmpty(p.FeaturesJson))
+            {
+                try
+                {
+                    var rawDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(p.FeaturesJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (rawDict != null)
+                    {
+                        foreach (var kvp in rawDict)
+                        {
+                            featuresDict[kvp.Key] = kvp.Value.ValueKind == JsonValueKind.True || 
+                                (kvp.Value.ValueKind == JsonValueKind.Number && kvp.Value.GetInt32() > 0);
+                        }
+                    }
+                }
+                catch { /* ignore parse errors */ }
+            }
+            return new 
+            {
+                p.Name,
+                p.Type,
+                p.Description,
+                p.GuestCount,
+                p.Price,
+                p.Currency,
+                p.HasDiscount,
+                p.DiscountPercentage,
+                Features = featuresDict
+            };
         }).ToList();
 
         return Ok(result);

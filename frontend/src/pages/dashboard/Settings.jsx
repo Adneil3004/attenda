@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
+import { apiClient } from '../../lib/api';
+import PlanCard from '../../components/dashboard/PlanCard';
+import { usePlanDetails } from '../../hooks/usePlanDetails';
 
 
 
@@ -78,6 +81,13 @@ const Settings = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
+  /* ── dashboard/subscription state ── */
+  const [dashboardData, setDashboardData] = useState(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+
+  /* ── plan details hook ── */
+  const { loading: planLoading, matchedPackage } = usePlanDetails(dashboardData);
+
   /* ── load profile ── */
   useEffect(() => {
     if (!user) return;
@@ -98,6 +108,27 @@ const Settings = () => {
         setEditDraft(loaded);
       }
     })();
+  }, [user]);
+
+  /* ── load dashboard (for subscription info) ── */
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchDashboard = async () => {
+      setSubscriptionLoading(true);
+      try {
+        const activeEventId = localStorage.getItem('activeEventId');
+        const endpoint = activeEventId ? `/events/dashboard?eventId=${activeEventId}` : '/events/dashboard';
+        const data = await apiClient.get(endpoint);
+        setDashboardData(data);
+      } catch (err) {
+        console.error('Error fetching subscription data:', err);
+      } finally {
+        setSubscriptionLoading(false);
+      }
+    };
+
+    fetchDashboard();
   }, [user]);
 
   const flash = (setter, type, text) => {
@@ -901,48 +932,11 @@ const Settings = () => {
         {/* ── RIGHT COLUMN ── */}
         <aside className="xl:w-[300px] flex-shrink-0 space-y-6 pt-16">
           {/* Current Plan Card */}
-          <div className="group bg-gradient-to-br from-[#0c142c] via-[#16214d] to-[#0c142c] rounded-xl p-7 text-white shadow-2xl space-y-6 relative overflow-hidden border border-white/10">
-            <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
-              <div className="absolute top-0 -left-[100%] w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-25deg] group-hover:left-[100%] transition-all duration-[1500ms] ease-in-out" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-            </div>
-
-            <div className="relative z-10">
-              <p className="text-[11px] uppercase tracking-[0.2em] text-[#86a3d9] font-bold mb-2">Current Plan</p>
-              <h3 className="text-4xl font-display font-light text-white tracking-tight">
-                Elite <span className="text-sm text-[#86a3d9] font-normal italic ml-1 opacity-80">/ Yearly</span>
-              </h3>
-            </div>
-
-            <p className="relative z-10 text-xs text-white/70 leading-relaxed font-light">
-              Full access to concierge services, priority guest seating, and digital calligraphy.
-            </p>
-
-            <ul className="relative z-10 space-y-3.5">
-              {['Unlimited Invitations', 'Priority Support'].map(f => (
-                <li key={f} className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-white/10 text-white flex items-center justify-center flex-shrink-0 border border-white/20">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-xs text-white/90 font-medium">{f}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="relative z-10 pt-4">
-              <button className="w-full py-3 bg-white text-[#0f1b3d] font-bold text-sm rounded-lg shadow-[0_4px_12px_rgba(255,255,255,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all">
-                Manage Subscription
-              </button>
-            </div>
-
-            <div className="relative z-10 text-center">
-              <button className="text-[11px] text-white/40 hover:text-white transition-colors tracking-widest uppercase font-bold">
-                Cancel Subscription
-              </button>
-            </div>
-          </div>
+          <PlanCard
+            matchedPackage={matchedPackage}
+            isBusiness={dashboardData?.isBusiness}
+            loading={planLoading || subscriptionLoading}
+          />
 
           {/* Privacy Box */}
           <div className="bg-[#f8f9fa] rounded-xl p-5 flex items-start gap-4">

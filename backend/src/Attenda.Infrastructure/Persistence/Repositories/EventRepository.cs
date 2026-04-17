@@ -1,5 +1,6 @@
 using Attenda.Domain.Aggregates.EventAggregate;
 using Attenda.Domain.Interfaces;
+using Attenda.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Attenda.Infrastructure.Persistence.Repositories;
@@ -62,5 +63,14 @@ public class EventRepository : IEventRepository
         // Use ToListAsync to avoid translation issues with RsvpToken.Value
         var guests = await _context.Set<Guest>().ToListAsync(cancellationToken);
         return guests.FirstOrDefault(g => g.RsvpToken.Value == tokenGuid);
+    }
+
+    public async Task<int> CountActiveEventsByTierAsync(Guid organizerId, string tier, CancellationToken cancellationToken = default)
+    {
+        return await _context.Events
+            .CountAsync(e => e.OrganizerId == organizerId && 
+                             e.CapacityTier.ToLower() == tier.ToLower() &&
+                             (e.Status == EventStatus.Active || e.Status == EventStatus.Draft), 
+                        cancellationToken);
     }
 }

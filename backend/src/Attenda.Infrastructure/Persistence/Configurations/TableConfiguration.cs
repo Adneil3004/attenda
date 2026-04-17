@@ -8,7 +8,11 @@ public class TableConfiguration : IEntityTypeConfiguration<Table>
 {
     public void Configure(EntityTypeBuilder<Table> builder)
     {
+        builder.ToTable("tables");
+
         builder.HasKey(t => t.Id);
+        builder.Property(t => t.Id)
+            .ValueGeneratedOnAdd();
 
         builder.Property(t => t.Name)
             .IsRequired()
@@ -20,7 +24,5 @@ public class TableConfiguration : IEntityTypeConfiguration<Table>
         builder.Property(t => t.Priority)
             .HasConversion<string>()
             .IsRequired();
-
-        builder.ToTable("tables");
     }
 }
