@@ -1,21 +1,45 @@
+/**
+ * PlanCard Component
+ * 
+ * Displays the user's current subscription plan with dynamic data
+ * from the PaymentPackages API. Shows plan details, features,
+ * and subscription management buttons.
+ * 
+ * @prop {Object} matchedPackage - The matched package from usePlanDetails
+ * @prop {boolean} isBusiness - Whether account is Business or Personal
+ * @prop {boolean} loading - Loading state
+ * 
+ * @example
+ * <PlanCard
+ *   matchedPackage={matchedPackage}
+ *   isBusiness={dashboardData?.isBusiness}
+ *   loading={planLoading}
+ * />
+ */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FEATURE_LABELS } from '../../constants/featureLabels';
 
 const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
   const navigate = useNavigate();
+  
+  // Modal visibility for cancel confirmation
   const [showCancelModal, setShowCancelModal] = useState(false);
 
+  // Navigate to pricing page to manage/upgrade subscription
   const handleManageSubscription = () => {
     navigate('/pricing');
   };
 
+  // Handle cancel confirmation - TODO: connect to backend API when available
   const handleCancelConfirm = () => {
     setShowCancelModal(false);
     alert('Para cancelar tu suscripción, contacta a soporte.');
   };
 
-  // Loading skeleton
+  // ═══════════════════════════════════════════════════════════════════════════
+  // RENDER: Loading State
+  // ═══════════════════════════════════════════════════════════════════════════
   if (loading) {
     return (
       <div className="bg-gradient-to-br from-[#0c142c] via-[#16214d] to-[#0c142c] rounded-xl p-7 text-white shadow-2xl space-y-6 relative overflow-hidden border border-white/10">
@@ -32,7 +56,14 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
     );
   }
 
-  // Get active features from package
+  // ═══════════════════════════════════════════════════════════════════════════
+  // HELPERS: Extract and format data from matchedPackage
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Get active features from package.features
+   * Filters for true values and maps to human-readable labels
+   */
   const getActiveFeatures = () => {
     if (!matchedPackage?.features) return [];
     return Object.entries(matchedPackage.features)
@@ -40,21 +71,27 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
       .map(([key]) => FEATURE_LABELS[key] || key);
   };
 
-  const activeFeatures = getActiveFeatures();
-
-  // Format guest count
+  /**
+   * Format guest count display
+   * 9999 = unlimited invitations
+   */
   const guestCountDisplay = matchedPackage?.guestCount === 9999
     ? 'Invitaciones Ilimitadas'
     : `${matchedPackage?.guestCount || 20} Invitaciones`;
 
-  // Format price
+  /**
+   * Format price display
+   * 0 = free plan, otherwise monthly price
+   */
   const priceDisplay = matchedPackage?.price === 0
     ? 'Gratis'
     : matchedPackage?.price
       ? `$${matchedPackage.price}/mes`
       : null;
 
-  // Get description based on tier
+  /**
+   * Get tier-specific description
+   */
   const getDescription = () => {
     const tier = matchedPackage?.type?.toLowerCase();
     if (tier === 'elite' || tier === 'planner') {
@@ -63,18 +100,25 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
     return 'Gestiona tus eventos con facilidad y estilo. Actualiza para más funciones.';
   };
 
-  // Plan name and badge
+  // Extract display values
   const planName = matchedPackage?.name || matchedPackage?.type || 'Free';
   const badgeType = isBusiness ? 'Business' : 'Personal';
+  const activeFeatures = getActiveFeatures();
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // RENDER: Main Plan Card
+  // ═══════════════════════════════════════════════════════════════════════════
   return (
     <>
+      {/* Card Container - Dark gradient with sheen effect */}
       <div className="group bg-gradient-to-br from-[#0c142c] via-[#16214d] to-[#0c142c] rounded-xl p-7 text-white shadow-2xl space-y-6 relative overflow-hidden border border-white/10">
+        {/* Animated sheen effect on hover */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
           <div className="absolute top-0 -left-[100%] w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-25deg] group-hover:left-[100%] transition-all duration-[1500ms] ease-in-out" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
         </div>
 
+        {/* Plan Header: Name + Badge */}
         <div className="relative z-10">
           <p className="text-[11px] uppercase tracking-[0.2em] text-[#86a3d9] font-bold mb-2">Current Plan</p>
           <h3 className="text-4xl font-display font-light text-white tracking-tight capitalize">
@@ -82,18 +126,21 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
           </h3>
         </div>
 
+        {/* Price Display */}
         {priceDisplay && (
           <div className="relative z-10">
             <p className="text-2xl font-bold text-white">{priceDisplay}</p>
           </div>
         )}
 
+        {/* Plan Description */}
         <p className="relative z-10 text-xs text-white/70 leading-relaxed font-light">
           {getDescription()}
         </p>
 
+        {/* Features List */}
         <ul className="relative z-10 space-y-3.5">
-          {/* Guest count - always show */}
+          {/* Guest count - always shown first */}
           <li className="flex items-center gap-3">
             <div className="w-5 h-5 rounded-full bg-white/10 text-white flex items-center justify-center flex-shrink-0 border border-white/20">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -103,7 +150,7 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
             <span className="text-xs text-white/90 font-medium">{guestCountDisplay}</span>
           </li>
 
-          {/* Dynamic features */}
+          {/* Dynamic features from package (max 5) */}
           {activeFeatures.slice(0, 5).map((feature) => (
             <li key={feature} className="flex items-center gap-3">
               <div className="w-5 h-5 rounded-full bg-white/10 text-white flex items-center justify-center flex-shrink-0 border border-white/20">
@@ -116,6 +163,7 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
           ))}
         </ul>
 
+        {/* Action Buttons */}
         <div className="relative z-10 pt-4">
           <button
             onClick={handleManageSubscription}
@@ -135,10 +183,13 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
         </div>
       </div>
 
-      {/* Cancel Subscription Modal */}
+      {/* ═══════════════════════════════════════════════════════════════════════
+          CANCEL SUBSCRIPTION MODAL
+          TODO: Connect to backend API when cancel subscription endpoint exists
+          ═══════════════════════════════════════════════════════════════════════ */}
       {showCancelModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          {/* Backdrop */}
+          {/* Backdrop - closes modal on click */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-md"
             onClick={() => setShowCancelModal(false)}
@@ -147,6 +198,7 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
           {/* Modal Content */}
           <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all">
             <div className="p-8">
+              {/* Warning Icon + Title */}
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
                   <svg className="w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -156,10 +208,12 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
                 <h3 className="text-xl font-bold text-gray-800 leading-tight">Cancelar Suscripción</h3>
               </div>
 
+              {/* Warning Message */}
               <p className="text-gray-600 text-sm mb-8 leading-relaxed">
                 ¿Estás seguro de que quieres cancelar tu suscripción? Perderás acceso a todas las funciones premium de tu plan actual.
               </p>
 
+              {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => setShowCancelModal(false)}

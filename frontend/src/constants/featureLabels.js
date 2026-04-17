@@ -1,3 +1,13 @@
+/**
+ * Feature Labels Mapping
+ * 
+ * Maps internal feature keys from PaymentPackages to human-readable Spanish labels.
+ * Used by both Pricing.jsx and PlanCard.jsx to display plan features.
+ * 
+ * @example
+ * // Package returns: { "guest_management": true }
+ * // Display: "Gestión de invitados"
+ */
 export const FEATURE_LABELS = {
   seats: 'Invitados',
   events_per_month: 'Eventos por mes',
