@@ -47,6 +47,11 @@ public class TablesController : ControllerBase
             return BadRequest(new { Message = "Prioridad no válida. Valores permitidos: Normal, VIP." });
         }
 
+        if (request.EventId == Guid.Empty)
+        {
+            return BadRequest(new { Message = "EventId es requierido." });
+        }
+
         var command = new CreateTableCommand(request.EventId, request.Name, request.Capacity, priorityEnum, userId);
         var result = await _mediator.Send(command);
 

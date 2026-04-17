@@ -427,7 +427,7 @@ const EditEvent = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-gray-400 ml-1">Start Date & Time</label>
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-gray-400 ml-1">Event Date & Time (24h)</label>
               <input
                 type="datetime-local"
                 name="startDate"

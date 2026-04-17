@@ -8,10 +8,11 @@ public class Table : Entity
     public string Name { get; private set; }
     public int Capacity { get; private set; }
     public TablePriority Priority { get; private set; }
+    public Guid EventId { get; private set; }
 
-    private Table() : base() { Name = null!; } // Requerido por EF Core
+    private Table() : base(Guid.Empty) { Name = null!; } // Requerido por EF Core
 
-    private Table(string name, int capacity, TablePriority priority) : base()
+    private Table(string name, int capacity, TablePriority priority) : base(Guid.Empty)
     {
         Name = name;
         Capacity = capacity;

@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IPaymentPackageRepository, PaymentPackageRepository>();
 
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IQrCodeService, QrCodeService>();

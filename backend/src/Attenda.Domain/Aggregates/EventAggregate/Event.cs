@@ -66,9 +66,34 @@ public class Event : AggregateRoot
 
     public static Event Create(string name, string? description, EventDate date, Guid organizerId, string? eventType = null, string[]? celebrants = null, string? organizerName = null, string? religiousAddress = null, string? venueAddress = null, string capacityTier = "FREE", int guestLimit = 20, string? imageUrl = null, bool isBusiness = false)
     {
+        // 1. Regla de negocio: No se pueden crear eventos en el pasado.
+        if (date.StartDate.Date < DateTime.UtcNow.Date)
+            throw new InvalidOperationException("No se puede crear un evento con una fecha de inicio en el pasado.");
+
+        // 2. Regla de negocio: Validar límite de invitados según el Tier si es uno conocido.
+        var maxAllowed = GetMaxGuestsForTier(capacityTier);
+        if (guestLimit > maxAllowed)
+            throw new InvalidOperationException($"El límite de invitados ({guestLimit}) excede el máximo permitido para el plan {capacityTier} ({maxAllowed}).");
+
         var @event = new Event(name, description, date, organizerId, eventType, celebrants, organizerName, religiousAddress, venueAddress, capacityTier, guestLimit, imageUrl, isBusiness);
         // Add EventCreated domain event here if needed
         return @event;
+    }
+
+    private static int GetMaxGuestsForTier(string tier) => tier.ToLower() switch
+    {
+        "free" => 40,
+        "standard" => 150,
+        "premium" => 250,
+        "elite" => 500,
+        "planner" => 9999,
+        _ => 20 // Default legacy limit if unknown
+    };
+
+    private void EnsureEventIsModifiable()
+    {
+        if (Status == EventStatus.Completed || Status == EventStatus.Cancelled)
+            throw new InvalidOperationException($"No se puede modificar el evento porque ya está en estado {Status}.");
     }
 
     public void UpdateDetails(
@@ -83,6 +108,11 @@ public class Event : AggregateRoot
         string? imageUrl,
         bool isBusiness)
     {
+        EnsureEventIsModifiable();
+
+        if (date.StartDate.Date < Date.StartDate.Date && date.StartDate.Date < DateTime.UtcNow.Date)
+            throw new InvalidOperationException("No se puede mover un evento a una fecha pasada.");
+
         Name = name;
         Description = description;
         Date = date;
@@ -100,11 +130,13 @@ public class Event : AggregateRoot
 
     public void UpdateRsvpConfiguration(RsvpConfiguration config)
     {
+        EnsureEventIsModifiable();
         RsvpConfig = config;
     }
 
     public Guest AddGuest(string firstName, string lastName, PhoneNumber phoneNumber, int plusOnes = 0, Guid? groupId = null, IEnumerable<DietaryRestriction>? dietaryRestrictions = null, string? notes = null)
     {
+        EnsureEventIsModifiable();
         var projectedTotal = _guests.Count + TotalPlusOnes + 1 + plusOnes;
         if (projectedTotal > GuestLimit)
             throw new InvalidOperationException($"Cannot add guest. This would exceed the limit of {GuestLimit} guests (current: {TotalGuests}, with plus-ones: {plusOnes}).");
@@ -119,6 +151,7 @@ public class Event : AggregateRoot
 
     public void AddGuestGroup(string name)
     {
+        EnsureEventIsModifiable();
         if (_guestGroups.Any(g => g.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
             throw new InvalidOperationException($"Group with name {name} already exists.");
 
@@ -127,6 +160,7 @@ public class Event : AggregateRoot
 
     public void RecordCheckIn(Guid guestId, string? scannedBy = null)
     {
+        EnsureEventIsModifiable();
         if (!_guests.Any(g => g.Id == guestId))
             throw new InvalidOperationException("Guest not found in this event.");
 
@@ -138,11 +172,13 @@ public class Event : AggregateRoot
 
     public void AddTask(string title, string? description = null, TaskPriority priority = TaskPriority.Medium, DateTime? dueDate = null)
     {
+        EnsureEventIsModifiable();
         _taskItems.Add(TaskItem.Create(title, description, priority, dueDate));
     }
 
     public void UpdateTask(Guid taskId, string title, string? description, TaskPriority priority, DateTime? dueDate)
     {
+        EnsureEventIsModifiable();
         var taskItem = _taskItems.FirstOrDefault(t => t.Id == taskId);
         if (taskItem == null)
         {
@@ -155,6 +191,7 @@ public class Event : AggregateRoot
 
     public void RemoveTask(Guid taskId)
     {
+        EnsureEventIsModifiable();
         var taskItem = _taskItems.FirstOrDefault(t => t.Id == taskId);
         if (taskItem == null)
         {
@@ -166,6 +203,7 @@ public class Event : AggregateRoot
 
     public void RemoveGuest(Guid guestId)
     {
+        EnsureEventIsModifiable();
         var guest = _guests.FirstOrDefault(g => g.Id == guestId);
         if (guest != null)
         {
@@ -184,6 +222,7 @@ public class Event : AggregateRoot
 
     public void ClearGuests()
     {
+        EnsureEventIsModifiable();
         _guests.Clear();
         _checkIns.Clear();
     }
@@ -192,6 +231,7 @@ public class Event : AggregateRoot
 
     public Table AddTable(string name, int capacity, TablePriority priority)
     {
+        EnsureEventIsModifiable();
         var table = Table.Create(name, capacity, priority);
         _tables.Add(table);
         return table;
@@ -199,6 +239,7 @@ public class Event : AggregateRoot
 
     public void UpdateTable(Guid tableId, string name, int capacity, TablePriority priority)
     {
+        EnsureEventIsModifiable();
         var table = _tables.FirstOrDefault(t => t.Id == tableId)
             ?? throw new KeyNotFoundException($"Mesa {tableId} no encontrada.");
 
@@ -213,6 +254,7 @@ public class Event : AggregateRoot
 
     public void RemoveTable(Guid tableId)
     {
+        EnsureEventIsModifiable();
         var table = _tables.FirstOrDefault(t => t.Id == tableId)
             ?? throw new KeyNotFoundException($"Mesa {tableId} no encontrada.");
 
@@ -225,6 +267,7 @@ public class Event : AggregateRoot
 
     public void AssignGuestToTable(Guid guestId, Guid tableId)
     {
+        EnsureEventIsModifiable();
         var guest = _guests.FirstOrDefault(g => g.Id == guestId)
             ?? throw new KeyNotFoundException($"Invitado {guestId} no encontrado.");
 
@@ -244,6 +287,7 @@ public class Event : AggregateRoot
 
     public void UnassignGuestFromTable(Guid guestId)
     {
+        EnsureEventIsModifiable();
         var guest = _guests.FirstOrDefault(g => g.Id == guestId)
             ?? throw new KeyNotFoundException($"Invitado {guestId} no encontrado.");
 

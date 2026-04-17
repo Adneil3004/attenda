@@ -43,7 +43,6 @@ public class CreateGuestHandler : IRequestHandler<CreateGuestCommand, Guid>
             {
                 @event.AddGuestGroup(request.GroupName);
                 // Save immediately so the new group gets an ID before creating the guest
-                _eventRepository.Update(@event);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
                 
                 group = @event.GuestGroups.First(g => g.Name.Equals(request.GroupName, StringComparison.OrdinalIgnoreCase));
@@ -67,7 +66,6 @@ public class CreateGuestHandler : IRequestHandler<CreateGuestCommand, Guid>
             guest.UpdateRsvpStatus(status);
         }
 
-        _eventRepository.Update(@event);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return guest.Id;

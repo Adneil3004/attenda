@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -27,6 +27,24 @@ const CreateEvent = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
 
+  // ── Payment Packages from API ──
+  const [packages, setPackages] = useState([]);
+  const [loadingPackages, setLoadingPackages] = useState(true);
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const data = await apiClient.get('/paymentpackages');
+        setPackages(data || []);
+      } catch (err) {
+        console.error('Error fetching packages:', err);
+      } finally {
+        setLoadingPackages(false);
+      }
+    };
+    fetchPackages();
+  }, []);
+
   // ── Step Stepper ──
   const [step, setStep] = useState(1);
 
@@ -38,7 +56,7 @@ const CreateEvent = () => {
   const [eventDate, setEventDate] = useState('');
   const [religiousAddress, setReligiousAddress] = useState('');
   const [venueAddress, setVenueAddress] = useState('');
-  const [tier, setTier] = useState('Premium');
+  const [tier, setTier] = useState('premium'); // lower case to match DB type
   const [isBusiness, setIsBusiness] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -53,6 +71,29 @@ const CreateEvent = () => {
   const [submitError, setSubmitError] = useState(null);
   // Token extracted by simulateTokenize — safe to store in state
   const [cardToken, setCardToken] = useState(null);
+  const [hasActiveFreeEvent, setHasActiveFreeEvent] = useState(false);
+  const [checkingEvents, setCheckingEvents] = useState(true);
+
+  // ── Fetch existing events to check free tier restriction ──
+  useEffect(() => {
+    const checkFreeTier = async () => {
+      try {
+        const events = await apiClient.get('/events');
+        // A user has an active free event if there's any with tier 'FREE' and status 'Draft' (0) or 'Active' (1)
+        const activeFree = (events || []).find(e => 
+          e.capacityTier?.toUpperCase() === 'FREE' && 
+          (e.status === 'Draft' || e.status === 'Active' || e.status === 0 || e.status === 1)
+        );
+        setHasActiveFreeEvent(!!activeFree);
+      } catch (err) {
+        console.error('Error checking active events:', err);
+      } finally {
+        setCheckingEvents(false);
+      }
+    };
+    checkFreeTier();
+  }, []);
+
 
   // ── Festejados helpers ──
   const addFestejado = () => setFestejados([...festejados, '']);
@@ -88,7 +129,7 @@ const CreateEvent = () => {
   // ── Navigation ──
   const handleNext = () => {
     if (!validateStep1()) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-    if (tier === 'Free') { handleSubmitEvent(null); return; }
+    if (tier === 'free') { handleSubmitEvent(null); return; }
     setStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -112,8 +153,8 @@ const CreateEvent = () => {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      // Fix date-shift: ensuring YYYY-MM-DD stays the same day in UTC
-      const startDate = eventDate + 'T00:00:00Z';
+      // Send date-time with UTC suffix for backend consistency
+      const startDate = eventDate ? (eventDate.includes('T') ? `${eventDate}:00Z` : `${eventDate}T00:00:00Z`) : null;
       
       const payload = {
         name: eventName,
@@ -128,7 +169,7 @@ const CreateEvent = () => {
         religiousAddress,
         venueAddress,
         capacityTier: tier.toUpperCase(),
-        guestLimit: tier === 'Free' ? 50 : tier === 'Premium' ? 150 : 250,
+        guestLimit: packages.find(p => p.type === tier)?.guestCount || 40,
         isBusiness,
         // Only the token and safe metadata reach the server — never the PAN
         cardToken: tokenData?.token ?? null,
@@ -409,9 +450,9 @@ const CreateEvent = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <FieldLabel>Event Date</FieldLabel>
+                  <FieldLabel>Event Date & Time (24h)</FieldLabel>
                   <input
-                    type="date"
+                    type="datetime-local"
                     value={eventDate}
                     onChange={(e) => { setEventDate(e.target.value); if (errors.eventDate) setErrors({ ...errors, eventDate: null }); }}
                     className={InputClass(errors.eventDate)}
@@ -448,38 +489,77 @@ const CreateEvent = () => {
               <h3 className="text-lg font-headline font-semibold text-[var(--color-primary)] border-b border-[var(--color-outline-variant)]/10 pb-2 mb-6">
                 Select Your Plan
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[
-                  { id: 'Free', guests: '50 Guests', price: 'Gratis', desc: 'Perfect for intimate gatherings and quick demos.' },
-                  { id: 'Premium', guests: '150 Guests', price: '$800 MXN', desc: 'Ideal for standard weddings and corporate mixers.' },
-                  { id: 'Elite', guests: '200+ Guests', price: '$1,500 MXN', desc: 'Scalable for major galas and grand celebrations.' },
-                ].map(({ id, guests, price, desc }) => (
-                  <label key={id} className="relative group cursor-pointer h-full">
-                    <input
-                      className="peer sr-only"
-                      name="tier"
-                      type="radio"
-                      checked={tier === id}
-                      onChange={() => setTier(id)}
-                    />
-                    <div className={`h-full p-6 border-2 rounded-xl transition-all shadow-sm hover:shadow-md flex flex-col justify-between relative overflow-hidden
-                      ${tier === id
-                        ? `border-[var(--color-secondary)] ${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 via-gray-600 to-gray-700' : 'bg-[linear-gradient(135deg,#001b44_0%,#001b44_35%,#4c3cb7_50%,#001b44_65%,#001b44_100%)]'} shadow-xl ring-2 ring-[var(--color-secondary)]/30`
-                        : 'border-[var(--color-card-border)] bg-[var(--color-card-bg)] hover:border-[var(--color-primary)]/30'}`}
-                    >
-                      {tier === id && <div className="sheen-element opacity-50" />}
-                      <div className="relative z-10">
-                        <span className={`text-xs font-bold uppercase tracking-tighter ${tier === id ? (theme === 'dark' ? 'text-gray-300' : 'text-white/80') : 'text-[var(--color-text-secondary)]'}`}>{id}</span>
-                        <p className={`text-xl font-headline font-bold mt-2 ${tier === id ? (theme === 'dark' ? 'text-white' : 'text-white') : 'text-[var(--color-text-primary)]'}`}>{guests}</p>
-                        <p className={`text-xs mt-1 mb-4 ${tier === id ? (theme === 'dark' ? 'text-gray-400' : 'text-white/70') : 'text-[var(--color-text-secondary)]'}`}>{desc}</p>
-                      </div>
-                      <div className={`mt-auto border-t pt-4 relative z-10 ${tier === id ? (theme === 'dark' ? 'border-gray-500' : 'border-white/20') : 'border-[var(--color-card-border)]'}`}>
-                        <p className={`text-2xl font-bold font-headline ${tier === id ? (theme === 'dark' ? 'text-white' : 'text-white') : 'text-[var(--color-text-primary)]'}`}>{price}</p>
-                      </div>
-                    </div>
-                  </label>
-                ))}
-              </div>
+              
+              {loadingPackages ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="h-48 rounded-xl bg-[var(--color-surface-container-high)] animate-pulse" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {packages.map((pkg) => {
+                    const id = pkg.type;
+                    const isDisabled = id === 'free' && hasActiveFreeEvent;
+                    const priceFormatted = pkg.price === 0 ? 'Gratis' : 
+                      new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(pkg.price) + ' MXN';
+                    
+                    return (
+                      <label 
+                        key={id} 
+                        className={`relative group h-full ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                      >
+                        <input
+                          className="peer sr-only"
+                          name="tier"
+                          type="radio"
+                          checked={tier === id}
+                          onChange={() => !isDisabled && setTier(id)}
+                          disabled={isDisabled}
+                        />
+                        <div className={`h-full p-6 border-2 rounded-xl transition-all shadow-sm flex flex-col justify-between relative overflow-hidden
+                          ${tier === id
+                            ? `border-[var(--color-secondary)] ${theme === 'dark' ? 'bg-gradient-to-br from-gray-700 via-gray-600 to-gray-700' : 'bg-[linear-gradient(135deg,#001b44_0%,#001b44_35%,#4c3cb7_50%,#001b44_65%,#001b44_100%)]'} shadow-xl ring-2 ring-[var(--color-secondary)]/30`
+                            : isDisabled
+                              ? 'border-[var(--color-outline-variant)]/20 bg-[var(--color-surface-container-low)]'
+                              : 'border-[var(--color-card-border)] bg-[var(--color-card-bg)] hover:border-[var(--color-primary)]/30'}`}
+                        >
+                          {tier === id && <div className="sheen-element opacity-50" />}
+                          <div className="relative z-10 font-bold uppercase tracking-tighter">
+                            <div className="flex justify-between items-start">
+                              <span className={`text-xs ${tier === id ? (theme === 'dark' ? 'text-gray-300' : 'text-white/80') : 'text-[var(--color-text-secondary)]'}`}>
+                                {pkg.name}
+                              </span>
+                              {isDisabled && id === 'free' && (
+                                <span className="text-[9px] bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">
+                                  Límite Alcanzado
+                                </span>
+                              )}
+                            </div>
+                            <p className={`text-xl font-headline font-bold mt-2 ${tier === id ? (theme === 'dark' ? 'text-white' : 'text-white') : 'text-[var(--color-text-primary)]'}`}>
+                              {id === 'planner' ? 'Unlimited Events' : `${pkg.guestCount} Guests`}
+                            </p>
+                            <p className={`text-xs mt-1 mb-4 normal-case font-normal ${tier === id ? (theme === 'dark' ? 'text-gray-400' : 'text-white/70') : 'text-[var(--color-text-secondary)]'}`}>
+                              {pkg.description}
+                            </p>
+                            
+                            {isDisabled && id === 'free' && (
+                              <p className="text-[10px] text-amber-600 dark:text-amber-400 normal-case font-medium mt-1">
+                                Finalizá tu evento gratuito actual para crear uno nuevo.
+                              </p>
+                            )}
+                          </div>
+                          <div className={`mt-auto border-t pt-4 relative z-10 ${tier === id ? (theme === 'dark' ? 'border-gray-500' : 'border-white/20') : 'border-[var(--color-card-border)]'}`}>
+                            <p className={`text-2xl font-bold font-headline ${tier === id ? (theme === 'dark' ? 'text-white' : 'text-white') : 'text-[var(--color-text-primary)]'}`}>
+                              {priceFormatted}
+                            </p>
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
             </section>
 
             {/* Footer */}
@@ -497,7 +577,7 @@ const CreateEvent = () => {
                 onClick={handleNext}
                 className="bg-gradient-to-br from-[#00020a] to-[#001b44] text-white py-3 px-10 rounded-md font-semibold text-sm shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                {tier === 'Free' ? 'Finalizar' : 'Siguiente →'}
+                {tier === 'free' ? 'Finalizar' : 'Siguiente →'}
               </button>
             </div>
           </div>

@@ -38,7 +38,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           
-          {/* Public RSVP Page - No authentication required */}
+          {/* Public RSVP Page */}
           <Route path="/rsvp" element={<RsvpPage />} />
         </Route>
 
@@ -52,15 +52,15 @@ function App() {
           }
         >
           <Route index element={<Overview />} />
-          <Route path=":eventId" element={<Overview />} />
-          <Route path="guests/:eventId" element={<Guests />} />
-          <Route path="tasks/:eventId" element={<Tasks />} />
-          <Route path="settings/:eventId" element={<Settings />} />
           <Route path="create-event" element={<CreateEvent />} />
           <Route path="edit-event/:id" element={<EditEvent />} />
           <Route path="my-events" element={<MyEvents />} />
+          <Route path="guests/:eventId" element={<Guests />} />
+          <Route path="tasks/:eventId" element={<Tasks />} />
+          <Route path="settings/:eventId" element={<Settings />} />
           <Route path="table-layout/:eventId" element={<TableLayout />} />
           <Route path="rsvp-designer/:eventId" element={<RsvpDesigner />} />
+          <Route path=":eventId" element={<Overview />} />
         </Route>
       </Routes>
     </BrowserRouter>

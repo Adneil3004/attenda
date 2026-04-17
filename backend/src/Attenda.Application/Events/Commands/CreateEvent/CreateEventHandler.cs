@@ -9,15 +9,18 @@ public class CreateEventHandler : IRequestHandler<CreateEventCommand, Guid>
 {
     private readonly IEventRepository _eventRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IPaymentPackageRepository _paymentPackageRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public CreateEventHandler(
         IEventRepository eventRepository,
         IUserRepository userRepository,
+        IPaymentPackageRepository paymentPackageRepository,
         IUnitOfWork unitOfWork)
     {
         _eventRepository = eventRepository;
         _userRepository = userRepository;
+        _paymentPackageRepository = paymentPackageRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -42,7 +45,29 @@ public class CreateEventHandler : IRequestHandler<CreateEventCommand, Guid>
 
         }
 
-        // 2. Create the event
+        // 2. Business Rule: One active Free event per user
+        var package = await _paymentPackageRepository.GetByTypeAsync(request.CapacityTier, cancellationToken);
+        if (package == null)
+        {
+            throw new InvalidOperationException($"El plan seleccionado '{request.CapacityTier}' no es válido.");
+        }
+
+        if (request.CapacityTier.Equals("FREE", StringComparison.OrdinalIgnoreCase))
+        {
+            var activeFreeEventsCount = await _eventRepository.CountActiveEventsByTierAsync(request.OrganizerId, "FREE", cancellationToken);
+            if (activeFreeEventsCount >= 1)
+            {
+                throw new InvalidOperationException("Ya tenés un evento gratuito activo. Terminá el actual para crear uno nuevo.");
+            }
+        }
+
+        // Validate guest limit against DB package
+        if (request.GuestLimit > package.GuestCount)
+        {
+            throw new InvalidOperationException($"El límite de invitados ({request.GuestLimit}) excede el máximo permitido para el plan {package.Name} ({package.GuestCount}).");
+        }
+
+        // 3. Create the event
         var eventDate = EventDate.Create(request.StartDate, request.EndDate);
         var @event = Event.Create(
             request.Name, 

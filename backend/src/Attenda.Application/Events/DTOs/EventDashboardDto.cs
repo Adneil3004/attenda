@@ -23,6 +23,7 @@ public class EventDashboardDto
     public bool IsBusiness { get; set; }
     public string LocationName { get; set; } = string.Empty;
     public string CapacityTier { get; set; } = string.Empty;
+    public int GuestLimit { get; set; }
     public string? ImageUrl { get; set; }
     public int TotalTables { get; set; }
     public int TotalSeatingCapacity { get; set; }

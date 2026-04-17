@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -27,7 +28,25 @@ const Sidebar = () => {
     .toUpperCase()
     .slice(0, 2);
 
-  const activeEventId = urlEventId || localStorage.getItem('activeEventId') || '';
+  const SYSTEM_KEYWORDS = ['create-event', 'my-events', 'table-layout', 'guests', 'tasks', 'settings', 'rsvp-designer', 'edit-event'];
+  
+  const isValidId = (id) => {
+    if (!id) return false;
+    return !SYSTEM_KEYWORDS.includes(id);
+  };
+
+  const activeEventId = isValidId(urlEventId) 
+    ? urlEventId 
+    : (isValidId(localStorage.getItem('activeEventId')) ? localStorage.getItem('activeEventId') : '');
+
+  // Cleanup effect to remove corrupted IDs from localStorage
+  useEffect(() => {
+    const storedId = localStorage.getItem('activeEventId');
+    if (storedId && !isValidId(storedId)) {
+      localStorage.removeItem('activeEventId');
+      console.log('Cleared corrupted activeEventId from localStorage');
+    }
+  }, []);
   
   const navItems = [
     { name: 'Overview', path: `/dashboard/${activeEventId}`, icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },

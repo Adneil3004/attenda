@@ -1,21 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '../lib/api';
-
-const FEATURE_LABELS = {
-  seats: 'Invitados',
-  events_per_month: 'Eventos por mes',
-  guest_management: 'Gestión de invitados',
-  table_layout: 'Distribución de mesas',
-  task_management: 'Gestión de tareas',
-  vendor_management: 'Gestión de proveedores',
-  priority_support: 'Soporte prioritario',
-  analytics: 'Analíticas',
-  white_label: 'Marca blanca',
-  api_access: 'Acceso API',
-  dedicated_manager: 'Gerente dedicado',
-  basic_support: 'Soporte básico',
-  email_support: 'Soporte por email'
-};
+import { FEATURE_LABELS } from '../constants/featureLabels';
 
 const Pricing = () => {
   const [packages, setPackages] = useState([]);
@@ -25,7 +10,9 @@ const Pricing = () => {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
+        console.log('Fetching packages...');
         const data = await apiClient.get('/paymentpackages');
+        console.log('Packages data:', data);
         setPackages(data || []);
       } catch (err) {
         console.error('Error fetching packages:', err);
@@ -74,71 +61,57 @@ const Pricing = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
         {/* Free Plan */}
         {freePlan && (
-          <div className="bg-[var(--color-surface-container-lowest)] rounded-2xl p-10 flex flex-col ghost-border ambient-shadow">
-            <h3 className="text-2xl font-bold text-[var(--color-primary)] mb-2">{freePlan.name}</h3>
-            <p className="text-[var(--color-on-surface-variant)] mb-6 text-sm">{freePlan.description}</p>
-            <div className="mb-8">
-              <span className="text-5xl font-bold text-[var(--color-primary)]">
+          <div className="bg-[var(--color-surface-container-lowest)] rounded-2xl p-6 flex flex-col border border-[var(--color-outline-variant)]">
+            <h3 className="text-xl font-bold text-[var(--color-primary)] mb-2">{freePlan.name}</h3>
+            <p className="text-[var(--color-on-surface-variant)] mb-4 text-sm">{freePlan.description}</p>
+            <div className="mb-6">
+              <span className="text-4xl font-bold text-[var(--color-primary)]">
                 {freePlan.price === 0 ? 'Free' : `$${freePlan.price}`}
               </span>
             </div>
             
-            <ul className="space-y-4 mb-10 flex-1">
+            <ul className="space-y-3 mb-6 flex-1">
               {renderFeatures(freePlan.features).map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[var(--color-secondary)] mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <li key={idx} className="flex items-start gap-2 text-sm">
+                  <svg className="w-4 h-4 text-[var(--color-secondary)] mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-[var(--color-on-surface-variant)] text-sm">{feature}</span>
+                  <span className="text-[var(--color-on-surface-variant)]">{feature}</span>
                 </li>
               ))}
             </ul>
-            
-            <button className="w-full py-4 rounded-md font-semibold text-sm text-[var(--color-primary)] bg-[var(--color-surface-container-low)] hover:bg-[#e7e8e9] transition-colors">
-              Get Started
-            </button>
           </div>
         )}
 
-        {/* Paid Plans - show first one as the "featured" one */}
-        {paidPlans.length > 0 && (
-          <div className="bg-[var(--color-primary)] rounded-2xl p-10 flex flex-col ambient-shadow transform md:-translate-y-4">
-            <h3 className="text-2xl font-bold text-white mb-2">{paidPlans[0].name}</h3>
-            <p className="text-[#c5c6d0] mb-6 text-sm">{paidPlans[0].description}</p>
-            <div className="mb-8 flex items-baseline gap-2">
-              <span className="text-5xl font-bold text-white">
-                {paidPlans[0].hasDiscount 
-                  ? `$${Math.round(paidPlans[0].price * (1 - paidPlans[0].discountPercentage / 100))}`
-                  : `$${paidPlans[0].price}`
-                }
+        {/* Paid Plans - show all */}
+        {paidPlans.map((plan, idx) => (
+          <div key={idx} className={`rounded-2xl p-6 flex flex-col ${idx === 0 ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-surface-container-lowest)] border border-[var(--color-outline-variant)]'}`}>
+            <h3 className={`text-xl font-bold mb-2 ${idx === 0 ? 'text-white' : 'text-[var(--color-primary)]'}`}>{plan.name}</h3>
+            <p className={`mb-4 text-sm ${idx === 0 ? 'text-[#c5c6d0]' : 'text-[var(--color-on-surface-variant)]'}`}>{plan.description}</p>
+            <div className="mb-6 flex items-baseline gap-2">
+              <span className={`text-4xl font-bold ${idx === 0 ? 'text-white' : 'text-[var(--color-primary)]'}`}>
+                ${plan.price}
               </span>
-              <span className="text-[#c5c6d0] text-sm font-medium">
-                {paidPlans[0].hasDiscount && paidPlans[0].discountPercentage > 0 
-                  ? <span className="line-through text-sm opacity-60">${paidPlans[0].price}</span>
-                  : null}
-                {' '} / event
+              <span className={`text-sm ${idx === 0 ? 'text-[#c5c6d0]' : 'text-[var(--color-on-surface-variant)]'}`}>
+                / event
               </span>
             </div>
             
-            <ul className="space-y-4 mb-10 flex-1">
-              {renderFeatures(paidPlans[0].features).map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#c9bfff] mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <ul className="space-y-3 mb-6 flex-1">
+              {renderFeatures(plan.features).map((feature, fidx) => (
+                <li key={fidx} className="flex items-start gap-2 text-sm">
+                  <svg className={`w-4 h-4 mt-0.5 flex-shrink-0 ${idx === 0 ? 'text-[#c9bfff]' : 'text-[var(--color-secondary)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-white text-sm">{feature}</span>
+                  <span className={idx === 0 ? 'text-white' : 'text-[var(--color-on-surface-variant)]'}>{feature}</span>
                 </li>
               ))}
             </ul>
-            
-            <button className="w-full py-4 rounded-md font-semibold text-sm text-[var(--color-on-secondary-fixed-variant)] bg-[var(--color-secondary-fixed)] hover:opacity-90 transition-opacity">
-              Upgrade to {paidPlans[0].name}
-            </button>
           </div>
-        )}
+        ))}
       </div>
 
       {/* CTA Section */}
