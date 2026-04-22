@@ -314,6 +314,8 @@ const Tasks = () => {
   const [loading, setLoading] = useState(true);
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [activeTab, setActiveTab] = useState('board'); // 'board' or 'calendar'
+
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -412,61 +414,52 @@ const Tasks = () => {
   return (
     <div className="flex flex-col h-full bg-[var(--color-surface)]">
       <header className="px-4 sm:px-6 lg:px-10 py-4 sm:py-6 lg:py-8 flex-shrink-0 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[var(--color-outline-variant)]/10">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl lg:text-3xl font-bold text-[var(--color-primary)] font-headline tracking-tight">Event Task Management</h1>
-            <span className="bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-[9px] font-black px-2 py-0.5 rounded-md border border-[var(--color-primary)]/10">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)] opacity-60">
-                ID: {eventId?.slice(0, 8)}...
-              </p>
-            </span>
+        <div className="flex flex-col gap-4 w-full">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl lg:text-3xl font-bold text-[var(--color-primary)] font-headline tracking-tight uppercase">
+                {activeTab === 'board' ? 'Event Task Management' : 'Planning Calendar'}
+              </h1>
+            </div>
+            <button 
+              onClick={() => setShowNewTaskModal(true)}
+              className="bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              <span>+</span> New Task
+            </button>
           </div>
-          <p className="text-sm text-[var(--color-on-surface-variant)] mt-2">Manage logistics, vendors, and timelines in one place.</p>
+          
+          <div className="flex items-center gap-1 bg-[var(--color-surface-container-low)] p-1 rounded-xl w-fit">
+            <button
+              onClick={() => setActiveTab('board')}
+              className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'board' ? 'bg-white dark:bg-gray-800 shadow-sm text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'}`}
+            >
+              Board View
+            </button>
+            <button
+              onClick={() => setActiveTab('calendar')}
+              className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'calendar' ? 'bg-white dark:bg-gray-800 shadow-sm text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'}`}
+            >
+              Calendar
+            </button>
+          </div>
         </div>
-        <button 
-          onClick={() => setShowNewTaskModal(true)}
-          className="bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 sm:w-auto"
-        >
-          <span>+</span> New Task
-        </button>
       </header>
 
-      <div className="flex-1 lg:overflow-x-auto lg:overflow-y-hidden p-4 sm:p-6 lg:p-10">
-        {loading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]"></div>
-          </div>
-        ) : (
-          <DndContext 
+      <div className="flex-1 overflow-auto">
+        {activeTab === 'board' ? (
+          <BoardView 
+            loading={loading}
+            tasks={tasks}
             sensors={sensors}
-            collisionDetection={closestCorners}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="flex flex-col lg:flex-row gap-6 h-full lg:items-start lg:min-w-max">
-              {COLUMNS.map(column => {
-                const columnTasks = getTasksByStatus(column);
-                
-                return (
-                  <DroppableColumn key={column} column={column} columnTasks={columnTasks}>
-                    <SortableContext items={columnTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                      {columnTasks.map(task => (
-                        <SortableTaskCard 
-                          key={task.id} 
-                          task={task} 
-                          onClick={() => setSelectedTaskForDrawer(task)}
-                        />
-                      ))}
-                    </SortableContext>
-                  </DroppableColumn>
-                );
-              })}
-            </div>
-            
-            <DragOverlay dropAnimation={{ duration: 200, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
-              {activeTask ? <TaskCard task={activeTask} isLayoutOverlay={true} /> : null}
-            </DragOverlay>
-          </DndContext>
+            handleDragStart={handleDragStart}
+            handleDragEnd={handleDragEnd}
+            getTasksByStatus={getTasksByStatus}
+            setSelectedTaskForDrawer={setSelectedTaskForDrawer}
+            activeTask={activeTask}
+          />
+        ) : (
+          <CalendarView tasks={tasks} />
         )}
       </div>
 
@@ -488,5 +481,238 @@ const Tasks = () => {
     </div>
   );
 };
+
+// ─── Sub-Components ───
+
+const BoardView = ({ loading, tasks, sensors, handleDragStart, handleDragEnd, getTasksByStatus, setSelectedTaskForDrawer, activeTask }) => {
+  return (
+    <div className="h-full p-4 sm:p-6 lg:p-10">
+      {loading ? (
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]"></div>
+        </div>
+      ) : (
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="flex flex-col lg:flex-row gap-6 h-full lg:items-start lg:min-w-max">
+            {COLUMNS.map(column => {
+              const columnTasks = getTasksByStatus(column);
+              
+              return (
+                <DroppableColumn key={column} column={column} columnTasks={columnTasks}>
+                  <SortableContext items={columnTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+                    {columnTasks.map(task => (
+                      <SortableTaskCard 
+                        key={task.id} 
+                        task={task} 
+                        onClick={() => setSelectedTaskForDrawer(task)}
+                      />
+                    ))}
+                  </SortableContext>
+                </DroppableColumn>
+              );
+            })}
+          </div>
+          
+          <DragOverlay dropAnimation={{ duration: 200, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
+            {activeTask ? <TaskCard task={activeTask} isLayoutOverlay={true} /> : null}
+          </DragOverlay>
+        </DndContext>
+      )}
+    </div>
+  );
+};
+
+const CalendarView = ({ tasks }) => {
+  const [selectedDay, setSelectedDay] = useState(12);
+
+  const timelineTasks = [
+    { date: 'OCT 08', title: 'Venue Deposit Paid', time: '10:30 AM', user: 'Marc J.', status: 'COMPLETED', color: 'bg-green-500' },
+    { date: 'OCT 12', title: 'Confirm Floral Arrangements', time: '09:00 AM', user: 'Marc J.', status: 'IN PROGRESS', color: 'bg-indigo-500', active: true },
+    { date: 'OCT 12', title: 'Final Catering Menu Review', time: '02:30 PM', user: 'Elena S.', status: 'NOT STARTED', color: 'bg-gray-400' },
+  ];
+
+  const sidebarTasks = [
+    { title: 'Confirm Floral Arrangements', time: '09:00 AM', user: 'Marc J.', status: 'En progreso', color: 'border-indigo-500', statusBg: 'bg-indigo-50/50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300' },
+    { title: 'Final Catering Menu Review', time: '02:30 PM', user: 'Elena S.', status: 'Sin iniciar', color: 'border-slate-200', statusBg: 'bg-slate-50/50 text-slate-500 dark:bg-slate-800 dark:text-slate-400' },
+  ];
+
+  return (
+    <div className="flex flex-col lg:flex-row h-full">
+      {/* ─── Left Column (Main Content) ─── */}
+      <div className="flex-1 p-6 lg:p-10 lg:border-r border-[var(--color-outline-variant)]/10">
+        {/* Calendar Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+          <div>
+            <h2 className="text-3xl font-black text-[var(--color-primary)] dark:text-white font-headline">October 2024</h2>
+            <p className="text-sm font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-widest">Planning: 14 Active Tasks</p>
+          </div>
+          <div className="flex p-1 bg-gray-50 dark:bg-gray-800/50 rounded-xl shadow-inner-sm">
+            {['Month', 'Week', 'Day'].map(view => (
+              <button
+                key={view}
+                className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${view === 'Month' ? 'bg-white dark:bg-gray-700 shadow-sm text-[var(--color-primary)]' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                {view}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Calendar Grid */}
+        <div className="mb-12">
+          <div className="grid grid-cols-7 mb-4">
+            {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map(day => (
+              <div key={day} className="text-center text-[10px] font-black text-slate-300 dark:text-slate-600 tracking-[0.2em]">{day}</div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 border-t border-l border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm">
+            {/* Simple mock grid for Oct 2024 */}
+            {[...Array(31)].map((_, i) => {
+              const day = i + 1;
+              const isSelected = day === selectedDay;
+              
+              return (
+                <div 
+                  key={i} 
+                  onClick={() => setSelectedDay(day)}
+                  className={`relative h-24 sm:h-28 lg:h-32 p-2 border-r border-b border-gray-100 dark:border-gray-800 transition-all cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-800/30 ${isSelected ? 'bg-indigo-50/30 dark:bg-indigo-900/10 ring-2 ring-indigo-500/50 ring-inset z-10' : 'bg-white dark:bg-gray-900'}`}
+                >
+                  <span className={`text-xs font-black ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'} ${day === 30 ? 'opacity-20' : ''}`}>
+                    {day < 10 ? `0${day}` : day}
+                  </span>
+                  
+                  {day === 8 && (
+                    <div className="mt-2 bg-green-500/10 border border-green-500/20 rounded px-1.5 py-0.5">
+                      <p className="text-[8px] font-black text-green-600 uppercase tracking-tighter truncate leading-tight">Terminada</p>
+                    </div>
+                  )}
+
+                  {day === 12 && (
+                    <div className="mt-2 space-y-1">
+                      <div className="bg-indigo-600 rounded px-1.5 py-1">
+                        <p className="text-[8px] font-black text-white uppercase tracking-tighter truncate leading-tight">Confir...</p>
+                      </div>
+                      <div className="bg-gray-100 dark:bg-gray-800 rounded px-1.5 py-1">
+                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-tighter truncate leading-tight">Cateri...</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Workstream Timeline */}
+        <div className="border-t border-[var(--color-outline-variant)]/10 pt-10">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-xl font-black text-[var(--color-primary)] dark:text-white font-headline">Workstream Timeline</h3>
+              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mt-1">Visual task progression for October</p>
+            </div>
+            <div className="flex gap-4">
+              <button className="text-slate-400 hover:text-slate-600 transition-colors"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg></button>
+              <button className="text-slate-400 hover:text-slate-600 transition-colors"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></button>
+            </div>
+          </div>
+
+          <div className="space-y-4 relative before:absolute before:left-2 before:top-4 before:bottom-4 before:w-0.5 before:bg-gray-100 dark:before:bg-gray-800 pl-8">
+            {timelineTasks.map((t, i) => (
+              <div key={i} className="relative group">
+                <div className={`absolute -left-[30px] top-4 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-gray-900 ${t.color} z-10 shadow-sm`}></div>
+                <div className="absolute -left-20 top-2.5">
+                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{t.date}</span>
+                </div>
+                <div className={`p-6 rounded-2xl border transition-all ${t.active ? 'bg-white dark:bg-gray-800 shadow-xl shadow-indigo-500/5 border-indigo-100 dark:border-indigo-900' : 'bg-gray-50/50 dark:bg-gray-800/30 border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-black text-[var(--color-primary)] dark:text-white mb-2">{t.title}</h4>
+                      <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                        <div className="flex items-center gap-1.5 leading-none">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          <span>{t.time}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 leading-none">
+                          <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[8px] text-white">MK</div>
+                          <span>{t.user}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={`px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest ${t.status === 'COMPLETED' ? 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400' : t.status === 'IN PROGRESS' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' : 'bg-gray-100 text-slate-500 dark:bg-gray-700 dark:text-slate-400'}`}>
+                      {t.status}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Right Column (Sidebar) ─── */}
+      <div className="w-full lg:w-[380px] p-6 lg:p-10 bg-gray-50/30 dark:bg-gray-900/40 flex flex-col h-full overflow-y-auto">
+        <div className="mb-10">
+          <p className="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-[0.2em] mb-2 leading-none">Selected Day</p>
+          <h2 className="text-2xl font-black text-[var(--color-primary)] dark:text-white font-headline leading-tight">Tasks for Oct {selectedDay}</h2>
+        </div>
+
+        <div className="space-y-6 flex-1">
+          {sidebarTasks.map((t, i) => (
+            <div key={i} className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg shadow-gray-200/40 dark:shadow-none border-l-4 ${t.color} relative group transition-all hover:-translate-y-1`}>
+              <button className="absolute top-4 right-4 text-slate-300 hover:text-slate-500 transition-colors">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+              </button>
+              <div className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest w-fit mb-4 ${t.statusBg}`}>
+                {t.status}
+              </div>
+              <h4 className="text-lg font-black text-[var(--color-primary)] dark:text-white mb-6 pr-6 leading-snug">{t.title}</h4>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-[10px] text-white overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">MK</div>
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">{t.user}</span>
+                </div>
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-tight">{t.time}</span>
+              </div>
+            </div>
+          ))}
+
+          {/* Add Task Placeholder */}
+          <div className="border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-3xl p-8 flex flex-col items-center justify-center gap-3 transition-all hover:border-indigo-400/50 hover:bg-gray-50/50 group cursor-pointer">
+            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-slate-400 group-hover:bg-indigo-500 group-hover:text-white transition-all transform group-active:scale-90">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+            </div>
+            <span className="text-xs font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest group-hover:text-indigo-500">Add task for Oct {selectedDay}</span>
+          </div>
+        </div>
+
+        {/* Milestone Card */}
+        <div className="mt-10 bg-[#030712] rounded-2xl p-6 flex items-center justify-between border border-white/5 shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+          <div>
+            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1 leading-none">Next Milestone</p>
+            <h4 className="text-lg font-black text-white font-headline">Gala Setup</h4>
+          </div>
+          <div className="relative w-14 h-14">
+            <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+              <circle className="stroke-white/10" strokeWidth="4" fill="none" r="16" cx="18" cy="18" />
+              <circle className="stroke-indigo-500 animate-in fade-in duration-1000" strokeWidth="4" strokeDasharray="72, 100" strokeLinecap="round" fill="none" r="16" cx="18" cy="18" />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-[10px] font-black text-white">72%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 export default Tasks;

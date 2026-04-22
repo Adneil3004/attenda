@@ -37,7 +37,7 @@ const Overview = () => {
       if (!user) return;
       setLoading(true);
 
-      const SYSTEM_KEYWORDS = ['create-event', 'my-events', 'table-layout', 'guests', 'tasks', 'settings', 'rsvp-designer', 'edit-event'];
+      const SYSTEM_KEYWORDS = ['create-event', 'my-events', 'table-layout', 'guests', 'tasks', 'settings', 'rsvp-designer', 'edit-event', 'providers'];
       const isValidId = (id) => id && !SYSTEM_KEYWORDS.includes(id);
 
       try {
