@@ -28,7 +28,7 @@ const Pricing = () => {
   if (loading) {
     return (
       <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-24 flex items-center justify-center">
-        <div className="animate-pulse text-[var(--color-on-surface-variant)]">Cargando planes...</div>
+        <div className="animate-pulse text-[var(--color-on-surface-variant)]">Loading plans...</div>
       </div>
     );
   }
@@ -117,16 +117,16 @@ const Pricing = () => {
       {/* CTA Section */}
       <div className="text-center mt-20 pt-12 border-t border-[var(--color-outline-variant)]">
         <p className="text-[var(--color-on-surface-variant)] mb-4">
-          ¿Listo para dar el siguiente paso?
+          Ready to take the next step?
         </p>
         <p className="text-sm text-[var(--color-on-surface-variant)] mb-6">
-          Regístrate y prueba nuestro servicio gratis. No requerimos tarjeta de crédito.
+          Sign up and try our service for free. No credit card required.
         </p>
         <a 
-          href="/signup" 
+          href="/register" 
           className="inline-block px-8 py-3 rounded-md font-semibold text-sm text-white bg-[var(--color-primary)] hover:opacity-90 transition-opacity"
         >
-          Crear cuenta gratis
+          Create free account
         </a>
       </div>
     </div>

@@ -60,7 +60,7 @@ const StatCard = ({ label, value, icon, color, trend }) => {
         )}
       </div>
       <div className="flex-1">
-        <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-on-surface-variant)] opacity-60 mb-1">{label}</h4>
+        <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--color-on-surface-variant)] mb-1">{label}</h4>
         <p className="text-3xl font-headline font-black text-[var(--color-primary)]">{value}</p>
       </div>
 
@@ -68,7 +68,7 @@ const StatCard = ({ label, value, icon, color, trend }) => {
         <div className="mt-6 pt-6 border-t border-[var(--color-outline-variant)]/5 space-y-3">
           {trend.details.map((item, idx) => (
             <div key={idx} className="flex justify-between items-center">
-              <span className="text-[11px] font-black uppercase tracking-widest text-[var(--color-on-surface-variant)] opacity-40">{item.label}</span>
+              <span className="text-[11px] font-black uppercase tracking-widest text-[var(--color-on-surface-variant)] opacity-70">{item.label}</span>
               <span className="text-xs font-black text-[var(--color-primary)]">{item.value}</span>
             </div>
           ))}

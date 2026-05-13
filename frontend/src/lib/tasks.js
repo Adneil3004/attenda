@@ -1,4 +1,5 @@
 import { apiClient } from './api';
+import { DateService } from './dateUtils';
 
 // Status mapping: backend enum → frontend UI string
 const STATUS_MAP = {
@@ -44,7 +45,7 @@ const toFrontendTask = (backendTask) => ({
   description: backendTask.description || '',
   status: STATUS_MAP[backendTask.status] || 'To Do',
   priority: PRIORITY_MAP[backendTask.priority] || 'Normal',
-  dueDate: backendTask.dueDate ? formatDate(backendTask.dueDate) : null,
+  dueDate: backendTask.dueDate ? `${DateService.formatDate(backendTask.dueDate)} ${DateService.formatTime(backendTask.dueDate)}` : null,
   dueDateRaw: backendTask.dueDate,
   createdAt: backendTask.createdAt,
   // Frontend-specific fields (not from backend)
@@ -53,11 +54,7 @@ const toFrontendTask = (backendTask) => ({
   avatar: 'https://ui-avatars.com/api/?name=You&background=0D1117&color=fff'
 });
 
-// Format date for frontend display
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
+// Format date for frontend display - handled by DateService in toFrontendTask
 
 // Get active event ID from localStorage
 const getActiveEventId = () => {
@@ -79,7 +76,7 @@ export const tasksApi = {
   async create({ title, description, priority, dueDate, eventId }) {
     if (!eventId) throw new Error('No eventId provided to create task');
 
-    const formattedDueDate = dueDate ? new Date(`${dueDate}T00:00:00Z`).toISOString() : null;
+    const formattedDueDate = dueDate;
     const backendPriority = priority in PRIORITY_REVERSE ? PRIORITY_REVERSE[priority] : 1; 
     
     const result = await apiClient.post('/tasks', {
@@ -97,7 +94,7 @@ export const tasksApi = {
   async update(taskId, { title, description, priority, dueDate, eventId }) {
     if (!eventId) throw new Error('No eventId provided to update task');
     
-    const formattedDueDate = dueDate ? new Date(`${dueDate}T00:00:00Z`).toISOString() : null;
+    const formattedDueDate = dueDate;
     const backendPriority = priority in PRIORITY_REVERSE ? PRIORITY_REVERSE[priority] : (parseInt(priority, 10) || 1);
     
     const result = await apiClient.put(`/tasks/${taskId}`, {

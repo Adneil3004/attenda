@@ -9,17 +9,17 @@
  * // Display: "Gestión de invitados"
  */
 export const FEATURE_LABELS = {
-  seats: 'Invitados',
-  events_per_month: 'Eventos por mes',
-  guest_management: 'Gestión de invitados',
-  table_layout: 'Distribución de mesas',
-  task_management: 'Gestión de tareas',
-  vendor_management: 'Gestión de proveedores',
-  priority_support: 'Soporte prioritario',
-  analytics: 'Analíticas',
-  white_label: 'Marca blanca',
-  api_access: 'Acceso API',
-  dedicated_manager: 'Gerente dedicado',
-  basic_support: 'Soporte básico',
-  email_support: 'Soporte por email'
+  seats: 'Guests',
+  events_per_month: 'Events per month',
+  guest_management: 'Guest Management',
+  table_layout: 'Table Layout',
+  task_management: 'Task Management',
+  vendor_management: 'Vendor Management',
+  priority_support: 'Priority Support',
+  analytics: 'Analytics',
+  white_label: 'White Label',
+  api_access: 'API Access',
+  dedicated_manager: 'Dedicated Manager',
+  basic_support: 'Basic Support',
+  email_support: 'Email Support'
 };

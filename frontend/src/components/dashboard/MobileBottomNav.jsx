@@ -15,7 +15,7 @@ const MobileBottomNav = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden px-4 pb-6 pt-2 pointer-events-none">
+    <div className="no-print fixed bottom-0 left-0 right-0 z-50 lg:hidden px-4 pb-6 pt-2 pointer-events-none">
       <nav className="glass-panel rounded-3xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.08)] px-6 py-3 flex justify-between items-center pointer-events-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path));

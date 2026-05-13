@@ -22,11 +22,11 @@ const AboutUs = () => {
       <div className="max-w-4xl w-full relative z-10">
         <header className="mb-16">
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-6">
-            Orquestación de eventos <br />
-            <span className="text-[#a78bfa] brightness-125">elevada al siguiente nivel.</span>
+            Event orchestration <br />
+            <span className="text-[#a78bfa] brightness-125">taken to the next level.</span>
           </h1>
           <p className="text-xl text-white/70 max-w-2xl font-medium leading-relaxed">
-            Attenda no es solo una herramienta de gestión; es la evolución digital del servicio de conserjería para los organizadores de eventos más exigentes.
+            Attenda is not just a management tool; it is the digital evolution of concierge service for the most demanding event organizers.
           </p>
         </header>
 
@@ -34,10 +34,10 @@ const AboutUs = () => {
           {/* Section: ¿Qué es? */}
           <div className="glass-heavy p-10 rounded-2xl relative overflow-hidden group">
             <div className="relative z-10">
-              <span className="text-xs font-bold text-[#a78bfa] tracking-[0.2em] uppercase mb-4 block">¿Qué es Attenda?</span>
-              <h2 className="text-3xl font-bold text-white mb-4">Un ecosistema de orquestación premium.</h2>
+              <span className="text-xs font-bold text-[#a78bfa] tracking-[0.2em] uppercase mb-4 block">What is Attenda?</span>
+              <h2 className="text-3xl font-bold text-white mb-4">A premium orchestration ecosystem.</h2>
               <p className="text-white/60 text-lg leading-relaxed max-w-3xl">
-                Somos una plataforma integral que fusiona tecnología de punta con la delicadeza de la hotelería de lujo. Diseñamos un entorno donde cada interacción, desde la invitación hasta el ingreso, se siente intencional y elegante.
+                We are an all-in-one platform that merges cutting-edge technology with the delicacy of luxury hospitality. We design an environment where every interaction, from invitation to entry, feels intentional and elegant.
               </p>
             </div>
             {/* Subtle accent light */}
@@ -47,17 +47,17 @@ const AboutUs = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Section: ¿Para qué sirve? */}
             <div className="glass-heavy p-8 rounded-2xl hover:translate-y-[-5px] transition-transform duration-500">
-              <h3 className="text-xl font-bold text-white mb-3">¿Para qué sirve?</h3>
+              <h3 className="text-xl font-bold text-white mb-3">What is it for?</h3>
               <p className="text-white/50 text-base leading-relaxed">
-                Centralizamos la gestión de invitados en tiempo real. Olvidate de las planillas. Nuestra app permite gestionar RSVP inteligentes, asignación de grupos y control de acceso mediante escaneo de QR instantáneo.
+                We centralize guest management in real-time. Forget about spreadsheets. Our app allows managing smart RSVPs, group assignment, and access control through instant QR scanning.
               </p>
             </div>
 
             {/* Section: ¿Cómo ayuda? */}
             <div className="glass-heavy p-8 rounded-2xl hover:translate-y-[-5px] transition-transform duration-500 border-l border-l-[#a78bfa33]">
-              <h3 className="text-xl font-bold text-white mb-3">¿Cómo ayuda?</h3>
+              <h3 className="text-xl font-bold text-white mb-3">How does it help?</h3>
               <p className="text-white/50 text-base leading-relaxed">
-                Le devolvemos el control y la calma al organizador. Eliminamos la fricción logística en la puerta y garantizamos una base de datos impecable, permitiéndote enfocarte en lo que realmente importa: tu evento.
+                We restore control and calm to the organizer. We eliminate logistical friction at the door and guarantee an impeccable database, allowing you to focus on what really matters: your event.
               </p>
             </div>
           </div>
@@ -65,19 +65,19 @@ const AboutUs = () => {
 
         {/* CTA Section */}
         <section className="text-center py-12 border-t border-white/5">
-          <h2 className="text-2xl font-bold text-white mb-8">¿Listo para transformar tu próximo evento?</h2>
+          <h2 className="text-2xl font-bold text-white mb-8">Ready to transform your next event?</h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link 
               to="/register" 
               className="bg-[#5b3cdd] text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-[#6c4be0] transition-all shadow-[0_0_25px_rgba(91,60,221,0.2)]"
             >
-              Comenzar ahora
+              Get started now
             </Link>
             <Link 
               to="/" 
               className="text-white/60 hover:text-white px-10 py-4 font-bold text-lg transition-colors"
             >
-              Volver al inicio
+              Back to home
             </Link>
           </div>
         </section>

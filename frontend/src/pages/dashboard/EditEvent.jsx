@@ -48,9 +48,9 @@ const EditEvent = () => {
           localStorage.setItem('activeEventId', eventData.id);
           const eventType = eventData.eventType || '';
           
-          // Define which types are considered "Social" vs "Empresa"
-          const socialTypes = ['Boda', 'XV Años', 'Bautizo', 'Cumpleaños', 'Baby Shower'];
-          const businessTypes = ['Graduación', 'Fin de año', 'Aniversario', 'Congreso', 'Lanzamiento de Producto', 'Inauguración', 'Workshop / Capacitación'];
+          // Define which types are considered "Social" vs "Corporate"
+          const socialTypes = ['Wedding', 'Quinceañera', 'Baptism', 'Birthday', 'Baby Shower'];
+          const businessTypes = ['Graduation', 'Year-end', 'Anniversary', 'Convention', 'Product Launch', 'Grand Opening', 'Workshop / Training'];
           
           const isOther = eventType !== '' && !socialTypes.includes(eventType) && !businessTypes.includes(eventType);
           
@@ -59,7 +59,7 @@ const EditEvent = () => {
             description: eventData.description || '',
             startDate: eventData.eventDate ? new Date(eventData.eventDate).toISOString().slice(0, 16) : '',
             endDate: eventData.endDate ? new Date(eventData.endDate).toISOString().slice(0, 16) : '', 
-            eventType: isOther ? 'Otro' : eventType,
+            eventType: isOther ? 'Other' : eventType,
             celebrants: eventData.celebrants?.length > 0 ? eventData.celebrants : [''],
             organizerName: eventData.organizerName || '',
             religiousAddress: eventData.religiousAddress || '',
@@ -87,7 +87,7 @@ const EditEvent = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'eventType') {
-      setIsOtherType(value === 'Otro');
+      setIsOtherType(value === 'Other');
       if (value !== 'Other') setCustomType('');
     }
     setFormData({ ...formData, [name]: value });
@@ -324,17 +324,17 @@ const EditEvent = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-gray-400 ml-1">Categoría del Evento</label>
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-gray-400 ml-1">Event Category</label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => {
-                    const socialTypes = ['Boda', 'XV Años', 'Bautizo', 'Cumpleaños', 'Baby Shower'];
+                    const socialTypes = ['Wedding', 'Quinceañera', 'Baptism', 'Birthday', 'Baby Shower'];
                     const isCurrentSocial = socialTypes.includes(formData.eventType);
                     setFormData({ 
                       ...formData, 
                       isBusiness: false, 
-                      eventType: isCurrentSocial ? formData.eventType : 'Boda' 
+                      eventType: isCurrentSocial ? formData.eventType : 'Wedding' 
                     });
                     if (!isCurrentSocial) setIsOtherType(false);
                   }}
@@ -352,12 +352,12 @@ const EditEvent = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    const businessTypes = ['Graduación', 'Fin de año', 'Aniversario', 'Congreso', 'Lanzamiento de Producto', 'Inauguración', 'Workshop / Capacitación'];
+                    const businessTypes = ['Graduation', 'Year-end', 'Anniversary', 'Convention', 'Product Launch', 'Grand Opening', 'Workshop / Training'];
                     const isCurrentBusiness = businessTypes.includes(formData.eventType);
                     setFormData({ 
                       ...formData, 
                       isBusiness: true, 
-                      eventType: isCurrentBusiness ? formData.eventType : 'Graduación' 
+                      eventType: isCurrentBusiness ? formData.eventType : 'Graduation' 
                     });
                     if (!isCurrentBusiness) setIsOtherType(false);
                   }}
@@ -370,7 +370,7 @@ const EditEvent = () => {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
-                  Empresa
+                  Corporate
                 </button>
               </div>
             </div>
@@ -389,21 +389,21 @@ const EditEvent = () => {
                     <option value="">Select Type...</option>
                     {!formData.isBusiness ? (
                       <>
-                        <option value="Boda">Boda</option>
-                        <option value="XV Años">XV Años</option>
-                        <option value="Bautizo">Bautizo</option>
-                        <option value="Cumpleaños">Cumpleaños</option>
+                        <option value="Wedding">Wedding</option>
+                        <option value="Quinceañera">Quinceañera</option>
+                        <option value="Baptism">Baptism</option>
+                        <option value="Birthday">Birthday</option>
                         <option value="Baby Shower">Baby Shower</option>
                       </>
                     ) : (
                       <>
-                        <option value="Graduación">Graduación</option>
-                        <option value="Fin de año">Fin de año</option>
-                        <option value="Aniversario">Aniversario</option>
-                        <option value="Congreso">Congreso</option>
-                        <option value="Lanzamiento de Producto">Lanzamiento de Producto</option>
-                        <option value="Inauguración">Inauguración</option>
-                        <option value="Workshop / Capacitación">Workshop / Capacitación</option>
+                        <option value="Graduation">Graduation</option>
+                        <option value="Year-end">Year-end</option>
+                        <option value="Anniversary">Anniversary</option>
+                        <option value="Convention">Convention</option>
+                        <option value="Product Launch">Product Launch</option>
+                        <option value="Grand Opening">Grand Opening</option>
+                        <option value="Workshop / Training">Workshop / Training</option>
                       </>
                     )}
                     <option value="Other">Other (Specify)</option>

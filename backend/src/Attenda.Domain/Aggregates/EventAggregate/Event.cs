@@ -43,6 +43,9 @@ public class Event : AggregateRoot
     private readonly List<Table> _tables = new();
     public IReadOnlyCollection<Table> Tables => _tables.AsReadOnly();
 
+    private readonly List<EventActivity> _activities = new();
+    public IReadOnlyCollection<EventActivity> Activities => _activities.AsReadOnly();
+
     private Event() : base() { Name = null!; CapacityTier = null!; } // Required by EF Core
 
     private Event(string name, string? description, EventDate date, Guid organizerId, string? eventType = null, string[]? celebrants = null, string? organizerName = null, string? religiousAddress = null, string? venueAddress = null, string capacityTier = "FREE", int guestLimit = 20, string? imageUrl = null, bool isBusiness = false) : base()
@@ -292,5 +295,71 @@ public class Event : AggregateRoot
             ?? throw new KeyNotFoundException($"Invitado {guestId} no encontrado.");
 
         guest.RemoveFromTable();
+    }
+
+    // ─── Activity Management ──────────────────────────────────────────────────
+
+    public EventActivity AddActivity(
+        string title, 
+        string? description, 
+        DateTime startTime, 
+        DateTime endTime, 
+        ActivityCategory category, 
+        string? customCategory = null)
+    {
+        EnsureEventIsModifiable();
+        
+        // El orden por defecto es el final de la lista
+        var order = _activities.Count;
+        var activity = EventActivity.Create(title, description, startTime, endTime, category, customCategory, order);
+        _activities.Add(activity);
+        return activity;
+    }
+
+    public void UpdateActivity(
+        Guid activityId,
+        string title, 
+        string? description, 
+        DateTime startTime, 
+        DateTime endTime, 
+        ActivityCategory category, 
+        string? customCategory = null)
+    {
+        EnsureEventIsModifiable();
+        var activity = _activities.FirstOrDefault(a => a.Id == activityId)
+            ?? throw new KeyNotFoundException($"Actividad {activityId} no encontrada.");
+
+        activity.Update(title, description, startTime, endTime, category, customCategory);
+    }
+
+    public void RemoveActivity(Guid activityId)
+    {
+        EnsureEventIsModifiable();
+        var activity = _activities.FirstOrDefault(a => a.Id == activityId)
+            ?? throw new KeyNotFoundException($"Actividad {activityId} no encontrada.");
+
+        _activities.Remove(activity);
+        
+        // Reordenar las restantes para evitar huecos
+        var sorted = _activities.OrderBy(a => a.Order).ToList();
+        for (int i = 0; i < sorted.Count; i++)
+        {
+            sorted[i].UpdateOrder(i);
+        }
+    }
+
+    public void ReorderActivities(IEnumerable<Guid> activityIds)
+    {
+        EnsureEventIsModifiable();
+        var idList = activityIds.ToList();
+        
+        foreach (var activity in _activities)
+        {
+            var newIndex = idList.IndexOf(activity.Id);
+            if (newIndex != -1)
+            {
+                activity.UpdateOrder(newIndex);
+            }
+        }
     }
 }

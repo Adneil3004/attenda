@@ -6,16 +6,16 @@ const Providers = () => {
   
   // Dummy data representing the Stitch UI state
   const metrics = [
-    { label: "Total Committed", value: "$428,500.00", sub: "MXN", icon: "cash" },
-    { label: "Onboarded Agencies", value: "14", sub: "Activas", icon: "briefcase" },
-    { label: "Presupuesto Ejecutado", value: "85%", sub: "Límite: $500k", icon: "chart" }
+    { label: "Total Committed", value: "$428,500.00", sub: "USD", icon: "cash" },
+    { label: "Onboarded Agencies", value: "14", sub: "Active", icon: "briefcase" },
+    { label: "Executed Budget", value: "85%", sub: "Limit: $500k", icon: "chart" }
   ];
 
   const providers = [
-    { id: 10293, name: "Elite Catering Co.", category: "Gastronomía", status: "Active", spent: 185000 },
-    { id: 10442, name: "Starlight Venue", category: "Locación", status: "Active", spent: 120000 },
-    { id: 10881, name: "Artisan Decor", category: "Decoración", status: "Pending", spent: 45000 },
-    { id: 10992, name: "Vibe Music Ent.", category: "Entretenimiento", status: "Active", spent: 78500 }
+    { id: 10293, name: "Elite Catering Co.", category: "Gastronomy", status: "Active", spent: 185000 },
+    { id: 10442, name: "Starlight Venue", category: "Location", status: "Active", spent: 120000 },
+    { id: 10881, name: "Artisan Decor", category: "Decoration", status: "Pending", spent: 45000 },
+    { id: 10992, name: "Vibe Music Ent.", category: "Entertainment", status: "Active", spent: 78500 }
   ];
 
   const [activeProvider, setActiveProvider] = useState(providers[0]);
@@ -53,7 +53,7 @@ const Providers = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* Pie Chart Panel */}
           <div className="bg-[var(--color-surface-container-lowest)] dark:bg-gray-800 p-8 rounded-3xl ambient-shadow">
-            <h3 className="text-xs font-black text-[var(--color-on-surface-variant)] uppercase tracking-[0.2em] mb-8">Presupuesto Ejecutado</h3>
+            <h3 className="text-xs font-black text-[var(--color-on-surface-variant)] uppercase tracking-[0.2em] mb-8">Executed Budget</h3>
             <div className="flex items-center justify-around gap-8">
               <div className="relative w-40 h-40">
                 <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
@@ -81,14 +81,14 @@ const Providers = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-[var(--color-primary)]"></div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Gastado</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Spent</p>
                     <p className="text-sm font-black dark:text-white">$428,500</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-gray-200 dark:bg-gray-700"></div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Restante</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Remaining</p>
                     <p className="text-sm font-black dark:text-white">$71,500</p>
                   </div>
                 </div>
@@ -98,7 +98,7 @@ const Providers = () => {
 
           {/* Cost by Provider Panel */}
           <div className="bg-[var(--color-surface-container-lowest)] dark:bg-gray-800 p-8 rounded-3xl ambient-shadow">
-            <h3 className="text-xs font-black text-[var(--color-on-surface-variant)] uppercase tracking-[0.2em] mb-8">Costo por Proveedor</h3>
+            <h3 className="text-xs font-black text-[var(--color-on-surface-variant)] uppercase tracking-[0.2em] mb-8">Cost by Provider</h3>
             <div className="space-y-5">
               {providers.sort((a, b) => b.spent - a.spent).map(p => (
                 <div key={p.id} className="space-y-2">
@@ -182,8 +182,8 @@ const Providers = () => {
                 </h4>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-sm font-medium">
-                    <span className="text-slate-500">Representante</span>
-                    <span className="dark:text-gray-200">María del Valle</span>
+                    <span className="text-slate-500">Representative</span>
+                    <span className="dark:text-gray-200">Jane Smith</span>
                   </div>
                   <div className="flex justify-between items-center text-sm font-medium">
                     <span className="text-slate-500">Email</span>
@@ -199,12 +199,12 @@ const Providers = () => {
                 </h4>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-sm font-medium">
-                    <span className="text-slate-500">Acuerdo</span>
-                    <span className="dark:text-gray-200">Retainer Mensual</span>
+                    <span className="text-slate-500">Agreement</span>
+                    <span className="dark:text-gray-200">Monthly Retainer</span>
                   </div>
                   <div className="flex justify-between items-center text-sm font-medium">
-                    <span className="text-slate-500">Siguiente Pago</span>
-                    <span className="text-green-600 font-bold">$12,500.00 MXN</span>
+                    <span className="text-slate-500">Next Payment</span>
+                    <span className="text-green-600 font-bold">$12,500.00 USD</span>
                   </div>
                 </div>
               </div>
@@ -215,10 +215,10 @@ const Providers = () => {
                   Availability Tracking
                 </h4>
                 <div className="w-full h-8 bg-white dark:bg-gray-800 rounded-lg overflow-hidden flex items-center px-1">
-                  <div className="flex-1 h-6 bg-blue-100 dark:bg-blue-900/30 rounded m-0.5" title="Reservado"></div>
-                  <div className="flex-1 h-6 bg-transparent rounded m-0.5 border border-dashed border-slate-300 dark:border-gray-600" title="Disponible"></div>
-                  <div className="flex-1 h-6 bg-blue-500 hover:bg-blue-600 transition-colors rounded m-0.5 cursor-pointer" title="Catering Activo"></div>
-                  <div className="flex-1 h-6 bg-transparent rounded m-0.5 border border-dashed border-slate-300 dark:border-gray-600" title="Disponible"></div>
+                  <div className="flex-1 h-6 bg-blue-100 dark:bg-blue-900/30 rounded m-0.5" title="Reserved"></div>
+                  <div className="flex-1 h-6 bg-transparent rounded m-0.5 border border-dashed border-slate-300 dark:border-gray-600" title="Available"></div>
+                  <div className="flex-1 h-6 bg-blue-500 hover:bg-blue-600 transition-colors rounded m-0.5 cursor-pointer" title="Active Catering"></div>
+                  <div className="flex-1 h-6 bg-transparent rounded m-0.5 border border-dashed border-slate-300 dark:border-gray-600" title="Available"></div>
                 </div>
               </div>
 

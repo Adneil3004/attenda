@@ -19,6 +19,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import TaskDrawer from '../../components/dashboard/TaskDrawer';
 import { tasksApi } from '../../lib/tasks';
+import { DateService } from '../../lib/dateUtils';
 
 const COLUMNS = ['To Do', 'In Progress', 'Done', 'Cancelled'];
 
@@ -108,7 +109,7 @@ const TaskCard = ({ task, isLayoutOverlay }) => {
     'Urgent': { color: 'var(--color-error)', label: 'Urgent', bg: 'bg-red-500/10', text: 'text-red-500', pulse: true },
     'High': { color: '#f97316', label: 'High', bg: 'bg-orange-500/10', text: 'text-orange-500', pulse: false },
     'Medium': { color: 'var(--color-primary)', label: 'Medium', bg: 'bg-blue-500/10', text: 'text-blue-500', pulse: false },
-    'Low': { color: '#94a3b8', label: 'Low', bg: 'bg-slate-500/10', text: 'text-slate-400', pulse: false }
+    'Low': { color: 'var(--color-text-muted)', label: 'Low', bg: 'var(--color-surface-container-highest)', text: 'text-[var(--color-text-secondary)]', pulse: false }
   };
 
   const config = priorityConfig[task.priority] || priorityConfig['Medium'];
@@ -127,10 +128,10 @@ const TaskCard = ({ task, isLayoutOverlay }) => {
 
       <div className="flex justify-between items-start mb-4 pl-1">
         <div className="flex flex-col gap-1">
-          <span className="bg-[var(--color-surface-container-high)] text-[var(--color-text-secondary)] text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded w-fit">
+          <span className="bg-[var(--color-surface-container-highest)] text-[var(--color-primary)] text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded w-fit">
             {task.tag || 'General'}
           </span>
-          <span className={`${config.bg} ${config.text} text-[8px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border border-current opacity-80 w-fit`}>
+          <span className={`px-1.5 py-0.5 rounded border border-current opacity-80 w-fit text-[8px] font-black uppercase tracking-tighter ${config.text}`} style={{ backgroundColor: config.bg.startsWith('var') ? config.bg : undefined }}>
             {config.label}
           </span>
         </div>
@@ -163,7 +164,7 @@ const TaskCard = ({ task, isLayoutOverlay }) => {
 };
 
 // ─── New Task Modal ───
-const NewTaskModal = ({ isOpen, onClose, onSubmit, loading }) => {
+const NewTaskModal = ({ isOpen, onClose, onSubmit, loading, eventId }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('Medium');
@@ -175,12 +176,15 @@ const NewTaskModal = ({ isOpen, onClose, onSubmit, loading }) => {
       setTitle('');
       setDescription('');
       setPriority('Medium');
-      setDueDate('');
+      const initialDate = localStorage.getItem(`eventDate_${eventId}`) 
+        ? DateService.toInputFormat(localStorage.getItem(`eventDate_${eventId}`))
+        : DateService.getNowInputFormat();
+      setDueDate(initialDate);
       setErrors({});
     }
-  }, [isOpen]);
+  }, [isOpen, eventId]);
 
-  const today = new Date().toISOString().split('T')[0];
+  const minDateTime = DateService.getNowInputFormat();
 
   if (!isOpen) return null;
 
@@ -191,7 +195,7 @@ const NewTaskModal = ({ isOpen, onClose, onSubmit, loading }) => {
     }
     if (!dueDate) {
       newErrors.dueDate = 'Due date is required';
-    } else if (dueDate < today) {
+    } else if (dueDate < minDateTime) {
       newErrors.dueDate = 'Date must be in the future';
     }
     setErrors(newErrors);
@@ -201,7 +205,15 @@ const NewTaskModal = ({ isOpen, onClose, onSubmit, loading }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    onSubmit({ title: title.trim(), description, priority, dueDate: dueDate || null });
+    // Ensure date is sent in UTC format to the backend
+    const payload = {
+      title: title.trim(),
+      description,
+      priority,
+      dueDate: dueDate ? DateService.toUTC(dueDate) : null
+    };
+    
+    onSubmit(payload);
   };
 
   const handleTitleChange = (e) => {
@@ -216,17 +228,17 @@ const NewTaskModal = ({ isOpen, onClose, onSubmit, loading }) => {
 
   return (
     <>
-      <div className="fixed inset-0 bg-[var(--color-primary)]/10 dark:bg-black/60 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/20 dark:bg-black/60 backdrop-blur-md z-40" onClick={onClose} />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl w-full max-w-md border border-gray-100 dark:border-gray-700 animate-in zoom-in-95 duration-200">
-          <div className="px-8 py-6 border-b border-gray-50 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
+        <div className="bg-[var(--color-surface-container-lowest)] rounded-[2rem] shadow-2xl w-full max-w-md border border-[var(--color-outline-variant)]/20 animate-in zoom-in-95 duration-200 overflow-hidden">
+          <div className="px-8 py-6 border-b border-[var(--color-outline-variant)]/10 flex items-center justify-between bg-[var(--color-surface-container-low)]">
             <div>
-              <h2 className="text-xl font-bold text-[var(--color-primary)] dark:text-white">New Task</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Create a new task</p>
+              <h2 className="text-xl font-bold text-[var(--color-primary)]">New Task</h2>
+              <p className="text-xs text-[var(--color-text-muted)] mt-0.5 font-medium">Create a new task for your event</p>
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300 transition-all active:scale-90"
+              className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-high)] hover:text-[var(--color-primary)] transition-all active:scale-90"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -235,65 +247,65 @@ const NewTaskModal = ({ isOpen, onClose, onSubmit, loading }) => {
           </div>
           <form onSubmit={handleSubmit} className="px-8 py-8 space-y-6">
             <div>
-              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Title</label>
+              <label className="block text-xs font-bold text-[var(--color-primary)] uppercase tracking-widest mb-3">Title</label>
               <input
                 type="text"
                 value={title}
                 onChange={handleTitleChange}
-                className={`w-full px-5 py-4 rounded-2xl border bg-gray-50 dark:bg-gray-800 text-[var(--color-primary)] dark:text-white font-semibold placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-all ${errors.title ? 'border-red-400 ring-4 ring-red-50 dark:ring-red-900/30' : 'border-transparent focus:bg-white dark:focus:bg-gray-700 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10'}`}
+                className={`w-full px-5 py-4 rounded-2xl border bg-[var(--color-surface-container-low)] text-[var(--color-primary)] font-semibold placeholder-[var(--color-text-muted)]/50 outline-none transition-all ${errors.title ? 'border-[var(--color-error)] ring-4 ring-[var(--color-error)]/10' : 'border-transparent focus:bg-[var(--color-surface-container-lowest)] focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10'}`}
                 placeholder="Task title"
                 required
               />
               {errors.title && <p className="text-xs text-red-500 mt-2 font-bold flex items-center gap-1">{errors.title}</p>}
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Description</label>
+              <label className="block text-xs font-bold text-[var(--color-primary)] uppercase tracking-widest mb-3">Description</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-5 py-4 rounded-2xl border bg-gray-50 dark:bg-gray-800 border-transparent text-[var(--color-primary)] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-gray-700 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all resize-none"
+                className="w-full px-5 py-4 rounded-2xl border bg-[var(--color-surface-container-low)] border-transparent text-[var(--color-primary)] placeholder-[var(--color-text-muted)]/50 focus:bg-[var(--color-surface-container-lowest)] focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all resize-none"
                 rows={3}
                 placeholder="Task description (optional)"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Priority</label>
+                <label className="block text-xs font-bold text-[var(--color-primary)] uppercase tracking-widest mb-3">Priority</label>
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="w-full px-5 py-4 rounded-2xl border bg-gray-50 dark:bg-gray-800 border-transparent text-[var(--color-primary)] dark:text-white font-bold text-xs outline-none transition-all"
+                  className="w-full px-5 py-4 rounded-2xl border bg-[var(--color-surface-container-low)] border-transparent text-[var(--color-primary)] font-bold text-xs outline-none transition-all focus:bg-[var(--color-surface-container-lowest)]"
                 >
-                  <option value="Low" className="dark:bg-gray-800">Low</option>
-                  <option value="Medium" className="dark:bg-gray-800">Medium</option>
-                  <option value="High" className="dark:bg-gray-800">High</option>
-                  <option value="Urgent" className="dark:bg-gray-800">Urgent</option>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Urgent">Urgent</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Due Date</label>
+                <label className="block text-xs font-bold text-[var(--color-primary)] uppercase tracking-widest mb-3">Due Date</label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   value={dueDate}
                   onChange={handleDateChange}
-                  min={today}
-                  className={`w-full px-5 py-4 rounded-2xl border bg-gray-50 dark:bg-gray-800 text-[var(--color-primary)] dark:text-white font-semibold outline-none transition-all ${errors.dueDate ? 'border-red-400 ring-4 ring-red-50 dark:ring-red-900/30' : 'border-transparent focus:bg-white dark:focus:bg-gray-700 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10'}`}
+                  min={minDateTime}
+                  className={`w-full px-5 py-4 rounded-2xl border bg-[var(--color-surface-container-low)] text-[var(--color-primary)] font-semibold outline-none transition-all ${errors.dueDate ? 'border-[var(--color-error)] ring-4 ring-[var(--color-error)]/10' : 'border-transparent focus:bg-[var(--color-surface-container-lowest)] focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10'}`}
                 />
-                {errors.dueDate && <p className="text-xs text-red-500 mt-2 font-bold flex items-center gap-1">{errors.dueDate}</p>}
+                {errors.dueDate && <p className="text-xs text-[var(--color-error)] mt-2 font-bold flex items-center gap-1">{errors.dueDate}</p>}
               </div>
             </div>
             <div className="flex gap-3 pt-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-4 rounded-2xl text-sm font-bold uppercase tracking-widest border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-gray-600 dark:text-gray-400"
+                className="flex-1 py-4 rounded-2xl text-sm font-bold uppercase tracking-widest border border-[var(--color-outline-variant)]/20 hover:bg-[var(--color-surface-container-low)] transition-all text-[var(--color-text-muted)]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading || !title.trim()}
-                className="flex-1 py-4 bg-[#030712] text-white rounded-2xl text-sm font-bold uppercase tracking-widest shadow-xl shadow-gray-200 dark:shadow-gray-900 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-4 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-2xl text-sm font-bold uppercase tracking-widest shadow-xl shadow-[var(--color-primary)]/10 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Creating...' : 'Create Task'}
               </button>
@@ -344,7 +356,20 @@ const Tasks = () => {
 
   useEffect(() => {
     loadTasks();
-  }, [loadTasks]);
+    fetchEvent();
+  }, [loadTasks, eventId]);
+
+  const fetchEvent = async () => {
+    try {
+      const { apiClient } = await import('../../lib/api');
+      const eventData = await apiClient.get(`/events/${eventId}`);
+      if (eventData?.eventDate) {
+        localStorage.setItem(`eventDate_${eventId}`, eventData.eventDate);
+      }
+    } catch (error) {
+      console.error('Error fetching event data:', error);
+    }
+  };
 
   const getTasksByStatus = (status) => tasks.filter(t => t.status === status);
 
@@ -432,13 +457,13 @@ const Tasks = () => {
           <div className="flex items-center gap-1 bg-[var(--color-surface-container-low)] p-1 rounded-xl w-fit">
             <button
               onClick={() => setActiveTab('board')}
-              className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'board' ? 'bg-white dark:bg-gray-800 shadow-sm text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'}`}
+              className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'board' ? 'bg-[var(--color-surface-container-lowest)] shadow-sm text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'}`}
             >
               Board View
             </button>
             <button
               onClick={() => setActiveTab('calendar')}
-              className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'calendar' ? 'bg-white dark:bg-gray-800 shadow-sm text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'}`}
+              className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'calendar' ? 'bg-[var(--color-surface-container-lowest)] shadow-sm text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'}`}
             >
               Calendar
             </button>
@@ -537,8 +562,8 @@ const CalendarView = ({ tasks }) => {
   ];
 
   const sidebarTasks = [
-    { title: 'Confirm Floral Arrangements', time: '09:00 AM', user: 'Marc J.', status: 'En progreso', color: 'border-indigo-500', statusBg: 'bg-indigo-50/50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300' },
-    { title: 'Final Catering Menu Review', time: '02:30 PM', user: 'Elena S.', status: 'Sin iniciar', color: 'border-slate-200', statusBg: 'bg-slate-50/50 text-slate-500 dark:bg-slate-800 dark:text-slate-400' },
+    { title: 'Confirm Floral Arrangements', time: '09:00 AM', user: 'Marc J.', status: 'In Progress', color: 'border-indigo-500', statusBg: 'bg-indigo-50/50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300' },
+    { title: 'Final Catering Menu Review', time: '02:30 PM', user: 'Elena S.', status: 'Not Started', color: 'border-slate-200', statusBg: 'bg-slate-50/50 text-slate-500 dark:bg-slate-800 dark:text-slate-400' },
   ];
 
   return (
@@ -548,14 +573,14 @@ const CalendarView = ({ tasks }) => {
         {/* Calendar Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
           <div>
-            <h2 className="text-3xl font-black text-[var(--color-primary)] dark:text-white font-headline">October 2024</h2>
-            <p className="text-sm font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-widest">Planning: 14 Active Tasks</p>
+            <h2 className="text-3xl font-black text-[var(--color-primary)] font-headline">October 2024</h2>
+            <p className="text-sm font-bold text-[var(--color-text-muted)] mt-1 uppercase tracking-widest">Planning: 14 Active Tasks</p>
           </div>
-          <div className="flex p-1 bg-gray-50 dark:bg-gray-800/50 rounded-xl shadow-inner-sm">
+          <div className="flex p-1 bg-[var(--color-surface-container-low)] rounded-xl shadow-inner-sm">
             {['Month', 'Week', 'Day'].map(view => (
               <button
                 key={view}
-                className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${view === 'Month' ? 'bg-white dark:bg-gray-700 shadow-sm text-[var(--color-primary)]' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${view === 'Month' ? 'bg-[var(--color-surface-container-lowest)] shadow-sm text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'}`}
               >
                 {view}
               </button>
@@ -567,10 +592,10 @@ const CalendarView = ({ tasks }) => {
         <div className="mb-12">
           <div className="grid grid-cols-7 mb-4">
             {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map(day => (
-              <div key={day} className="text-center text-[10px] font-black text-slate-300 dark:text-slate-600 tracking-[0.2em]">{day}</div>
+              <div key={day} className="text-center text-[10px] font-black text-[var(--color-text-muted)] tracking-[0.2em]">{day}</div>
             ))}
           </div>
-          <div className="grid grid-cols-7 border-t border-l border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm">
+          <div className="grid grid-cols-7 border-t border-l border-[var(--color-outline-variant)]/10 rounded-xl overflow-hidden shadow-sm">
             {/* Simple mock grid for Oct 2024 */}
             {[...Array(31)].map((_, i) => {
               const day = i + 1;
@@ -580,25 +605,25 @@ const CalendarView = ({ tasks }) => {
                 <div 
                   key={i} 
                   onClick={() => setSelectedDay(day)}
-                  className={`relative h-24 sm:h-28 lg:h-32 p-2 border-r border-b border-gray-100 dark:border-gray-800 transition-all cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-800/30 ${isSelected ? 'bg-indigo-50/30 dark:bg-indigo-900/10 ring-2 ring-indigo-500/50 ring-inset z-10' : 'bg-white dark:bg-gray-900'}`}
+                  className={`relative h-24 sm:h-28 lg:h-32 p-2 border-r border-b border-[var(--color-outline-variant)]/10 transition-all cursor-pointer hover:bg-[var(--color-surface-container-low)]/50 ${isSelected ? 'bg-[var(--color-primary)]/5 ring-2 ring-[var(--color-primary)]/30 ring-inset z-10' : 'bg-[var(--color-surface-container-lowest)]'}`}
                 >
-                  <span className={`text-xs font-black ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'} ${day === 30 ? 'opacity-20' : ''}`}>
+                  <span className={`text-xs font-black ${isSelected ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'} ${day === 30 ? 'opacity-20' : ''}`}>
                     {day < 10 ? `0${day}` : day}
                   </span>
                   
                   {day === 8 && (
                     <div className="mt-2 bg-green-500/10 border border-green-500/20 rounded px-1.5 py-0.5">
-                      <p className="text-[8px] font-black text-green-600 uppercase tracking-tighter truncate leading-tight">Terminada</p>
+                      <p className="text-[8px] font-black text-green-600 uppercase tracking-tighter truncate leading-tight">Completed</p>
                     </div>
                   )}
 
                   {day === 12 && (
                     <div className="mt-2 space-y-1">
-                      <div className="bg-indigo-600 rounded px-1.5 py-1">
+                      <div className="bg-[var(--color-primary)] rounded px-1.5 py-1">
                         <p className="text-[8px] font-black text-white uppercase tracking-tighter truncate leading-tight">Confir...</p>
                       </div>
-                      <div className="bg-gray-100 dark:bg-gray-800 rounded px-1.5 py-1">
-                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-tighter truncate leading-tight">Cateri...</p>
+                      <div className="bg-[var(--color-surface-container-high)] rounded px-1.5 py-1">
+                        <p className="text-[8px] font-black text-[var(--color-text-muted)] uppercase tracking-tighter truncate leading-tight">Cateri...</p>
                       </div>
                     </div>
                   )}
@@ -612,8 +637,8 @@ const CalendarView = ({ tasks }) => {
         <div className="border-t border-[var(--color-outline-variant)]/10 pt-10">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-xl font-black text-[var(--color-primary)] dark:text-white font-headline">Workstream Timeline</h3>
-              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mt-1">Visual task progression for October</p>
+              <h3 className="text-xl font-black text-[var(--color-primary)] font-headline">Workstream Timeline</h3>
+              <p className="text-xs font-bold text-[var(--color-text-muted)] mt-1">Visual task progression for October</p>
             </div>
             <div className="flex gap-4">
               <button className="text-slate-400 hover:text-slate-600 transition-colors"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg></button>
@@ -621,24 +646,24 @@ const CalendarView = ({ tasks }) => {
             </div>
           </div>
 
-          <div className="space-y-4 relative before:absolute before:left-2 before:top-4 before:bottom-4 before:w-0.5 before:bg-gray-100 dark:before:bg-gray-800 pl-8">
+          <div className="space-y-4 relative before:absolute before:left-2 before:top-4 before:bottom-4 before:w-0.5 before:bg-[var(--color-outline-variant)]/10 pl-8">
             {timelineTasks.map((t, i) => (
               <div key={i} className="relative group">
-                <div className={`absolute -left-[30px] top-4 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-gray-900 ${t.color} z-10 shadow-sm`}></div>
+                <div className={`absolute -left-[30px] top-4 w-3.5 h-3.5 rounded-full border-2 border-[var(--color-surface-container-lowest)] ${t.color} z-10 shadow-sm`}></div>
                 <div className="absolute -left-20 top-2.5">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{t.date}</span>
+                  <span className="text-[8px] font-black text-[var(--color-text-secondary)] uppercase tracking-widest">{t.date}</span>
                 </div>
-                <div className={`p-6 rounded-2xl border transition-all ${t.active ? 'bg-white dark:bg-gray-800 shadow-xl shadow-indigo-500/5 border-indigo-100 dark:border-indigo-900' : 'bg-gray-50/50 dark:bg-gray-800/30 border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+                <div className={`p-6 rounded-2xl border transition-all ${t.active ? 'bg-[var(--color-surface-container-lowest)] shadow-xl shadow-[var(--color-primary)]/5 border-[var(--color-primary)]/20' : 'bg-[var(--color-surface-container-low)]/50 border-transparent hover:bg-[var(--color-surface-container-low)]'}`}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-black text-[var(--color-primary)] dark:text-white mb-2">{t.title}</h4>
-                      <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                      <h4 className="text-sm font-black text-[var(--color-primary)] mb-2">{t.title}</h4>
+                      <div className="flex items-center gap-4 text-[10px] font-bold text-[var(--color-text-muted)]">
                         <div className="flex items-center gap-1.5 leading-none">
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                           <span>{t.time}</span>
                         </div>
                         <div className="flex items-center gap-1.5 leading-none">
-                          <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-[8px] text-white">MK</div>
+                          <div className="w-5 h-5 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-[8px] text-white">MK</div>
                           <span>{t.user}</span>
                         </div>
                       </div>
@@ -655,49 +680,49 @@ const CalendarView = ({ tasks }) => {
       </div>
 
       {/* ─── Right Column (Sidebar) ─── */}
-      <div className="w-full lg:w-[380px] p-6 lg:p-10 bg-gray-50/30 dark:bg-gray-900/40 flex flex-col h-full overflow-y-auto">
+      <div className="w-full lg:w-[380px] p-6 lg:p-10 bg-[var(--color-surface-container-low)] flex flex-col h-full overflow-y-auto">
         <div className="mb-10">
-          <p className="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-[0.2em] mb-2 leading-none">Selected Day</p>
-          <h2 className="text-2xl font-black text-[var(--color-primary)] dark:text-white font-headline leading-tight">Tasks for Oct {selectedDay}</h2>
+          <p className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.2em] mb-2 leading-none">Selected Day</p>
+          <h2 className="text-2xl font-black text-[var(--color-primary)] font-headline leading-tight">Tasks for Oct {selectedDay}</h2>
         </div>
 
         <div className="space-y-6 flex-1">
           {sidebarTasks.map((t, i) => (
-            <div key={i} className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg shadow-gray-200/40 dark:shadow-none border-l-4 ${t.color} relative group transition-all hover:-translate-y-1`}>
-              <button className="absolute top-4 right-4 text-slate-300 hover:text-slate-500 transition-colors">
+            <div key={i} className={`bg-[var(--color-surface-container-lowest)] p-6 rounded-2xl shadow-lg shadow-[var(--color-primary)]/5 border-l-4 ${t.color} relative group transition-all hover:-translate-y-1`}>
+              <button className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
               </button>
               <div className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest w-fit mb-4 ${t.statusBg}`}>
                 {t.status}
               </div>
-              <h4 className="text-lg font-black text-[var(--color-primary)] dark:text-white mb-6 pr-6 leading-snug">{t.title}</h4>
+              <h4 className="text-lg font-black text-[var(--color-primary)] mb-6 pr-6 leading-snug">{t.title}</h4>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-[10px] text-white overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">MK</div>
+                  <div className="w-7 h-7 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-[10px] text-white overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center">MK</div>
                   </div>
-                  <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">{t.user}</span>
+                  <span className="text-[11px] font-bold text-[var(--color-text-muted)]">{t.user}</span>
                 </div>
-                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-tight">{t.time}</span>
+                <span className="text-[11px] font-bold text-[var(--color-text-muted)] tracking-tight">{t.time}</span>
               </div>
             </div>
           ))}
 
           {/* Add Task Placeholder */}
-          <div className="border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-3xl p-8 flex flex-col items-center justify-center gap-3 transition-all hover:border-indigo-400/50 hover:bg-gray-50/50 group cursor-pointer">
-            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-slate-400 group-hover:bg-indigo-500 group-hover:text-white transition-all transform group-active:scale-90">
+          <div className="border-2 border-dashed border-[var(--color-outline-variant)]/20 rounded-3xl p-8 flex flex-col items-center justify-center gap-3 transition-all hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-surface-container-lowest)]/50 group cursor-pointer">
+            <div className="w-10 h-10 rounded-full bg-[var(--color-surface-container-high)] flex items-center justify-center text-[var(--color-text-muted)] group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all transform group-active:scale-90">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
             </div>
-            <span className="text-xs font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest group-hover:text-indigo-500">Add task for Oct {selectedDay}</span>
+            <span className="text-xs font-black text-[var(--color-text-muted)] opacity-40 uppercase tracking-widest group-hover:text-[var(--color-primary)] group-hover:opacity-100 transition-opacity">Add task for Oct {selectedDay}</span>
           </div>
         </div>
 
         {/* Milestone Card */}
-        <div className="mt-10 bg-[#030712] rounded-2xl p-6 flex items-center justify-between border border-white/5 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+        <div className="mt-10 bg-[var(--color-surface-container-high)] dark:bg-[#030712] rounded-2xl p-6 flex items-center justify-between border border-[var(--color-outline-variant)]/20 shadow-xl shadow-[var(--color-primary)]/5 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary)]/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
           <div>
-            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1 leading-none">Next Milestone</p>
-            <h4 className="text-lg font-black text-white font-headline">Gala Setup</h4>
+            <p className="text-[10px] font-black text-[var(--color-secondary)] uppercase tracking-widest mb-1 leading-none">Next Milestone</p>
+            <h4 className="text-lg font-black text-[var(--color-primary)] dark:text-white font-headline">Gala Setup</h4>
           </div>
           <div className="relative w-14 h-14">
             <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
@@ -705,7 +730,7 @@ const CalendarView = ({ tasks }) => {
               <circle className="stroke-indigo-500 animate-in fade-in duration-1000" strokeWidth="4" strokeDasharray="72, 100" strokeLinecap="round" fill="none" r="16" cx="18" cy="18" />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[10px] font-black text-white">72%</span>
+              <span className="text-[10px] font-black text-[var(--color-primary)] dark:text-white">72%</span>
             </div>
           </div>
         </div>

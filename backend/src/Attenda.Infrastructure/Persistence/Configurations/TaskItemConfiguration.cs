@@ -11,7 +11,7 @@ public class TaskItemConfiguration : IEntityTypeConfiguration<TaskItem>
         builder.ToTable("task_items");
         
         builder.HasKey(t => t.Id);
-        builder.Property(t => t.Id).ValueGeneratedOnAdd();
+        builder.Property(t => t.Id).ValueGeneratedNever();
 
         builder.Property(t => t.Title)
             .IsRequired()

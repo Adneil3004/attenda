@@ -28,7 +28,7 @@ const Sidebar = () => {
     .toUpperCase()
     .slice(0, 2);
 
-  const SYSTEM_KEYWORDS = ['create-event', 'my-events', 'table-layout', 'guests', 'tasks', 'settings', 'rsvp-designer', 'edit-event', 'providers'];
+  const SYSTEM_KEYWORDS = ['create-event', 'my-events', 'table-layout', 'guests', 'tasks', 'settings', 'rsvp-designer', 'edit-event', 'providers', 'schedule'];
   
   const isValidId = (id) => {
     if (!id) return false;
@@ -52,6 +52,7 @@ const Sidebar = () => {
 
   const navItems = [
     { name: 'Overview', path: activeEventId ? `/dashboard/${activeEventId}` : '/dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
+    { name: 'Schedule', path: getPath('schedule', activeEventId), icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
     { name: 'Providers', path: getPath('providers', activeEventId), icon: 'M17 20h5V4H2v16h5m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
     { name: 'Table Layout', path: getPath('table-layout', activeEventId), icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1-1 0 01-1-1v-6z' },
     { name: 'Guests', path: getPath('guests', activeEventId), icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
@@ -74,7 +75,7 @@ const Sidebar = () => {
       </div>
 
       <nav className="flex-1 mt-12 px-4 space-y-1 overflow-y-auto">
-        <h4 className="px-4 text-[10px] font-bold uppercase tracking-widest text-[var(--color-outline-variant)] mb-4">Event Management</h4>
+        <h4 className="px-4 text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-4">Event Management</h4>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
           
@@ -114,7 +115,7 @@ const Sidebar = () => {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
             </svg>
-            Nuevo Evento
+            New Event
           </button>
           <button
             onClick={() => navigate('/dashboard/my-events')}
@@ -123,7 +124,7 @@ const Sidebar = () => {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            Mis Eventos
+            My Events
           </button>
         </div>
 
@@ -177,7 +178,7 @@ const Sidebar = () => {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          Cerrar sesión
+          Sign Out
         </button>
       </div>
     </div>

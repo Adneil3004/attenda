@@ -34,7 +34,7 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
   // Handle cancel confirmation - TODO: connect to backend API when available
   const handleCancelConfirm = () => {
     setShowCancelModal(false);
-    alert('Para cancelar tu suscripción, contacta a soporte.');
+    alert('To cancel your subscription, please contact support.');
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -76,17 +76,17 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
    * 9999 = unlimited invitations
    */
   const guestCountDisplay = matchedPackage?.guestCount === 9999
-    ? 'Invitaciones Ilimitadas'
-    : `${matchedPackage?.guestCount || 20} Invitaciones`;
+    ? 'Unlimited Invitations'
+    : `${matchedPackage?.guestCount || 20} Invitations`;
 
   /**
    * Format price display
    * 0 = free plan, otherwise monthly price
    */
   const priceDisplay = matchedPackage?.price === 0
-    ? 'Gratis'
+    ? 'Free'
     : matchedPackage?.price
-      ? `$${matchedPackage.price}/mes`
+      ? `$${matchedPackage.price}/mo`
       : null;
 
   /**
@@ -97,7 +97,7 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
     if (tier === 'elite' || tier === 'planner') {
       return 'Full access to concierge services, priority guest seating, and digital calligraphy.';
     }
-    return 'Gestiona tus eventos con facilidad y estilo. Actualiza para más funciones.';
+    return 'Manage your events with ease and style. Upgrade for more features.';
   };
 
   // Extract display values
@@ -205,12 +205,12 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 leading-tight">Cancelar Suscripción</h3>
+                <h3 className="text-xl font-bold text-gray-800 leading-tight">Cancel Subscription</h3>
               </div>
 
               {/* Warning Message */}
               <p className="text-gray-600 text-sm mb-8 leading-relaxed">
-                ¿Estás seguro de que quieres cancelar tu suscripción? Perderás acceso a todas las funciones premium de tu plan actual.
+                Are you sure you want to cancel your subscription? You will lose access to all premium features of your current plan.
               </p>
 
               {/* Action Buttons */}
@@ -219,13 +219,13 @@ const PlanCard = ({ matchedPackage, isBusiness, loading }) => {
                   onClick={() => setShowCancelModal(false)}
                   className="flex-1 px-6 py-3.5 bg-gray-100 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors"
                 >
-                  Volver
+                  Go Back
                 </button>
                 <button
                   onClick={handleCancelConfirm}
                   className="flex-1 px-6 py-3.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg"
                 >
-                  Confirmar
+                  Confirm
                 </button>
               </div>
             </div>

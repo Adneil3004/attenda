@@ -17,7 +17,8 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         // Use a placeholder connection string for migrations
         // The actual connection is loaded from environment variables at runtime
         optionsBuilder.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL") 
-            ?? "Host=localhost;Database=attenda;Username=postgres;Password=postgres");
+            ?? "Host=localhost;Database=attenda;Username=postgres;Password=postgres")
+            .UseSnakeCaseNamingConvention();
         
         return new AppDbContext(optionsBuilder.Options);
     }
