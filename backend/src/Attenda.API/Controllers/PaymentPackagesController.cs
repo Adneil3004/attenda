@@ -38,19 +38,23 @@ public class PaymentPackagesController : ControllerBase
 
         // Deserialize features for each package - handle both bool and number values
         var result = packages.Select(p => {
-            var featuresDict = new Dictionary<string, bool>();
+            var featuresDict = new Dictionary<string, object>();
             if (!string.IsNullOrEmpty(p.FeaturesJson))
             {
                 try
                 {
-                    var rawDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(p.FeaturesJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    if (rawDict != null)
+                    using var doc = JsonDocument.Parse(p.FeaturesJson);
+                    foreach (var kvp in doc.RootElement.EnumerateObject())
                     {
-                        foreach (var kvp in rawDict)
+                        object value = kvp.Value.ValueKind switch
                         {
-                            featuresDict[kvp.Key] = kvp.Value.ValueKind == JsonValueKind.True || 
-                                (kvp.Value.ValueKind == JsonValueKind.Number && kvp.Value.GetInt32() > 0);
-                        }
+                            JsonValueKind.True => true,
+                            JsonValueKind.False => false,
+                            JsonValueKind.Number => kvp.Value.GetInt32(),
+                            JsonValueKind.String => kvp.Value.GetString() ?? "",
+                            _ => ""
+                        };
+                        featuresDict[kvp.Name] = value;
                     }
                 }
                 catch { /* ignore parse errors */ }
