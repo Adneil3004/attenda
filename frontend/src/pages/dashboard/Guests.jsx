@@ -30,7 +30,10 @@ const Guests = () => {
   // Filter state
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [groupFilter, setGroupFilter] = useState('All');
+  const [groupFilter, setGroupFilter] = useState('All'); // Store groupId
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Selection state
   const [selectedGuestIds, setSelectedGuestIds] = useState(new Set());
@@ -52,47 +55,62 @@ const Guests = () => {
   }, [guests]);
 
 
-  const fetchEventDetails = useCallback(async () => {
-    if (!eventId) return;
-    try {
-      const eventData = await apiClient.get(`/events/${eventId}`);
-      setActiveEvent(eventData);
-    } catch (err) {
-      console.error('Error fetching event details:', err);
-    }
-  }, [eventId]);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
-  const fetchData = useCallback(async () => {
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setPageNumber(1); // Reset page on search
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const fetchInitialData = useCallback(async () => {
     if (!user || !eventId) return;
-    
-    // Only show full loading the very first time
-    const isFirstLoad = !activeEvent && guests.length === 0;
-    if (isFirstLoad) {
-      setLoading(true);
-    } else {
-      setIsRefreshing(true);
-    }
-    
-    setErrorMsg('');
-
     try {
-      // Parallelize all data fetching
-      const [eventData, groupsData, guestsData, rsvpConfig] = await Promise.all([
+      const [eventData, groupsData, rsvpConfig] = await Promise.all([
         apiClient.get(`/events/${eventId}`),
         apiClient.get(`/Groups/event/${eventId}`),
-        apiClient.get(`/Guests/event/${eventId}`),
         rsvpApi.fetchRsvpConfig(eventId).catch(() => null)
       ]);
 
       if (eventData) setActiveEvent(eventData);
       setGroups(groupsData || []);
-      setGuests(guestsData || []);
       
       if (rsvpConfig) {
         setHasRsvpConfig(rsvpConfig.isConfigured || false);
       } else {
         setHasRsvpConfig(false);
       }
+    } catch (err) {
+      console.error('Error fetching initial data:', err);
+    } finally {
+      setCheckingRsvp(false);
+    }
+  }, [user, eventId]);
+
+  const fetchGuests = useCallback(async (showFullLoading = false) => {
+    if (!user || !eventId) return;
+    
+    if (showFullLoading) setLoading(true);
+    setIsRefreshing(true);
+    setErrorMsg('');
+
+    try {
+      const params = new URLSearchParams({
+        pageNumber,
+        pageSize,
+        searchTerm: debouncedSearchTerm,
+        status: statusFilter === 'All' ? '' : statusFilter,
+        groupId: groupFilter === 'All' ? '' : groupFilter
+      });
+
+      const response = await apiClient.get(`/Guests/event/${eventId}?${params.toString()}`);
+      
+      // Response is PaginatedList: { items, pageNumber, totalPages, totalCount, ... }
+      setGuests(response.items || []);
+      setTotalCount(response.totalCount || 0);
       
     } catch (err) {
       setErrorMsg(err.message || 'Failed to load guest data.');
@@ -100,13 +118,16 @@ const Guests = () => {
     } finally {
       setLoading(false);
       setIsRefreshing(false);
-      setCheckingRsvp(false);
     }
-  }, [user, eventId]);
+  }, [user, eventId, pageNumber, pageSize, debouncedSearchTerm, statusFilter, groupFilter]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  useEffect(() => {
+    fetchGuests();
+  }, [fetchGuests]);
   
   useEffect(() => {
     if (notification) {
@@ -134,14 +155,24 @@ const Guests = () => {
   };
 
   // derived filtered state
-  const filteredGuests = useMemo(() => {
-    return guests.filter(g => {
-      const matchSearch = (g.firstName + ' ' + (g.lastName||'')).toLowerCase().includes(searchTerm.toLowerCase());
-      const matchStatus = statusFilter === 'All' || g.rsvpStatus === statusFilter;
-      const matchGroup = groupFilter === 'All' || (g.groupName === groupFilter);
-      return matchSearch && matchStatus && matchGroup;
-    });
-  }, [guests, searchTerm, statusFilter, groupFilter]);
+  const filteredGuests = guests; // Filtering is now server-side
+
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setPageNumber(1);
+  };
+
+  const handleStatusFilterChange = (val) => {
+    setStatusFilter(val);
+    setPageNumber(1);
+  };
+
+  const handleGroupFilterChange = (val) => {
+    setGroupFilter(val);
+    setPageNumber(1);
+  };
 
   // Selection handlers
   const toggleSelectGuest = (id) => {
@@ -178,7 +209,7 @@ const Guests = () => {
             guestIds: [guest.id]
           });
 
-          fetchData();
+          fetchGuests();
         } catch (err) {
           alert(err.message);
         } finally {
@@ -205,7 +236,7 @@ const Guests = () => {
           });
 
           setSelectedGuestIds(new Set());
-          fetchData();
+          fetchGuests();
         } catch (err) {
           alert(err.message);
         } finally {
@@ -230,7 +261,7 @@ const Guests = () => {
           await apiClient.delete(`/Guests/event/${activeEvent.id}/all`);
 
           setSelectedGuestIds(new Set());
-          fetchData();
+          fetchGuests();
         } catch (err) {
           alert(err.message);
         } finally {
@@ -315,7 +346,7 @@ const Guests = () => {
           guests: newGuests
         });
 
-        fetchData();
+        fetchGuests();
       } catch (err) {
         alert(err.message);
       } finally {
@@ -373,7 +404,7 @@ const Guests = () => {
             {/* Status Filter */}
             <select 
               value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
+              onChange={e => handleStatusFilterChange(e.target.value)}
               className="py-2.5 pl-3 pr-8 bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/30 text-sm w-full sm:w-auto shadow-sm"
             >
               <option value="All">All Status</option>
@@ -385,12 +416,12 @@ const Guests = () => {
             {/* Group Filter */}
             <select 
               value={groupFilter}
-              onChange={e => setGroupFilter(e.target.value)}
+              onChange={e => handleGroupFilterChange(e.target.value)}
               className="py-2.5 pl-3 pr-8 bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/30 text-sm w-full sm:w-auto shadow-sm"
             >
               <option value="All">All Groups</option>
               {groups.map(g => (
-                <option key={g.id} value={g.name}>{g.name}</option>
+                <option key={g.id} value={g.id}>{g.name}</option>
               ))}
             </select>
             
@@ -515,7 +546,7 @@ const Guests = () => {
                   )}
                 </div>
                 <div className="text-[10px] font-semibold text-gray-400">
-                  {filteredGuests.length} of {guests.length} guests shown
+                  Showing {guests.length > 0 ? (pageNumber - 1) * pageSize + 1 : 0}-{Math.min(pageNumber * pageSize, totalCount)} of {totalCount} guests
                 </div>
               </div>
 
@@ -598,7 +629,7 @@ const Guests = () => {
                               window.open(rsvpUrl, '_blank');
                               
                               // 3. Refresh list to show log in drawer if opened
-                              fetchData();
+                              fetchGuests();
                             } catch (err) {
                               console.error('Error logging invitation:', err);
                             }
@@ -632,6 +663,57 @@ const Guests = () => {
                   ))
                 )}
               </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="px-6 py-4 border-t border-gray-50 flex items-center justify-between bg-gray-50/10">
+                  <div className="text-xs text-gray-500 font-medium">
+                    Page <span className="text-[var(--color-primary)] font-bold">{pageNumber}</span> of <span className="text-[var(--color-primary)] font-bold">{totalPages}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setPageNumber(prev => Math.max(1, prev - 1))}
+                      disabled={pageNumber === 1}
+                      className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    
+                    {/* Simple numeric pages for smaller sets, or just prev/next for simplicity */}
+                    <div className="flex items-center gap-1">
+                      {[...Array(Math.min(5, totalPages))].map((_, i) => {
+                        let pg = pageNumber <= 3 ? i + 1 : (pageNumber >= totalPages - 2 ? totalPages - 4 + i : pageNumber - 2 + i);
+                        if (pg <= 0 || pg > totalPages) return null;
+                        return (
+                          <button
+                            key={pg}
+                            onClick={() => setPageNumber(pg)}
+                            className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                              pageNumber === pg 
+                                ? 'bg-[var(--color-primary)] text-white shadow-md' 
+                                : 'bg-white border border-gray-100 text-gray-400 hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]'
+                            }`}
+                          >
+                            {pg}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => setPageNumber(prev => Math.min(totalPages, prev + 1))}
+                      disabled={pageNumber === totalPages}
+                      className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -639,7 +721,7 @@ const Guests = () => {
 
       <GuestDrawer 
         isOpen={isDrawerOpen} 
-        onClose={() => { setIsDrawerOpen(false); fetchData(); }} 
+        onClose={() => { setIsDrawerOpen(false); fetchGuests(); }} 
         guest={selectedGuest} 
         activeEvent={activeEvent}
         groups={groups}

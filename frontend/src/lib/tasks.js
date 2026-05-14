@@ -111,7 +111,7 @@ export const tasksApi = {
   async delete(taskId, eventId) {
     if (!eventId) throw new Error('No eventId provided to delete task');
 
-    return await apiClient.delete(`/tasks/${taskId}`, { eventId, taskId });
+    return await apiClient.delete(`/tasks/${taskId}?eventId=${eventId}`, null);
   },
 
   // Update task status
