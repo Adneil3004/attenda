@@ -75,4 +75,40 @@ public class EventRepository : IEventRepository
                              (e.Status == EventStatus.Active || e.Status == EventStatus.Draft), 
                         cancellationToken);
     }
+
+    public async Task<(List<Guest> Items, int TotalCount)> GetGuestsPaginatedAsync(Guid eventId, int pageNumber, int pageSize, string searchTerm = null, Guid? groupId = null, RsvpStatus? status = null, CancellationToken cancellationToken = default)
+    {
+        var query = _context.Guests
+            .AsNoTracking()
+            .Where(g => g.EventId == eventId);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            query = query.Where(g => g.FirstName.ToLower().Contains(search) || 
+                                     g.LastName.ToLower().Contains(search) || 
+                                     (g.PhoneNumber != null && g.PhoneNumber.Value.Contains(search)));
+        }
+
+        if (groupId.HasValue)
+        {
+            query = query.Where(g => g.GuestGroupId == groupId.Value);
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(g => g.RsvpStatus == status.Value);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        
+        var items = await query
+            .OrderBy(g => g.FirstName)
+            .ThenBy(g => g.LastName)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
 }

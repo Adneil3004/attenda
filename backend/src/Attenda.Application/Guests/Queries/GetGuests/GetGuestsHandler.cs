@@ -1,10 +1,11 @@
 using Attenda.Application.Guests.DTOs;
+using Attenda.Application.Common.Models;
 using Attenda.Domain.Interfaces;
 using MediatR;
 
 namespace Attenda.Application.Guests.Queries.GetGuests;
 
-public class GetGuestsHandler : IRequestHandler<GetGuestsQuery, List<GuestDto>>
+public class GetGuestsHandler : IRequestHandler<GetGuestsQuery, PaginatedList<GuestDto>>
 {
     private readonly IEventRepository _eventRepository;
 
@@ -13,14 +14,21 @@ public class GetGuestsHandler : IRequestHandler<GetGuestsQuery, List<GuestDto>>
         _eventRepository = eventRepository;
     }
 
-    public async Task<List<GuestDto>> Handle(GetGuestsQuery request, CancellationToken cancellationToken)
+    public async Task<PaginatedList<GuestDto>> Handle(GetGuestsQuery request, CancellationToken cancellationToken)
     {
+        var (guests, totalCount) = await _eventRepository.GetGuestsPaginatedAsync(
+            request.EventId, 
+            request.PageNumber, 
+            request.PageSize, 
+            request.SearchTerm, 
+            request.GroupId, 
+            request.Status,
+            cancellationToken);
+
         var @event = await _eventRepository.GetWithGuestsAndGroupsAsync(request.EventId, cancellationToken);
-        if (@event == null) return new List<GuestDto>();
+        var groupDict = @event?.GuestGroups.ToDictionary(g => g.Id, g => g.Name) ?? new Dictionary<Guid, string>();
 
-        var groupDict = @event.GuestGroups.ToDictionary(g => g.Id, g => g.Name);
-
-        return @event.Guests.Select(g => new GuestDto(
+        var dtos = guests.Select(g => new GuestDto(
             g.Id,
             g.FirstName,
             g.LastName,
@@ -33,5 +41,7 @@ public class GetGuestsHandler : IRequestHandler<GetGuestsQuery, List<GuestDto>>
             g.RsvpToken?.Value.ToString(),
             g.InvitationSent
         )).ToList();
+
+        return new PaginatedList<GuestDto>(dtos, totalCount, request.PageNumber, request.PageSize);
     }
 }

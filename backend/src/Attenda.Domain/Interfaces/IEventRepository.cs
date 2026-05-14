@@ -12,4 +12,5 @@ public interface IEventRepository
     void Delete(Event @event);
     Task<Guest?> GetGuestByTokenAsync(string token, CancellationToken cancellationToken = default);
     Task<int> CountActiveEventsByTierAsync(Guid organizerId, string tier, CancellationToken cancellationToken = default);
+    Task<(List<Guest> Items, int TotalCount)> GetGuestsPaginatedAsync(Guid eventId, int pageNumber, int pageSize, string searchTerm = null, Guid? groupId = null, RsvpStatus? status = null, CancellationToken cancellationToken = default);
 }

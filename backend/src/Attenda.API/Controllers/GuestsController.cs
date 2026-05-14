@@ -7,10 +7,12 @@ using Attenda.Application.Guests.Commands.LogInvitationSent;
 using Attenda.Application.Guests.Queries.GetGuests;
 using Attenda.Application.Guests.Queries.GetGuestGroups;
 using Attenda.Application.Guests.DTOs;
+using Attenda.Application.Common.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Attenda.Domain.Enums;
 
 namespace Attenda.API.Controllers;
 
@@ -26,19 +28,20 @@ public class GuestsController : ControllerBase
         _mediator = mediator;
     }
 
+    private Guid GetUserId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
     [HttpGet("event/{eventId}")]
-    public async Task<IActionResult> GetGuests(Guid eventId)
+    public async Task<ActionResult<PaginatedList<GuestDto>>> Get(
+        Guid eventId, 
+        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageSize = 10, 
+        [FromQuery] string searchTerm = null, 
+        [FromQuery] Guid? groupId = null,
+        [FromQuery] RsvpStatus? status = null)
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!Guid.TryParse(userIdString, out var userId))
-        {
-            return Unauthorized();
-        }
-
-        var query = new GetGuestsQuery(eventId, userId);
-        var result = await _mediator.Send(query);
-
-        return Ok(result);
+        var userId = GetUserId();
+        var query = new GetGuestsQuery(eventId, userId, pageNumber, pageSize, searchTerm, groupId, status);
+        return await _mediator.Send(query);
     }
 
     [HttpGet("groups/{eventId}")]

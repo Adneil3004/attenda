@@ -351,11 +351,23 @@ const Tasks = () => {
     setIsDrawerOpen(true);
   };
 
-  const handleAddTask = (status = 'To Do') => {
-    setInitialStatus(status);
-    setSelectedTask(null);
-    setIsDrawerOpen(true);
-    setIsCreating(true);
+  const handleAddTask = async (status = 'To Do') => {
+    const title = prompt('Task title:');
+    if (!title?.trim()) return;
+    
+    try {
+      const newTask = await tasksApi.create({
+        title: title.trim(),
+        description: '',
+        status,
+        priority: 'Medium',
+        dueDate: null,
+        eventId
+      });
+      setTasks(prev => [...prev, { ...newTask, dueDateRaw: newTask.dueDate }]);
+    } catch (err) {
+      console.error('Error creating task:', err);
+    }
   };
 
   const handleUpdate = (updatedTask) => {
