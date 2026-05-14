@@ -11,4 +11,5 @@ public record UpdateTaskCommand(
     string? Description,
     TaskPriority? Priority,
     DateTime? DueDate,
-    Guid UserId) : IRequest<TaskItemDto>;
+    Guid UserId,
+    List<ChecklistItemDto>? Checklist = null) : IRequest<TaskItemDto>;

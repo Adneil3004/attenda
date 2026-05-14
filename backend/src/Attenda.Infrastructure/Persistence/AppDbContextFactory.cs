@@ -1,24 +1,25 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Attenda.Infrastructure.Persistence;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace Attenda.Infrastructure.Persistence;
 
-/// <summary>
-/// Design-time factory for creating AppDbContext instances.
-/// Required by EF Core tools (migrations, scaffholding).
-/// </summary>
 public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
     public AppDbContext CreateDbContext(string[] args)
     {
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../Attenda.API"))
+            .AddJsonFile("appsettings.json")
+            .Build();
+
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        
-        // Use a placeholder connection string for migrations
-        // The actual connection is loaded from environment variables at runtime
-        optionsBuilder.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL") 
-            ?? "Host=localhost;Database=attenda;Username=postgres;Password=postgres");
-        
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        optionsBuilder.UseNpgsql(connectionString)
+            .UseSnakeCaseNamingConvention();
+
         return new AppDbContext(optionsBuilder.Options);
     }
 }

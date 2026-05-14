@@ -10,20 +10,16 @@ namespace Attenda.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "invitation_sent",
-                table: "guests",
-                type: "boolean",
-                nullable: false,
-                defaultValue: false);
+            migrationBuilder.Sql(@"
+                ALTER TABLE guests
+                ADD COLUMN invitation_sent BOOLEAN NOT NULL DEFAULT false;
+            ");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "invitation_sent",
-                table: "guests");
+            migrationBuilder.Sql("ALTER TABLE guests DROP COLUMN invitation_sent;");
         }
     }
 }

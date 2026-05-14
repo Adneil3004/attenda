@@ -50,6 +50,7 @@ public class UpdateTaskStatusHandler : IRequestHandler<UpdateTaskStatusCommand, 
             taskItem.Status.ToString(),
             taskItem.Priority.ToString(),
             taskItem.DueDate,
-            taskItem.CreatedAt);
+            taskItem.CreatedAt,
+            taskItem.Checklist.Select(c => new ChecklistItemDto(c.Id, c.Text, c.IsDone)).ToList());
     }
 }

@@ -92,21 +92,22 @@ const Settings = () => {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase
+      // Get from profiles table first, fallback to user metadata
+      const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
-      if (data) {
-        const loaded = {
-          full_name: data.full_name || '',
-          phone:     data.phone     || '',
-          birthdate: data.birthdate || '',
-          gender:    data.gender    || 'Male'
-        };
-        setProfileData(loaded);
-        setEditDraft(loaded);
-      }
+      
+      // Use profile data or fallback to user metadata
+      const loaded = {
+        full_name: profileData?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+        phone:     profileData?.phone     || '',
+        birthdate: profileData?.birthdate || '',
+        gender:    profileData?.gender    || 'Male'
+      };
+      setProfileData(loaded);
+      setEditDraft(loaded);
     })();
   }, [user]);
 

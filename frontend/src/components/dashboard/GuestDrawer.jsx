@@ -16,8 +16,8 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
   const [notes, setNotes] = useState(''); // This maps to PrivateNotes
   const [activityLog, setActivityLog] = useState([]); // This maps to Notes (JSON)
 
-  const socialGroups = ['Familia', 'Padrinos', 'Amigos', 'Compañeros de trabajo', 'Otros'];
-  const corporateGroups = ['Directivos', 'Gerentes', 'Empleados', 'Proveedores', 'Clientes', 'Otros'];
+  const socialGroups = ['Family', 'Godparents', 'Friends', 'Coworkers', 'Others'];
+  const corporateGroups = ['Executives', 'Managers', 'Employees', 'Suppliers', 'Clients', 'Others'];
   const suggestedGroups = activeEvent?.isBusiness ? corporateGroups : socialGroups;
 
   useEffect(() => {
@@ -116,7 +116,7 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
       >
         <div className="flex items-center justify-between px-8 py-6">
           <h2 className="text-xl font-bold text-[var(--color-primary)]">
-            {guest ? 'Editar Invitado' : 'Nuevo Invitado'}
+            {guest ? 'Edit Guest' : 'New Guest'}
           </h2>
           <button 
             type="button"
@@ -140,30 +140,30 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
-              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Nombre *</label>
+              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">First Name *</label>
               <input 
                 type="text" 
                 required
                 value={firstName}
                 onChange={e => setFirstName(e.target.value)}
                 className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm"
-                placeholder="Nombre"
+                placeholder="First Name"
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Apellido</label>
+              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Last Name</label>
               <input 
                 type="text" 
                 value={lastName}
                 onChange={e => setLastName(e.target.value)}
                 className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm"
-                placeholder="Apellido"
+                placeholder="Last Name"
               />
             </div>
           </div>
 
           <div className="flex flex-col">
-            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Número de Teléfono</label>
+            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Phone Number</label>
             <input 
               type="tel" 
               value={phoneNumber}
@@ -175,19 +175,19 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
           
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
-              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Estado RSVP</label>
+              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">RSVP Status</label>
               <select 
                 value={status}
                 onChange={e => setStatus(e.target.value)}
                 className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm appearance-none"
               >
-                <option value="Confirmed">Confirmado</option>
-                <option value="Pending">Pendiente</option>
-                <option value="Declined">Declinado</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Pending">Pending</option>
+                <option value="Declined">Declined</option>
               </select>
             </div>
             <div className="flex flex-col">
-              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Acompañantes</label>
+              <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Plus Ones</label>
               <input 
                 type="number" 
                 min="0"
@@ -200,20 +200,20 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
           </div>
 
           <div className="flex flex-col">
-            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Grupo</label>
+            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Group</label>
             <select 
               value={groupId || groupName}
               onChange={e => handleGroupSelect(e.target.value)}
               className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm appearance-none"
             >
-              <option value="">Sin asignar</option>
-              <optgroup label="Grupos Existentes">
+              <option value="">Unassigned</option>
+              <optgroup label="Existing Groups">
                 {groups?.map(g => (
                   <option key={g.id} value={g.id}>{g.name}</option>
                 ))}
               </optgroup>
               {suggestedGroups.length > 0 && (
-                <optgroup label="Categorías Sugeridas">
+                <optgroup label="Suggested Categories">
                   {suggestedGroups.map(sg => (
                     <option key={sg} value={sg}>{sg}</option>
                   ))}
@@ -223,24 +223,24 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
           </div>
 
           <div className="flex flex-col">
-            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Restricciones Alimenticias</label>
+            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Dietary Restrictions</label>
             <input 
               type="text" 
               value={diet}
               onChange={e => setDiet(e.target.value)}
               className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm"
-              placeholder="Ej. Vegano, Sin Gluten"
+              placeholder="e.g. Vegan, Gluten-Free"
             />
           </div>
           
           <div className="flex flex-col">
-            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Notas Privadas</label>
+            <label className="text-xs font-semibold text-[var(--color-on-surface-variant)] mb-2">Private Notes</label>
             <textarea 
               rows="3"
               value={notes}
               onChange={e => setNotes(e.target.value)}
               className="bg-[var(--color-surface-container-lowest)] border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:border-[var(--color-secondary)] focus:ring-1 focus:ring-[var(--color-secondary)] transition-all text-sm shadow-sm resize-none"
-              placeholder="Notas internas sobre este invitado..."
+              placeholder="Internal notes about this guest..."
             ></textarea>
           </div>
 
@@ -251,11 +251,11 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
                 <svg className="w-4 h-4 text-[var(--color-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Historial de Actividad
+                Activity History
               </label>
               <div className="bg-gray-50/50 rounded-xl border border-gray-100 overflow-hidden">
                 {activityLog.length === 0 ? (
-                  <div className="px-4 py-6 text-center text-xs text-gray-400 italic">No hay actividad registrada aún.</div>
+                  <div className="px-4 py-6 text-center text-xs text-gray-400 italic">No activity recorded yet.</div>
                 ) : (
                   <div className="divide-y divide-gray-100 max-h-60 overflow-y-auto">
                     {activityLog.sort((a,b) => new Date(b.at) - new Date(a.at)).map((log, i) => (
@@ -265,7 +265,7 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
                             {log.action.replace(/_/g, ' ')}
                           </span>
                           <span className="text-[9px] text-gray-400 font-medium">
-                            {new Date(log.at).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
+                            {new Date(log.at).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}
                           </span>
                         </div>
                         <p className="text-[11px] text-gray-600 leading-relaxed">
@@ -285,7 +285,7 @@ const GuestDrawer = ({ isOpen, onClose, guest, activeEvent, groups }) => {
               disabled={loading}
               className="w-full primary-gradient text-white px-8 py-3.5 rounded-md font-semibold text-sm hover:opacity-90 transition-opacity ambient-shadow disabled:opacity-50"
             >
-              {loading ? 'Guardando...' : (guest ? 'Guardar Cambios' : 'Agregar Invitado')}
+              {loading ? 'Saving...' : (guest ? 'Save Changes' : 'Add Guest')}
             </button>
           </div>
         </form>

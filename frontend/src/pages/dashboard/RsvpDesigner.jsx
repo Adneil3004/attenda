@@ -88,7 +88,7 @@ const RsvpDesigner = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-          alert('La imagen debe ser menor a 5MB.');
+          alert('Image must be less than 5MB.');
           return;
       }
       setSelectedFile(file);
@@ -130,12 +130,12 @@ const RsvpDesigner = () => {
 
       await rsvpApi.saveRsvpConfig(effectiveId, finalConfig);
       setSelectedFile(null); // Clear selected file after successful save
-      setNotification({ type: 'success', message: 'Configuración guardada exitosamente' });
+      setNotification({ type: 'success', message: 'Settings saved successfully' });
     } catch (err) {
       console.error(err);
       setNotification({ 
         type: 'error', 
-        message: 'Error al guardar: ' + (err.response?.data?.message || err.message) 
+        message: 'Error saving: ' + (err.response?.data?.message || err.message) 
       });
     } finally {
       setSaving(false);

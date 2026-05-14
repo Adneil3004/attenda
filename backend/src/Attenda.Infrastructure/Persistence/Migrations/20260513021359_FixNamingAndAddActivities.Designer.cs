@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Attenda.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260416044218_AddInvitationSentToGuests")]
-    partial class AddInvitationSentToGuests
+    [Migration("20260513021359_FixNamingAndAddActivities")]
+    partial class FixNamingAndAddActivities
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -29,38 +29,44 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CheckInTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("EventId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("check_in_time");
 
                     b.Property<Guid>("GuestId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("guest_id");
 
                     b.Property<string>("ScannedBy")
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("scanned_by");
 
                     b.Property<Guid?>("event_id")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_check_ins");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("GuestId")
+                        .HasDatabaseName("ix_check_ins_guest_id");
 
-                    b.HasIndex("GuestId");
+                    b.HasIndex("event_id")
+                        .HasDatabaseName("ix_check_ins_event_id");
 
-                    b.ToTable("CheckIns");
+                    b.ToTable("check_ins", (string)null);
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.Event", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("CapacityTier")
                         .IsRequired()
@@ -72,10 +78,12 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                         .HasColumnName("celebrants");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
                     b.Property<string>("EventType")
                         .HasColumnType("text")
@@ -90,15 +98,18 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                         .HasColumnName("image_url");
 
                     b.Property<bool>("IsBusiness")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_business");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
 
                     b.Property<Guid>("OrganizerId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizer_id");
 
                     b.Property<string>("OrganizerName")
                         .HasColumnType("text")
@@ -110,33 +121,96 @@ namespace Attenda.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("status");
 
                     b.Property<string>("VenueAddress")
                         .HasColumnType("text")
                         .HasColumnName("venue_address");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_events");
 
-                    b.ToTable("Events");
+                    b.ToTable("events", (string)null);
+                });
+
+            modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.EventActivity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("category");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CustomCategory")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("custom_category");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("end_time");
+
+                    b.Property<Guid?>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer")
+                        .HasColumnName("order");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_time");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id")
+                        .HasName("pk_event_activities");
+
+                    b.HasIndex("EventId")
+                        .HasDatabaseName("ix_event_activities_event_id");
+
+                    b.ToTable("event_activities", (string)null);
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.Guest", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("first_name");
 
                     b.Property<Guid?>("GuestGroupId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("guest_group_id");
 
                     b.Property<bool>("InvitationSent")
                         .ValueGeneratedOnAdd()
@@ -147,17 +221,21 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("last_name");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("phone_number");
 
                     b.Property<int>("PlusOnes")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("plus_ones");
 
                     b.Property<string>("PrivateNotes")
                         .HasColumnType("text")
@@ -165,74 +243,93 @@ namespace Attenda.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("RsvpStatus")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("rsvp_status");
 
                     b.Property<Guid>("RsvpToken")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("rsvp_token");
 
                     b.Property<Guid?>("TableId")
                         .HasColumnType("uuid")
                         .HasColumnName("table_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_guests");
 
-                    b.HasIndex("GuestGroupId");
+                    b.HasIndex("GuestGroupId")
+                        .HasDatabaseName("ix_guests_guest_group_id");
 
                     b.HasIndex("RsvpToken")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_guests_rsvp_token");
 
-                    b.HasIndex("TableId");
+                    b.HasIndex("TableId")
+                        .HasDatabaseName("ix_guests_table_id");
 
                     b.HasIndex("EventId", "PhoneNumber")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_guests_event_id_phone_number");
 
-                    b.ToTable("Guests");
+                    b.ToTable("guests", (string)null);
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.GuestGroup", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<Guid?>("EventId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("name");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_guest_groups");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("EventId")
+                        .HasDatabaseName("ix_guest_groups_event_id");
 
-                    b.ToTable("GuestGroups");
+                    b.ToTable("guest_groups", (string)null);
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.Table", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<int>("Capacity")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("capacity");
 
-                    b.Property<Guid?>("EventId")
-                        .HasColumnType("uuid");
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("character varying(150)");
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("name");
 
                     b.Property<string>("Priority")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("priority");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_tables");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("EventId")
+                        .HasDatabaseName("ix_tables_event_id");
 
                     b.ToTable("tables", (string)null);
                 });
@@ -241,38 +338,46 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("due_date");
 
                     b.Property<Guid?>("EventId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
 
                     b.Property<string>("Priority")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("priority");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("status");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_task_items");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("EventId")
+                        .HasDatabaseName("ix_task_items_event_id");
 
                     b.ToTable("task_items", (string)null);
                 });
@@ -281,136 +386,169 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Currency")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("currency");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
                     b.Property<string>("DiscountCode")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("discount_code");
 
                     b.Property<int>("DiscountPercentage")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("discount_percentage");
 
                     b.Property<string>("Features")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("features");
 
                     b.Property<int>("GuestCount")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("guest_count");
 
                     b.Property<bool>("HasDiscount")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_discount");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("name");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
+                        .HasColumnType("numeric")
+                        .HasColumnName("price");
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("type");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_payment_packages");
 
-                    b.ToTable("PaymentPackages");
+                    b.ToTable("payment_packages", (string)null);
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.UserAggregate.PaymentMethod", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("Brand")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("brand");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<bool>("IsDefault")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_default");
 
                     b.Property<string>("Last4")
                         .IsRequired()
                         .HasMaxLength(4)
                         .HasColumnType("character(4)")
+                        .HasColumnName("last4")
                         .IsFixedLength();
 
                     b.Property<string>("ProviderToken")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("provider_token");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_payment_methods");
 
                     b.HasIndex("UserId", "ProviderToken")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_payment_methods_user_id_provider_token");
 
-                    b.ToTable("PaymentMethods");
+                    b.ToTable("payment_methods", (string)null);
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.UserAggregate.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("email");
 
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("full_name");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_users");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_email");
 
-                    b.ToTable("Users");
+                    b.ToTable("users", (string)null);
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.CheckIn", b =>
                 {
-                    b.HasOne("Attenda.Domain.Aggregates.EventAggregate.Event", null)
-                        .WithMany("CheckIns")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("Attenda.Domain.Aggregates.EventAggregate.Guest", null)
                         .WithMany()
                         .HasForeignKey("GuestId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_check_ins_guests_guest_id");
+
+                    b.HasOne("Attenda.Domain.Aggregates.EventAggregate.Event", null)
+                        .WithMany("CheckIns")
+                        .HasForeignKey("event_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_check_ins_events_event_id");
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.Event", b =>
@@ -418,7 +556,8 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                     b.OwnsOne("Attenda.Domain.ValueObjects.EventDate", "Date", b1 =>
                         {
                             b1.Property<Guid>("EventId")
-                                .HasColumnType("uuid");
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
 
                             b1.Property<DateTime?>("EndDate")
                                 .HasColumnType("timestamp with time zone")
@@ -430,16 +569,18 @@ namespace Attenda.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("EventId");
 
-                            b1.ToTable("Events");
+                            b1.ToTable("events");
 
                             b1.WithOwner()
-                                .HasForeignKey("EventId");
+                                .HasForeignKey("EventId")
+                                .HasConstraintName("fk_events_events_id");
                         });
 
                     b.OwnsOne("Attenda.Domain.ValueObjects.RsvpConfiguration", "RsvpConfig", b1 =>
                         {
                             b1.Property<Guid>("event_id")
-                                .HasColumnType("uuid");
+                                .HasColumnType("uuid")
+                                .HasColumnName("event_id");
 
                             b1.Property<bool>("AllowDietaryRequirements")
                                 .HasColumnType("boolean")
@@ -469,12 +610,14 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                                 .HasColumnType("text")
                                 .HasColumnName("typography_theme");
 
-                            b1.HasKey("event_id");
+                            b1.HasKey("event_id")
+                                .HasName("pk_event_rsvp_configs");
 
                             b1.ToTable("event_rsvp_configs", (string)null);
 
                             b1.WithOwner()
-                                .HasForeignKey("event_id");
+                                .HasForeignKey("event_id")
+                                .HasConstraintName("fk_event_rsvp_configs_events_event_id");
                         });
 
                     b.Navigation("Date")
@@ -483,32 +626,46 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                     b.Navigation("RsvpConfig");
                 });
 
+            modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.EventActivity", b =>
+                {
+                    b.HasOne("Attenda.Domain.Aggregates.EventAggregate.Event", null)
+                        .WithMany("Activities")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_event_activities_events_event_id");
+                });
+
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.Guest", b =>
                 {
                     b.HasOne("Attenda.Domain.Aggregates.EventAggregate.Event", null)
                         .WithMany("Guests")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_guests_events_event_id");
 
                     b.HasOne("Attenda.Domain.Aggregates.EventAggregate.GuestGroup", null)
                         .WithMany()
                         .HasForeignKey("GuestGroupId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_guests_guest_groups_guest_group_id");
 
                     b.HasOne("Attenda.Domain.Aggregates.EventAggregate.Table", null)
                         .WithMany()
                         .HasForeignKey("TableId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_guests_tables_table_id");
 
                     b.OwnsMany("Attenda.Domain.ValueObjects.DietaryRestriction", "DietaryRestrictions", b1 =>
                         {
                             b1.Property<Guid>("guest_id")
-                                .HasColumnType("uuid");
+                                .HasColumnType("uuid")
+                                .HasColumnName("guest_id");
 
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("integer");
+                                .HasColumnType("integer")
+                                .HasColumnName("id");
 
                             NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
 
@@ -517,12 +674,14 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                                 .HasColumnType("text")
                                 .HasColumnName("restriction_name");
 
-                            b1.HasKey("guest_id", "Id");
+                            b1.HasKey("guest_id", "Id")
+                                .HasName("pk_guest_dietary_restrictions");
 
                             b1.ToTable("guest_dietary_restrictions", (string)null);
 
                             b1.WithOwner()
-                                .HasForeignKey("guest_id");
+                                .HasForeignKey("guest_id")
+                                .HasConstraintName("fk_guest_dietary_restrictions_guests_guest_id");
                         });
 
                     b.Navigation("DietaryRestrictions");
@@ -533,7 +692,8 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                     b.HasOne("Attenda.Domain.Aggregates.EventAggregate.Event", null)
                         .WithMany("GuestGroups")
                         .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_guest_groups_events_event_id");
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.Table", b =>
@@ -541,7 +701,9 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                     b.HasOne("Attenda.Domain.Aggregates.EventAggregate.Event", null)
                         .WithMany("Tables")
                         .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_tables_events_event_id");
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.TaskItem", b =>
@@ -549,7 +711,8 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                     b.HasOne("Attenda.Domain.Aggregates.EventAggregate.Event", null)
                         .WithMany("TaskItems")
                         .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_task_items_events_event_id");
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.UserAggregate.PaymentMethod", b =>
@@ -558,11 +721,14 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                         .WithMany("PaymentMethods")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_payment_methods_users_user_id");
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.Event", b =>
                 {
+                    b.Navigation("Activities");
+
                     b.Navigation("CheckIns");
 
                     b.Navigation("GuestGroups");

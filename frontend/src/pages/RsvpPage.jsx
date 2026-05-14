@@ -138,10 +138,10 @@ const RsvpPage = () => {
             </svg>
           </div>
           <h1 className="text-3xl font-bold mb-4" style={{ color: THEMES[config?.rsvpConfig?.colorTheme]?.['--rsvp-primary'] || 'white', fontFamily: TYPOGRAPHY[config?.rsvpConfig?.typographyTheme]?.fontFamily }}>
-            ¡Gracias, {guest?.firstName}!
+            Thank you, {guest?.firstName}!
           </h1>
           <p className="opacity-60 text-lg" style={{ color: THEMES[config?.rsvpConfig?.colorTheme]?.['--rsvp-primary'] || 'white' }}>
-            Tu respuesta ha sido registrada. ¡Nos vemos pronto!
+            Your response has been registered. See you soon!
           </p>
         </div>
       </div>
@@ -176,17 +176,17 @@ const RsvpPage = () => {
               </svg>
             </div>
             <h1 className="text-3xl font-bold mb-2" style={{ color: THEMES[config?.rsvpConfig?.colorTheme]?.['--rsvp-primary'] || 'white', fontFamily: TYPOGRAPHY[config?.rsvpConfig?.typographyTheme]?.fontFamily }}>
-              Ya respondiste, {guest?.firstName}!
+              You've already responded, {guest?.firstName}!
             </h1>
             <div className="inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4"
               style={{ 
                 backgroundColor: guest?.rsvpStatus === 'Confirmed' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)',
                 color: guest?.rsvpStatus === 'Confirmed' ? '#22c55e' : '#ef4444'
               }}>
-              {guest?.rsvpStatus === 'Confirmed' ? '✅ Asistiré' : '❌ No podré asistir'}
+              {guest?.rsvpStatus === 'Confirmed' ? '✅ Attending' : '❌ Unable to attend'}
             </div>
             <p className="opacity-60 text-lg" style={{ color: THEMES[config?.rsvpConfig?.colorTheme]?.['--rsvp-primary'] || 'white' }}>
-              Tu respuesta ya fue registrada. ¡Gracias por confirmar!
+              Your response has already been registered. Thank you for confirming!
             </p>
           </div>
         </div>
@@ -283,7 +283,7 @@ const RsvpPage = () => {
           {guest && (
             <div className="text-center mb-2 animate-fade-in">
               <span className="text-sm font-black uppercase tracking-[0.4em] opacity-40 italic" style={{ color: 'var(--rsvp-primary)' }}>
-                Hola, {guest.firstName}
+                Hello, {guest.firstName}
               </span>
             </div>
           )}
@@ -319,7 +319,7 @@ const RsvpPage = () => {
             <div className="mb-10">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="uppercase text-[10px] font-black tracking-[0.3em] opacity-50" style={{ color: 'var(--rsvp-primary)' }}>
-                  Acompañantes ({plusOnes.length}/{guest.plusOnes})
+                  Guests ({plusOnes.length}/{guest.plusOnes})
                 </h3>
                 {canAddMore && (
                   <button 
@@ -327,7 +327,7 @@ const RsvpPage = () => {
                     className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-current opacity-60 hover:opacity-100 transition-all"
                     style={{ color: 'var(--rsvp-primary)' }}
                   >
-                    + Agregar
+                    + Add
                   </button>
                 )}
               </div>
@@ -336,7 +336,7 @@ const RsvpPage = () => {
                 {plusOnes.map((p, idx) => (
                   <div key={idx} className="p-4 rounded-2xl border flex flex-col gap-3 animate-slide-up" style={{ backgroundColor: 'var(--rsvp-surface)', borderColor: 'var(--rsvp-border)' }}>
                     <div className="flex justify-between items-center">
-                       <span className="text-[10px] font-black uppercase opacity-40">Invitado #{idx + 1}</span>
+                       <span className="text-[10px] font-black uppercase opacity-40">Guest #{idx + 1}</span>
                        <button onClick={() => handleRemovePlusOne(idx)} className="text-red-500/60 hover:text-red-500">
                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                        </button>
@@ -344,7 +344,7 @@ const RsvpPage = () => {
                     <div className="grid grid-cols-2 gap-3">
                       <input 
                         type="text" 
-                        placeholder="Nombre"
+                        placeholder="First Name"
                         value={p.firstName}
                         onChange={(e) => handlePlusOneChange(idx, 'firstName', e.target.value)}
                         className="bg-transparent border-b border-white/10 py-2 text-sm focus:outline-none focus:border-purple-500 transition-colors"
@@ -352,7 +352,7 @@ const RsvpPage = () => {
                       />
                       <input 
                         type="text" 
-                        placeholder="Apellido"
+                        placeholder="Last Name"
                         value={p.lastName}
                         onChange={(e) => handlePlusOneChange(idx, 'lastName', e.target.value)}
                         className="bg-transparent border-b border-white/10 py-2 text-sm focus:outline-none focus:border-purple-500 transition-colors"
@@ -361,7 +361,7 @@ const RsvpPage = () => {
                     </div>
                     <input 
                       type="tel" 
-                      placeholder="Teléfono (opcional)"
+                      placeholder="Phone (optional)"
                       value={p.phoneNumber}
                       onChange={(e) => handlePlusOneChange(idx, 'phoneNumber', e.target.value)}
                       className="bg-transparent border-b border-white/10 py-2 text-sm focus:outline-none focus:border-purple-500 transition-colors"
@@ -382,7 +382,7 @@ const RsvpPage = () => {
                 className="w-full py-5 rounded-2xl font-black uppercase tracking-[0.1em] text-sm shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all active:scale-95 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: 'var(--rsvp-accent)', color: '#ffffff' }}
               >
-                {submitting ? 'Confirmando...' : 'I will attend'}
+                {submitting ? 'Confirming...' : 'I will attend'}
               </button>
               <button 
                 disabled={submitting}

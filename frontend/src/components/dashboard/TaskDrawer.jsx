@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { tasksApi } from '../../lib/tasks';
+import { DateService } from '../../lib/dateUtils';
 
 const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -17,7 +18,7 @@ const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete }) => {
         title: task.title || '',
         description: task.description || '',
         priority: task.priority || 'Medium',
-        dueDate: task.dueDateRaw ? new Date(task.dueDateRaw).toISOString().split('T')[0] : ''
+        dueDate: task.dueDateRaw ? DateService.toInputFormat(task.dueDateRaw) : ''
       });
       setIsEditing(false);
     }
@@ -34,7 +35,7 @@ const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete }) => {
         title: formData.title,
         description: formData.description,
         priority: formData.priority,
-        dueDate: formData.dueDate || null,
+        dueDate: formData.dueDate ? DateService.toUTC(formData.dueDate) : null,
         eventId
       });
       onUpdate(updated);
@@ -158,7 +159,7 @@ const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete }) => {
                 <div>
                   <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Due Date</label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     value={formData.dueDate}
                     onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border border-[var(--color-outline-variant)]/20 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10 outline-none transition-all"
@@ -174,7 +175,7 @@ const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete }) => {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex-1 py-3 bg-[var(--color-primary)] text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg hover:brightness-110 active:scale-95 transition-all"
+                  className="flex-1 py-3 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg hover:brightness-110 active:scale-95 transition-all"
                 >
                   Save Changes
                 </button>
@@ -238,7 +239,7 @@ const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete }) => {
           {!isDone && (
             <button 
               onClick={() => handleStatusChange('Done')}
-              className="w-full py-3 bg-[var(--color-primary)] text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg hover:brightness-110 transition-all flex justify-center items-center gap-2"
+              className="w-full py-3 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg hover:brightness-110 transition-all flex justify-center items-center gap-2"
             >
               Mark as Done
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

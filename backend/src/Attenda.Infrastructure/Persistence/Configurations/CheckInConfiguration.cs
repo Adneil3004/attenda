@@ -9,6 +9,7 @@ public class CheckInConfiguration : IEntityTypeConfiguration<CheckIn>
     public void Configure(EntityTypeBuilder<CheckIn> builder)
     {
         builder.HasKey(c => c.Id);
+        builder.Property(c => c.Id).ValueGeneratedNever();
 
         builder.Property(c => c.GuestId)
             .IsRequired();

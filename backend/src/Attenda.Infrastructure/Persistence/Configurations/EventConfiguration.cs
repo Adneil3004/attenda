@@ -10,6 +10,7 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
     public void Configure(EntityTypeBuilder<Event> builder)
     {
         builder.HasKey(e => e.Id);
+        builder.Property(e => e.Id).ValueGeneratedNever();
 
         builder.Property(e => e.Name)
             .IsRequired()
@@ -90,11 +91,28 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
             .HasForeignKey("EventId")
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Access private collections
-        var navigation = builder.Metadata.FindNavigation(nameof(Event.Guests));
-        navigation?.SetPropertyAccessMode(PropertyAccessMode.Field);
+        builder.HasMany(e => e.Activities)
+            .WithOne()
+            .HasForeignKey("EventId")
+            .OnDelete(DeleteBehavior.Cascade);
 
-        var tablesNav = builder.Metadata.FindNavigation(nameof(Event.Tables));
-        tablesNav?.SetPropertyAccessMode(PropertyAccessMode.Field);
+        // Access private collections
+        builder.Metadata.FindNavigation(nameof(Event.Guests))
+            ?.SetPropertyAccessMode(PropertyAccessMode.Field);
+        
+        builder.Metadata.FindNavigation(nameof(Event.GuestGroups))
+            ?.SetPropertyAccessMode(PropertyAccessMode.Field);
+            
+        builder.Metadata.FindNavigation(nameof(Event.TaskItems))
+            ?.SetPropertyAccessMode(PropertyAccessMode.Field);
+            
+        builder.Metadata.FindNavigation(nameof(Event.CheckIns))
+            ?.SetPropertyAccessMode(PropertyAccessMode.Field);
+            
+        builder.Metadata.FindNavigation(nameof(Event.Tables))
+            ?.SetPropertyAccessMode(PropertyAccessMode.Field);
+            
+        builder.Metadata.FindNavigation(nameof(Event.Activities))
+            ?.SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

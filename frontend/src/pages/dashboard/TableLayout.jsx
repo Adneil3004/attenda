@@ -18,7 +18,7 @@ import GuestChip from '../../components/dashboard/GuestChip';
 const TableLayout = () => {
   const { eventId: paramEventId } = useParams();
   
-  const SYSTEM_KEYWORDS = ['create-event', 'my-events', 'table-layout', 'guests', 'tasks', 'settings', 'rsvp-designer', 'edit-event'];
+  const SYSTEM_KEYWORDS = ['create-event', 'my-events', 'table-layout', 'guests', 'tasks', 'settings', 'rsvp-designer', 'edit-event', 'providers'];
   const isValidId = (id) => id && !SYSTEM_KEYWORDS.includes(id);
 
   // Fallback to localStorage if eventId not in URL, ensuring we only use valid IDs

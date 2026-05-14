@@ -54,6 +54,7 @@ public class CreateTaskHandler : IRequestHandler<CreateTaskCommand, TaskItemDto>
             taskItem.Status.ToString(),
             taskItem.Priority.ToString(),
             taskItem.DueDate,
-            taskItem.CreatedAt);
+            taskItem.CreatedAt,
+            taskItem.Checklist.Select(c => new ChecklistItemDto(c.Id, c.Text, c.IsDone)).ToList());
     }
 }

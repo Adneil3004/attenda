@@ -3,6 +3,8 @@ using Attenda.Application.Common.Behaviors;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using AutoMapper;
+
 
 namespace Attenda.Application;
 
@@ -12,7 +14,7 @@ public static class DependencyInjection
     {
         var assembly = Assembly.GetExecutingAssembly();
 
-        services.AddAutoMapper(assembly);
+        services.AddAutoMapper(cfg => cfg.AddMaps(assembly));
         services.AddValidatorsFromAssembly(assembly);
         
         services.AddMediatR(cfg => {

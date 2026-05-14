@@ -31,8 +31,8 @@ public class UpdateTaskHandler : IRequestHandler<UpdateTaskCommand, TaskItemDto>
             throw new UnauthorizedAccessException("You do not have permission to update tasks in this event.");
         }
 
-        var dueDate = request.DueDate.HasValue 
-            ? DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc) 
+        var dueDate = request.DueDate.HasValue
+            ? DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc)
             : (DateTime?)null;
 
         @event.UpdateTask(
@@ -42,9 +42,15 @@ public class UpdateTaskHandler : IRequestHandler<UpdateTaskCommand, TaskItemDto>
             request.Priority ?? TaskPriority.Medium,
             dueDate);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
         var taskItem = @event.TaskItems.First(t => t.Id == request.TaskId);
+
+        // Sincronizar checklist si se envió
+        if (request.Checklist is not null)
+        {
+            SyncChecklist(taskItem, request.Checklist);
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new TaskItemDto(
             taskItem.Id,
@@ -53,6 +59,32 @@ public class UpdateTaskHandler : IRequestHandler<UpdateTaskCommand, TaskItemDto>
             taskItem.Status.ToString(),
             taskItem.Priority.ToString(),
             taskItem.DueDate,
-            taskItem.CreatedAt);
+            taskItem.CreatedAt,
+            taskItem.Checklist.Select(c => new ChecklistItemDto(c.Id, c.Text, c.IsDone)).ToList());
+    }
+
+    private static void SyncChecklist(TaskItem taskItem, List<ChecklistItemDto> incoming)
+    {
+        var existingIds = taskItem.Checklist.Select(c => c.Id).ToHashSet();
+        var incomingIds = incoming.Where(c => c.Id != Guid.Empty).Select(c => c.Id).ToHashSet();
+
+        // Eliminar los que ya no vienen
+        var toRemove = existingIds.Except(incomingIds).ToList();
+        foreach (var id in toRemove)
+            taskItem.RemoveChecklistItem(id);
+
+        foreach (var dto in incoming)
+        {
+            if (dto.Id == Guid.Empty)
+            {
+                // Nuevo item — sin Id asignado aún
+                taskItem.AddChecklistItem(dto.Text);
+            }
+            else
+            {
+                // Existente — sincronizar estado IsDone
+                taskItem.ToggleChecklistItem(dto.Id, dto.IsDone);
+            }
+        }
     }
 }

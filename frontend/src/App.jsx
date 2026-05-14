@@ -20,6 +20,8 @@ import MyEvents from './pages/dashboard/MyEvents';
 import EditEvent from './pages/dashboard/EditEvent';
 import TableLayout from './pages/dashboard/TableLayout';
 import RsvpDesigner from './pages/dashboard/RsvpDesigner';
+import Providers from './pages/dashboard/Providers';
+import Schedule from './pages/dashboard/Schedule';
 
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
@@ -60,6 +62,10 @@ function App() {
           <Route path="settings/:eventId" element={<Settings />} />
           <Route path="table-layout/:eventId" element={<TableLayout />} />
           <Route path="rsvp-designer/:eventId" element={<RsvpDesigner />} />
+          <Route path="schedule/:eventId" element={<Schedule />} />
+          <Route path="providers" element={<Providers />}>
+            <Route path=":eventId" element={<Providers />} />
+          </Route>
           <Route path=":eventId" element={<Overview />} />
         </Route>
       </Routes>

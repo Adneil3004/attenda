@@ -1,5 +1,3 @@
-using Attenda.Domain.Enums;
-
 namespace Attenda.Application.Tasks.DTOs;
 
 public record TaskItemDto(
@@ -9,4 +7,5 @@ public record TaskItemDto(
     string Status,
     string Priority,
     DateTime? DueDate,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    List<ChecklistItemDto> Checklist);

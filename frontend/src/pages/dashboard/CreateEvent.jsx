@@ -50,8 +50,8 @@ const CreateEvent = () => {
 
   // ── Step 1 form state ──
   const [eventName, setEventName] = useState('');
-  const [festejados, setFestejados] = useState(['']);
-  const [eventType, setEventType] = useState('Boda');
+  const [celebrants, setCelebrants] = useState(['']);
+  const [eventType, setEventType] = useState('Wedding');
   const [organizerName, setOrganizerName] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [religiousAddress, setReligiousAddress] = useState('');
@@ -95,22 +95,22 @@ const CreateEvent = () => {
   }, []);
 
 
-  // ── Festejados helpers ──
-  const addFestejado = () => setFestejados([...festejados, '']);
-  const handleFestejadoChange = (index, value) => {
-    const next = [...festejados];
+  // ── Celebrants helpers ──
+  const addCelebrant = () => setCelebrants([...celebrants, '']);
+  const handleCelebrantChange = (index, value) => {
+    const next = [...celebrants];
     next[index] = value;
-    setFestejados(next);
+    setCelebrants(next);
   };
-  const removeFestejado = (index) =>
-    setFestejados(festejados.filter((_, i) => i !== index));
+  const removeCelebrant = (index) =>
+    setCelebrants(celebrants.filter((_, i) => i !== index));
 
   // ── Validation ──
   const validateStep1 = () => {
     const e = {};
-    if (!eventName.trim()) e.eventName = 'El nombre del evento es obligatorio';
-    if (!eventType.trim()) e.eventType = 'El tipo de evento es obligatorio';
-    if (!eventDate.trim()) e.eventDate = 'La fecha es obligatoria';
+    if (!eventName.trim()) e.eventName = 'Event name is required';
+    if (!eventType.trim()) e.eventType = 'Event type is required';
+    if (!eventDate.trim()) e.eventDate = 'Event date is required';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -118,10 +118,10 @@ const CreateEvent = () => {
   const validateStep2 = () => {
     const raw = cardNumber.replace(/\s/g, '');
     const e = {};
-    if (raw.length < 15) e.cardNumber = 'Número de tarjeta inválido';
-    if (!/^\d{2}\/\d{2}$/.test(expiry)) e.expiry = 'Formato MM/YY requerido';
-    if (cvv.length < 3) e.cvv = 'CVV inválido';
-    if (!cardHolder.trim()) e.cardHolder = 'Nombre requerido';
+    if (raw.length < 15) e.cardNumber = 'Invalid card number';
+    if (!/^\d{2}\/\d{2}$/.test(expiry)) e.expiry = 'MM/YY format required';
+    if (cvv.length < 3) e.cvv = 'Invalid CVV';
+    if (!cardHolder.trim()) e.cardHolder = 'Cardholder name required';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -158,13 +158,13 @@ const CreateEvent = () => {
       
       const payload = {
         name: eventName,
-        description: [eventType, ...festejados.filter(Boolean)].join(' — '),
+        description: [eventType, ...celebrants.filter(Boolean)].join(' — '),
         startDate,
         endDate: null,
         organizerId: user?.id,
         // New fields
         eventType,
-        celebrants: festejados.filter(Boolean),
+        celebrants: celebrants.filter(Boolean),
         organizerName,
         religiousAddress,
         venueAddress,
@@ -179,7 +179,7 @@ const CreateEvent = () => {
       await apiClient.post('/events', payload);
       navigate('/dashboard');
     } catch (err) {
-      setSubmitError(err.message ?? 'Ocurrió un error. Intentá nuevamente.');
+      setSubmitError(err.message ?? 'An error occurred. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -320,26 +320,26 @@ const CreateEvent = () => {
                     value={eventName}
                     onChange={(e) => { setEventName(e.target.value); if (errors.eventName) setErrors({ ...errors, eventName: null }); }}
                     className={InputClass(errors.eventName)}
-                    placeholder="e.g. Boda García & López"
+                    placeholder="e.g. Smith & Jones Wedding"
                   />
                   <InlineError msg={errors.eventName} />
                 </div>
 
                 <div className="space-y-3">
-                  <FieldLabel>Nombre del Festejado(s)</FieldLabel>
+                  <FieldLabel>Celebrant Name(s)</FieldLabel>
                   <div className="space-y-2">
-                    {festejados.map((name, idx) => (
+                    {celebrants.map((name, idx) => (
                       <div key={idx} className="flex items-center gap-2">
                         <input
                           type="text"
                           value={name}
-                          onChange={(e) => handleFestejadoChange(idx, e.target.value)}
+                          onChange={(e) => handleCelebrantChange(idx, e.target.value)}
                           className={InputClass(false)}
-                          placeholder={idx === 0 ? 'Nombre Principal' : 'Otro Festejado'}
+                          placeholder={idx === 0 ? 'Primary Name' : 'Another Celebrant'}
                         />
                         {idx > 0 && (
                           <button
-                            onClick={() => removeFestejado(idx)}
+                            onClick={() => removeCelebrant(idx)}
                             className="p-3 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-md transition-colors"
                           >
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -350,7 +350,7 @@ const CreateEvent = () => {
                       </div>
                     ))}
                     <button
-                      onClick={addFestejado}
+                      onClick={addCelebrant}
                       className="flex items-center gap-2 text-[var(--color-secondary)] font-semibold text-xs py-2 px-2 hover:bg-[var(--color-secondary)]/5 rounded-md transition-colors mt-1"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -365,17 +365,17 @@ const CreateEvent = () => {
               {/* Column B — Logistics */}
               <div className="space-y-8">
                 <h3 className="text-lg font-headline font-semibold text-[var(--color-primary)] border-b border-[var(--color-outline-variant)]/10 pb-2">
-                  Configuración
+                  Configuration
                 </h3>
 
                 <div className="space-y-3">
-                  <FieldLabel>Categoría del Evento</FieldLabel>
+                  <FieldLabel>Event Category</FieldLabel>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => {
                         setIsBusiness(false);
-                        setEventType('Boda');
+                        setEventType('Wedding');
                       }}
                       className={`py-3 px-4 rounded-lg border-2 text-sm font-bold transition-all flex items-center justify-center gap-2 ${
                         !isBusiness
@@ -392,7 +392,7 @@ const CreateEvent = () => {
                       type="button"
                       onClick={() => {
                         setIsBusiness(true);
-                        setEventType('Graduación');
+                        setEventType('Graduation');
                       }}
                       className={`py-3 px-4 rounded-lg border-2 text-sm font-bold transition-all flex items-center justify-center gap-2 ${
                         isBusiness
@@ -403,13 +403,13 @@ const CreateEvent = () => {
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
-                      Empresa
+                      Corporate
                     </button>
                   </div>
                 </div>
 
                 <div className="space-y-1.5 pt-2">
-                  <FieldLabel>Event Type / Celebración</FieldLabel>
+                  <FieldLabel>Event Type / Celebration</FieldLabel>
                   <select
                     value={eventType}
                     onChange={(e) => { setEventType(e.target.value); if (errors.eventType) setErrors({ ...errors, eventType: null }); }}
@@ -417,21 +417,21 @@ const CreateEvent = () => {
                   >
                     {!isBusiness ? (
                       <>
-                        <option value="Boda">Boda</option>
-                        <option value="XV Años">XV Años</option>
-                        <option value="Bautizo">Bautizo</option>
-                        <option value="Cumpleaños">Cumpleaños</option>
+                        <option value="Wedding">Wedding</option>
+                        <option value="Quinceañera">Quinceañera</option>
+                        <option value="Baptism">Baptism</option>
+                        <option value="Birthday">Birthday</option>
                         <option value="Baby Shower">Baby Shower</option>
-                        <option value="Otro">Otro</option>
+                        <option value="Other">Other</option>
                       </>
                     ) : (
                       <>
-                        <option value="Graduación">Graduación</option>
-                        <option value="Fin de año">Fin de año</option>
-                        <option value="Aniversario">Aniversario</option>
-                        <option value="Congreso">Congreso</option>
-                        <option value="Lanzamiento de Producto">Lanzamiento de Producto</option>
-                        <option value="Otro">Otro</option>
+                        <option value="Graduation">Graduation</option>
+                        <option value="Year-end">Year-end</option>
+                        <option value="Anniversary">Anniversary</option>
+                        <option value="Convention">Convention</option>
+                        <option value="Product Launch">Product Launch</option>
+                        <option value="Other">Other</option>
                       </>
                     )}
                   </select>
@@ -445,7 +445,7 @@ const CreateEvent = () => {
                     value={organizerName}
                     onChange={(e) => setOrganizerName(e.target.value)}
                     className={InputClass(false)}
-                    placeholder="Tu nombre o empresa"
+                    placeholder="Your name or company"
                   />
                 </div>
 
@@ -467,7 +467,7 @@ const CreateEvent = () => {
                     value={venueAddress}
                     onChange={(e) => setVenueAddress(e.target.value)}
                     className={InputClass(false)}
-                    placeholder="Salón Palacio, CDMX"
+                    placeholder="Grand Ballroom, New York"
                   />
                 </div>
 
@@ -478,7 +478,7 @@ const CreateEvent = () => {
                     value={religiousAddress}
                     onChange={(e) => setReligiousAddress(e.target.value)}
                     className={InputClass(false)}
-                    placeholder="Catedral Metropolitana (opcional)"
+                    placeholder="St. Patrick's Cathedral (optional)"
                   />
                 </div>
               </div>
@@ -501,8 +501,8 @@ const CreateEvent = () => {
                   {packages.map((pkg) => {
                     const id = pkg.type;
                     const isDisabled = id === 'free' && hasActiveFreeEvent;
-                    const priceFormatted = pkg.price === 0 ? 'Gratis' : 
-                      new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(pkg.price) + ' MXN';
+                    const priceFormatted = pkg.price === 0 ? 'Free' : 
+                      new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(pkg.price) + ' USD';
                     
                     return (
                       <label 
@@ -532,7 +532,7 @@ const CreateEvent = () => {
                               </span>
                               {isDisabled && id === 'free' && (
                                 <span className="text-[9px] bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">
-                                  Límite Alcanzado
+                                  Limit Reached
                                 </span>
                               )}
                             </div>
@@ -545,7 +545,7 @@ const CreateEvent = () => {
                             
                             {isDisabled && id === 'free' && (
                               <p className="text-[10px] text-amber-600 dark:text-amber-400 normal-case font-medium mt-1">
-                                Finalizá tu evento gratuito actual para crear uno nuevo.
+                                Finish your current free event to create a new one.
                               </p>
                             )}
                           </div>
@@ -577,7 +577,7 @@ const CreateEvent = () => {
                 onClick={handleNext}
                 className="bg-gradient-to-br from-[#00020a] to-[#001b44] text-white py-3 px-10 rounded-md font-semibold text-sm shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                {tier === 'free' ? 'Finalizar' : 'Siguiente →'}
+                {tier === 'free' ? 'Finish' : 'Next →'}
               </button>
             </div>
           </div>
@@ -772,22 +772,22 @@ const CreateEvent = () => {
             </div>
 
             <h3 className="text-3xl font-headline font-bold text-[var(--color-primary)] mb-4">
-              Confirmar Activación de Plan
+              Confirm Plan Activation
             </h3>
             <p className="text-[var(--color-on-surface-variant)] text-sm max-w-sm mb-10 leading-relaxed">
-              Estás a punto de activar el plan{' '}
+              You are about to activate the{' '}
               <span className="font-bold text-[var(--color-secondary)]">{tier}</span>{' '}
-              para <strong>{eventName || 'tu evento'}</strong>.
+              plan for <strong>{eventName || 'your event'}</strong>.
             </p>
 
             <div className="bg-[var(--color-surface-container-high)] border border-[var(--color-outline-variant)]/30 rounded-2xl p-6 w-full max-w-sm mb-4 text-left space-y-3">
               <div className="flex justify-between text-xs">
-                <span className="text-[var(--color-on-surface-variant)] uppercase tracking-wider font-bold">Total a pagar</span>
-                <span className="text-[var(--color-primary)] font-bold">${tier === 'Premium' ? '800' : '1,500'} MXN</span>
+                <span className="text-[var(--color-on-surface-variant)] uppercase tracking-wider font-bold">Total amount</span>
+                <span className="text-[var(--color-primary)] font-bold">${tier === 'Premium' ? '800' : '1,500'} USD</span>
               </div>
               {cardToken && (
                 <div className="flex justify-between text-xs">
-                  <span className="text-[var(--color-on-surface-variant)] uppercase tracking-wider font-bold">Tarjeta</span>
+                  <span className="text-[var(--color-on-surface-variant)] uppercase tracking-wider font-bold">Card</span>
                   <span className="text-[var(--color-primary)] font-bold font-mono">
                     {cardToken.brand} •••• {cardToken.last4}
                   </span>

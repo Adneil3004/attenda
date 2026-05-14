@@ -11,7 +11,7 @@ public class TaskItemConfiguration : IEntityTypeConfiguration<TaskItem>
         builder.ToTable("task_items");
         
         builder.HasKey(t => t.Id);
-        builder.Property(t => t.Id).ValueGeneratedOnAdd();
+        builder.Property(t => t.Id).ValueGeneratedNever();
 
         builder.Property(t => t.Title)
             .IsRequired()
@@ -30,5 +30,13 @@ public class TaskItemConfiguration : IEntityTypeConfiguration<TaskItem>
 
         builder.Property(t => t.DueDate)
             .HasColumnName("due_date");
+
+        builder.HasMany(t => t.Checklist)
+            .WithOne()
+            .HasForeignKey("TaskItemId")
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(t => t.Checklist)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

@@ -12,7 +12,7 @@ public class TableConfiguration : IEntityTypeConfiguration<Table>
 
         builder.HasKey(t => t.Id);
         builder.Property(t => t.Id)
-            .ValueGeneratedOnAdd();
+            .ValueGeneratedNever();
 
         builder.Property(t => t.Name)
             .IsRequired()

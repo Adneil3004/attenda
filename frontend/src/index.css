@@ -178,3 +178,70 @@
   transform: translateY(0);
   transition: opacity 500ms, transform 500ms;
 }
+/* --- Print Optimization --- */
+@media print {
+  @page {
+    size: letter;
+    margin: 15mm;
+  }
+
+  /* Hide navigation, buttons, and other UI clutter */
+  .dashboard-root > aside,
+  .dashboard-root > nav,
+  .mobile-bottom-nav,
+  header button,
+  .no-print,
+  [role="button"]:not(.activity-card) {
+    display: none !important;
+  }
+
+  /* Reset layout for a clean page */
+  .dashboard-root {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .min-h-screen {
+    min-h: auto !important;
+    padding: 0 !important;
+  }
+
+  .max-w-5xl {
+    max-width: none !important;
+  }
+
+  /* Force background colors and gradients to appear in PDF */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    box-shadow: none !important; /* Shadows often look muddy on print */
+  }
+
+  /* Avoid cutting cards in the middle of a page */
+  .activity-card {
+    break-inside: avoid;
+    border: 1px solid #e2e8f0 !important; /* Force a subtle border since shadows are gone */
+    margin-bottom: 1rem !important;
+  }
+
+  /* Ensure text is readable */
+  body {
+    background: white !important;
+    color: #1a1a1a !important;
+  }
+
+  h2 {
+    page-break-after: avoid;
+    margin-top: 2rem !important;
+  }
+}

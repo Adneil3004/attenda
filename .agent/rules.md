@@ -64,5 +64,46 @@ Hemos dividido el trabajo en 4 agentes especializados. Cada uno debe consultar s
 ## 📁 Estructura del Proyecto
 - Consultar `.agent/project_mapping.md` para entender la ubicación de cada componente.
 
+
+## 🧠 Principios de Desarrollo
+
+### 1. Think Before Coding
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+- Antes de implementar: Declará tus suposiciones explícitamente. Si no estás seguro, preguntá.
+- Si existen múltiples interpretaciones, presentalas; no elijas en silencio.
+- Si existe un enfoque más simple, decilo. Oponete cuando sea justificado.
+- Si algo no está claro, detenete. Nombrá lo que confunde. Preguntá.
+
+### 2. Simplicity First
+**Minimum code that solves the problem. Nothing speculative.**
+- Nada de features más allá de lo pedido.
+- Sin abstracciones para código de un solo uso.
+- Sin "flexibilidad" o "configurabilidad" que no fue solicitada.
+- Sin manejo de errores para escenarios imposibles.
+- Si escribís 200 líneas y podrían ser 50, reescribilo.
+- Preguntate: "¿Diría un ingeniero senior que esto está sobrecomplicado?". Si la respuesta es sí, simplificá.
+
+### 3. Surgical Changes
+**Touch only what you must. Clean up only your own mess.**
+- Al editar código existente: No "mejores" código adyacente, comentarios o formato.
+- No refactorices cosas que no están rotas.
+- Coincidí con el estilo existente, incluso si lo harías diferente.
+- Si notás código muerto no relacionado, mencionalo; no lo borres.
+- Cuando tus cambios creen huérfanos: Eliminá imports/variables/funciones que TUS cambios dejaron sin uso.
+- No elimines código muerto preexistente a menos que se te pida.
+- El test: Cada línea cambiada debe rastrearse directamente a la solicitud del usuario.
+
+### 4. Goal-Driven Execution
+**Define success criteria. Loop until verified.**
+- Transformá tareas en metas verificables:
+  - "Agregar validación" → "Escribir tests para entradas inválidas, luego hacer que pasen".
+  - "Corregir el bug" → "Escribir un test que lo reproduzca, luego hacer que pase".
+  - "Refactorizar X" → "Asegurar que los tests pasen antes y después".
+- Para tareas de varios pasos, declará un plan breve:
+  1. [Paso] → verificar: [chequeo]
+  2. [Paso] → verificar: [chequeo]
+  3. [Paso] → verificar: [chequeo]
+
 ---
+
 *Toda nueva característica debe pasar por el flujo de `/documentador`.*
