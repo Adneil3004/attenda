@@ -2,15 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { tasksApi } from '../../lib/tasks';
 import { DateService } from '../../lib/dateUtils';
 
-const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete }) => {
+const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete, initialStatus = 'To Do', onCreate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     priority: 'Medium',
-    dueDate: ''
+    dueDate: '',
+    status: 'To Do'
   });
+
+  const isNewTask = !task?.id;
 
   useEffect(() => {
     if (task) {
@@ -18,30 +21,58 @@ const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete }) => {
         title: task.title || '',
         description: task.description || '',
         priority: task.priority || 'Medium',
-        dueDate: task.dueDateRaw ? DateService.toInputFormat(task.dueDateRaw) : ''
+        dueDate: task.dueDateRaw ? DateService.toInputFormat(task.dueDateRaw) : '',
+        status: task.status || 'To Do'
       });
       setIsEditing(false);
+    } else {
+      // Reset form for new task
+      setFormData({
+        title: '',
+        description: '',
+        priority: 'Medium',
+        dueDate: '',
+        status: initialStatus
+      });
+      setIsEditing(true); // Auto-open editing mode for new tasks
     }
-  }, [task]);
+  }, [task, initialStatus]);
 
   if (!isOpen) return null;
 
   const handleSave = async () => {
-    if (!task?.id) return;
-    
-    setIsEditing(false);
+    if (!formData.title.trim()) {
+      alert('Please enter a task title');
+      return;
+    }
+
     try {
-      const updated = await tasksApi.update(task.id, {
-        title: formData.title,
-        description: formData.description,
-        priority: formData.priority,
-        dueDate: formData.dueDate ? DateService.toUTC(formData.dueDate) : null,
-        eventId
-      });
-      onUpdate(updated);
+      if (isNewTask) {
+        // Create new task
+        const created = await tasksApi.create({
+          title: formData.title,
+          description: formData.description,
+          priority: formData.priority,
+          dueDate: formData.dueDate ? DateService.toUTC(formData.dueDate) : null,
+          status: formData.status,
+          eventId
+        });
+        onCreate(created);
+      } else {
+        // Update existing task
+        const updated = await tasksApi.update(task.id, {
+          title: formData.title,
+          description: formData.description,
+          priority: formData.priority,
+          dueDate: formData.dueDate ? DateService.toUTC(formData.dueDate) : null,
+          eventId
+        });
+        onUpdate(updated);
+      }
+      setIsEditing(false);
     } catch (error) {
-      console.error('Failed to update task:', error);
-      alert('Failed to update task. Please try again.');
+      console.error('Failed to save task:', error);
+      alert('Failed to save task. Please try again.');
     }
   };
 
@@ -89,7 +120,7 @@ const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete }) => {
         <div className="flex items-center justify-between p-6 border-b border-[var(--color-outline-variant)]/10">
           <div className="flex gap-2">
             <span className="px-2.5 py-1 rounded bg-[var(--color-surface-container-low)] text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-widest">
-              Task
+              {isNewTask ? 'New Task' : 'Task'}
             </span>
             <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border ${
               task?.priority === 'Urgent' ? 'bg-red-500/10 text-red-500 border-red-500/20 animate-pulse' : 
@@ -101,7 +132,7 @@ const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete }) => {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            {!isEditing && (
+            {!isNewTask && !isEditing && (
               <button 
                 onClick={() => setIsEditing(true)}
                 className="text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] p-1 transition-colors"
