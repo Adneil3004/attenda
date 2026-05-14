@@ -134,7 +134,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        policy.WithOrigins("https://adneil3004.github.io", "http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -149,6 +152,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+app.UseCors("AllowAll");
 
 if (app.Environment.IsDevelopment())
 {
@@ -160,7 +164,6 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/", () => Results.Ok(new { message = "Attenda API is running 🚀", environment = app.Environment.EnvironmentName, version = "1.0.0" }));
 
 app.UseStaticFiles();
-app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
