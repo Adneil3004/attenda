@@ -3,7 +3,7 @@ import { tasksApi } from '../../lib/tasks';
 import { DateService } from '../../lib/dateUtils';
 
 const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete, initialStatus = 'To Do', onCreate }) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(!task?.id);
   const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -197,20 +197,7 @@ const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete, initia
                   />
                 </div>
               </div>
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest border border-[var(--color-outline-variant)]/20 hover:bg-[var(--color-surface-container-low)] transition-all text-[var(--color-on-surface-variant)]"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="flex-1 py-3 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg hover:brightness-110 active:scale-95 transition-all"
-                >
-                  Save Changes
-                </button>
-              </div>
+
             </div>
           ) : (
             <>
@@ -266,28 +253,47 @@ const TaskDrawer = ({ isOpen, onClose, task, eventId, onUpdate, onDelete, initia
           )}
         </div>
 
-        <div className="p-6 border-t border-[var(--color-outline-variant)]/10 bg-[var(--color-surface-container-lowest)] space-y-3">
-          {!isDone && (
-            <button 
-              onClick={() => handleStatusChange('Done')}
-              className="w-full py-3 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg hover:brightness-110 transition-all flex justify-center items-center gap-2"
-            >
-              Mark as Done
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </button>
+        <div className="p-6 border-t border-[var(--color-outline-variant)]/10 bg-[var(--color-surface-container-lowest)]">
+          {isEditing ? (
+            <div className="flex gap-3">
+              <button
+                onClick={isNewTask ? onClose : () => setIsEditing(false)}
+                className="flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest border border-[var(--color-outline-variant)]/20 hover:bg-[var(--color-surface-container-low)] transition-all text-[var(--color-on-surface-variant)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="flex-1 py-3 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg hover:brightness-110 active:scale-95 transition-all"
+              >
+                {isNewTask ? 'Create Task' : 'Save Changes'}
+              </button>
+            </div>
+          ) : !isNewTask && (
+            <div className="space-y-3">
+              {!isDone && (
+                <button 
+                  onClick={() => handleStatusChange('Done')}
+                  className="w-full py-3 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg hover:brightness-110 transition-all flex justify-center items-center gap-2"
+                >
+                  Mark as Done
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </button>
+              )}
+              <button 
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="w-full py-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-red-100 transition-all flex justify-center items-center gap-2 disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Task'}
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
           )}
-          <button 
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="w-full py-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-red-100 transition-all flex justify-center items-center gap-2 disabled:opacity-50"
-          >
-            {isDeleting ? 'Deleting...' : 'Delete Task'}
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
         </div>
 
       </div>

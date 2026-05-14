@@ -1,0 +1,1290 @@
+{
+  "/Volumes/DHstorage/source/attenda/frontend/vite.config.js": {
+    "mtime": 1775702784.5262797,
+    "hash": "1c28838960980d2c4831ba98126075b8"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/eslint.config.js": {
+    "mtime": 1775701814.0579777,
+    "hash": "49c8473bcfcec3aef596a5fb04a6df06"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/main.jsx": {
+    "mtime": 1775974431.25521,
+    "hash": "d833afdd8ce8ff6e69ec401711223113"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/App.jsx": {
+    "mtime": 1778632521.716961,
+    "hash": "9819a5d9b5b318573cd2dfdbc306445e"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/contexts/AuthContext.jsx": {
+    "mtime": 1776394450.2380621,
+    "hash": "2a94b182bbe600f79e98680f5d50bba4"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/contexts/ThemeContext.jsx": {
+    "mtime": 1775974411.9402382,
+    "hash": "283584b9298433a3fa5df6a3cf6327c0"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/constants/featureLabels.js": {
+    "mtime": 1778645890.2692668,
+    "hash": "66d087fab5201c3bca08cc7ff858e92c"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/ConfirmModal.jsx": {
+    "mtime": 1776037338.7941196,
+    "hash": "3c9ed9841a7fcdb9f71e8ba46dca86a7"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/auth/ProtectedRoute.jsx": {
+    "mtime": 1775799705.697821,
+    "hash": "0fa286b14e45724fe8df0e5c15fd8510"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/layout/Footer.jsx": {
+    "mtime": 1775701937.8008823,
+    "hash": "4dfc3326c7ba42ef58a8b593b16e57db"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/layout/Navbar.jsx": {
+    "mtime": 1776225925.8922253,
+    "hash": "094507162f57e4d6f72df72acf33e09d"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/layout/MainLayout.jsx": {
+    "mtime": 1776225925.89197,
+    "hash": "eaa3d60afd8d6fc1c0ef25c468afdddd"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/dashboard/DashboardLayout.jsx": {
+    "mtime": 1776140246.729406,
+    "hash": "41d72301b668301e80bb4d0f9dbe3589"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/dashboard/GuestDrawer.jsx": {
+    "mtime": 1778645745.891332,
+    "hash": "d50bec15aeba4edfd9b1f95807ae05be"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/dashboard/TableCard.jsx": {
+    "mtime": 1776136516.85189,
+    "hash": "6c0c43d735e097520a5f63b495b75dd7"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/dashboard/CreateTableModal.jsx": {
+    "mtime": 1776136516.8493898,
+    "hash": "c76f82bee0e927f2a3de1b0aca30cc5e"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/dashboard/TaskDrawer.jsx": {
+    "mtime": 1778782170.8342059,
+    "hash": "e129566f08e46a03bf9b6e2c9b44b4fb"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/dashboard/ConfirmationModal.jsx": {
+    "mtime": 1778645779.274174,
+    "hash": "416accdcc1a3fd1e5db1f015b5a73715"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/dashboard/UnassignedPanel.jsx": {
+    "mtime": 1776136516.852235,
+    "hash": "b3ada16553da890a0b658e0917ed6c13"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/dashboard/Sidebar.jsx": {
+    "mtime": 1778730555.4575293,
+    "hash": "222d778c8d708145bcefcd354e942d43"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/dashboard/PlanCard.jsx": {
+    "mtime": 1778645826.9584649,
+    "hash": "b2ae0571d647bddf63e4048460ba1988"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/dashboard/GuestChip.jsx": {
+    "mtime": 1776136516.849527,
+    "hash": "c4fe93a12cd086e859e8e45199603eab"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/dashboard/StatCard.jsx": {
+    "mtime": 1778639835.8514466,
+    "hash": "bd7647a5ab15e9dedb6ca0b08f00af50"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/components/dashboard/MobileBottomNav.jsx": {
+    "mtime": 1778649121.0049465,
+    "hash": "2af35ec20bd0b3839bd1cc439619b7aa"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/hooks/usePlanDetails.js": {
+    "mtime": 1776402931.1365988,
+    "hash": "29beb386efe30a645b6d01d7d702fe5d"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/lib/rsvpApi.js": {
+    "mtime": 1776320233.0219948,
+    "hash": "492ecaaae4b8ada9fb0bb1dfd9846f4a"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/lib/supabase.js": {
+    "mtime": 1775799439.4914105,
+    "hash": "03ffb9a7e4cd1c8730c6cb52021b02ec"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/lib/tasks.js": {
+    "mtime": 1778781068.998425,
+    "hash": "d78d23067dc0e340e2a8f9f91fa5e3ff"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/lib/schedule.js": {
+    "mtime": 1778637727.6387477,
+    "hash": "4f7d6103846ab6178e0edfe4faeee59a"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/lib/exportUtils.js": {
+    "mtime": 1778649403.7740412,
+    "hash": "eb3df1fae424aeb88015f15fec24dd9f"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/lib/api.js": {
+    "mtime": 1776392830.4260728,
+    "hash": "23ae3ecca75202572a33dc8eb4852936"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/lib/dateUtils.js": {
+    "mtime": 1778646339.407464,
+    "hash": "452ea441a10f4f11373cc38aca49066e"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/Landing.jsx": {
+    "mtime": 1776225925.8935184,
+    "hash": "e8d59bbb824a2af6bf6ad3be0df16179"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/ResetPassword.jsx": {
+    "mtime": 1775802818.9136868,
+    "hash": "f896e39abbe11503f2f75ffdb7f96cd1"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/ForgotPassword.jsx": {
+    "mtime": 1775801389.6556673,
+    "hash": "9674eaaa8402b43d1a1289b71220e951"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/RsvpPage.jsx": {
+    "mtime": 1778645853.885339,
+    "hash": "1bde0ee05abd7aa27f8b577fc4bf8b62"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/AboutUs.jsx": {
+    "mtime": 1778645905.5246,
+    "hash": "344fbe14301870dfab0766320a4574cb"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/Login.jsx": {
+    "mtime": 1778645863.3493755,
+    "hash": "5bd34a5991b04064fa91327259299abd"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/Pricing.jsx": {
+    "mtime": 1778645880.0459118,
+    "hash": "e1dafff8ecfccac7d9f46ca8b4992843"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/Register.jsx": {
+    "mtime": 1778645870.603326,
+    "hash": "f5444ddc4f4ec6f62e69f5647f2d4fbf"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/Contact.jsx": {
+    "mtime": 1775702010.977426,
+    "hash": "684640eed17bbbfc83b07db257f84b3c"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/dashboard/Guests.jsx": {
+    "mtime": 1778781085.115028,
+    "hash": "74a53f7db4dcd884655119d4c9ca1730"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/dashboard/Schedule.jsx": {
+    "mtime": 1778649562.865957,
+    "hash": "032aef231aefbeec9fece5a6e33715e0"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/dashboard/Providers.jsx": {
+    "mtime": 1778645801.7124648,
+    "hash": "b248a50cfa4c348018448e4c306e3081"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/dashboard/CreateEvent.jsx": {
+    "mtime": 1778645687.849622,
+    "hash": "97cdee5a37d9e2560641166bad5d4585"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/dashboard/TableLayout.jsx": {
+    "mtime": 1776835526.866517,
+    "hash": "7e3e3366c421f8c195feed6c5c9545e6"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/dashboard/RsvpDesigner.jsx": {
+    "mtime": 1778645774.6628194,
+    "hash": "03a521ad2abe62ac8d14ae0a50a167fe"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/dashboard/EditEvent.jsx": {
+    "mtime": 1778645658.6929963,
+    "hash": "eb4f09a800c7eb205df347514671d7bc"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/dashboard/Settings.jsx": {
+    "mtime": 1778733546.142013,
+    "hash": "7af54c3fea25986f0953d677ca3cad8e"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/dashboard/Overview.jsx": {
+    "mtime": 1778645721.665825,
+    "hash": "77721b629ba3a313a601e057f85a7661"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/dashboard/MyEvents.jsx": {
+    "mtime": 1776136516.8541152,
+    "hash": "374e47c6e6c71c0c27711616c2d8a2a2"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/pages/dashboard/Tasks.jsx": {
+    "mtime": 1778780528.630651,
+    "hash": "bc73f486461afff508fd45ed59271e35"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/get_error.py": {
+    "mtime": 1775945014.8196115,
+    "hash": "0fc7dad72b15c196c69dbbcd18ac6c0c"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/db_check.js": {
+    "mtime": 1778640952.4167414,
+    "hash": "9e2df6bd521639194b9703a5a6106f4d"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.API.Tests/UnitTest1.cs": {
+    "mtime": 1775712693.181489,
+    "hash": "838d0f1d515413c2c151ba885b984802"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.API.Tests/obj/Debug/net8.0/Attenda.API.Tests.AssemblyInfo.cs": {
+    "mtime": 1778725770.3634026,
+    "hash": "8b5cfcb2f238e1216ca2b6c82d9bae41"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.API.Tests/obj/Debug/net8.0/Attenda.API.Tests.GlobalUsings.g.cs": {
+    "mtime": 1776318295.3932235,
+    "hash": "a37fabac23656a0fdda8f6bef30b54f4"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.API.Tests/obj/Debug/net10.0/Attenda.API.Tests.AssemblyInfo.cs": {
+    "mtime": 1776320230.8752334,
+    "hash": "14b0e6486d174f26eb02f33f52d77fc3"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.API.Tests/obj/Debug/net10.0/Attenda.API.Tests.GlobalUsings.g.cs": {
+    "mtime": 1776120907.2713704,
+    "hash": "a37fabac23656a0fdda8f6bef30b54f4"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Application.Tests/UnitTest1.cs": {
+    "mtime": 1775712692.5084202,
+    "hash": "d0331dfcfab99097ae708ffbc984f0dc"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Application.Tests/obj/Debug/net8.0/Attenda.Application.Tests.GlobalUsings.g.cs": {
+    "mtime": 1776318293.593651,
+    "hash": "a37fabac23656a0fdda8f6bef30b54f4"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Application.Tests/obj/Debug/net8.0/Attenda.Application.Tests.AssemblyInfo.cs": {
+    "mtime": 1778725770.5145922,
+    "hash": "b25ddf4dafea74558121715cc28d4632"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Application.Tests/obj/Debug/net10.0/Attenda.Application.Tests.GlobalUsings.g.cs": {
+    "mtime": 1776120907.268009,
+    "hash": "a37fabac23656a0fdda8f6bef30b54f4"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Application.Tests/obj/Debug/net10.0/Attenda.Application.Tests.AssemblyInfo.cs": {
+    "mtime": 1776320230.7699332,
+    "hash": "1ad05921313034ae8d9c83cee9325bc0"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Application.Tests/Guests/Commands/DeleteAllGuests/DeleteAllGuestsHandlerTests.cs": {
+    "mtime": 1776136516.848261,
+    "hash": "bc3f255fee107acf76fb156b3fd56524"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Application.Tests/Guests/Commands/DeleteGuests/DeleteGuestsHandlerTests.cs": {
+    "mtime": 1776136516.84842,
+    "hash": "90f237d93a72f8f7da2ae3ae1c32bc55"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Domain.Tests/UnitTest1.cs": {
+    "mtime": 1775712682.1359873,
+    "hash": "9b2f2438a774dae5c66a65661dfd54d7"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Domain.Tests/obj/Debug/net8.0/Attenda.Domain.Tests.AssemblyInfo.cs": {
+    "mtime": 1778725770.4711561,
+    "hash": "cf0b38e2cfc9a8fa0f530e7d7daa68ec"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Domain.Tests/obj/Debug/net8.0/Attenda.Domain.Tests.GlobalUsings.g.cs": {
+    "mtime": 1776318297.3008773,
+    "hash": "a37fabac23656a0fdda8f6bef30b54f4"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Domain.Tests/obj/Debug/net10.0/Attenda.Domain.Tests.AssemblyInfo.cs": {
+    "mtime": 1776320231.0390022,
+    "hash": "3c354d07dea396d69793eaaa9b85e89c"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Domain.Tests/obj/Debug/net10.0/Attenda.Domain.Tests.GlobalUsings.g.cs": {
+    "mtime": 1776120907.2695737,
+    "hash": "a37fabac23656a0fdda8f6bef30b54f4"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Domain.Tests/Aggregates/EventAggregate/EventTests.cs": {
+    "mtime": 1776136516.8485703,
+    "hash": "335d0fd67f0269f6b861dbd12498da57"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Domain.Tests/UserAggregate/PaymentMethodTests.cs": {
+    "mtime": 1776123988.8841412,
+    "hash": "f7b1475da9ac7ae70f4489ef2a5a6917"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/scratch/list_tables.cs": {
+    "mtime": 1778720722.1586988,
+    "hash": "e687f192e7f7f5512e67223138c99e5a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/scratch/db_check/Program.cs": {
+    "mtime": 1778720803.858989,
+    "hash": "3b82ae71f01924a224f7d9a43f95a894"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/scratch/db_check/obj/Debug/net10.0/db_check.AssemblyInfo.cs": {
+    "mtime": 1778720741.3557098,
+    "hash": "b077a6dbdd60e850eb148fdb75c9f6cf"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/scratch/db_check/obj/Debug/net10.0/db_check.GlobalUsings.g.cs": {
+    "mtime": 1778720741.291708,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/Program.cs": {
+    "mtime": 1778727915.1376214,
+    "hash": "3c083819bad0c026c98d8cee1a61d202"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/Middleware/ExceptionHandlingMiddleware.cs": {
+    "mtime": 1776015712.3621948,
+    "hash": "a6384ecda5052e0d0cfb6a5067b63d96"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/obj/Debug/net8.0/Attenda.API.AssemblyInfo.cs": {
+    "mtime": 1778779691.8477366,
+    "hash": "2493b617aa1b1106c313989916302c22"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/obj/Debug/net8.0/Attenda.API.MvcApplicationPartsAssemblyInfo.cs": {
+    "mtime": 1778720143.1341815,
+    "hash": "bcecbbba7d9cc1015f5838d32bcd3b3f"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/obj/Debug/net8.0/Attenda.API.GlobalUsings.g.cs": {
+    "mtime": 1776120907.2836099,
+    "hash": "3ca3ba71f186b61cb901145d168ce1fd"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/obj/Debug/net10.0/Attenda.API.AssemblyInfo.cs": {
+    "mtime": 1776307100.882386,
+    "hash": "07bdb0df14f35884887f8baa2ee5435e"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/obj/Debug/net10.0/Attenda.API.GlobalUsings.g.cs": {
+    "mtime": 1776123896.1543615,
+    "hash": "3ca3ba71f186b61cb901145d168ce1fd"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/Controllers/LookupsController.cs": {
+    "mtime": 1776022639.323356,
+    "hash": "b45b1889c147a21f9e6e2bfea3361ab5"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/Controllers/RsvpController.cs": {
+    "mtime": 1776320232.9837945,
+    "hash": "4528fdd05c3d54532c9b7f0505ca0c12"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/Controllers/GuestsController.cs": {
+    "mtime": 1778780117.2601533,
+    "hash": "d1713c4ae93d9ecfa89e6541cef1cbc4"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/Controllers/TasksController.cs": {
+    "mtime": 1778729628.3013623,
+    "hash": "d86eaac2d8f885f2537a05eda63c168f"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/Controllers/GroupsController.cs": {
+    "mtime": 1775965308.1669319,
+    "hash": "af9f1d4b32b9579b31908e4a7072cefa"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/Controllers/EventsController.cs": {
+    "mtime": 1776320232.9801044,
+    "hash": "ce71e61db7353c4cd8ad940bb6c1ef3c"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/Controllers/ScheduleController.cs": {
+    "mtime": 1778640941.83651,
+    "hash": "795dcde3288e8ad655884bfab1dbaac4"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/Controllers/TablesController.cs": {
+    "mtime": 1776397627.970586,
+    "hash": "b4a42ee53fbaf89277544c73543210c2"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/Controllers/PaymentPackagesController.cs": {
+    "mtime": 1778778256.7854345,
+    "hash": "61c06dd69ac4c4208e0df5695de19b0b"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/DependencyInjection.cs": {
+    "mtime": 1778720115.9632747,
+    "hash": "9509cbb35da35e18245bef1474ef1154"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/obj/Debug/net8.0/Attenda.Application.AssemblyInfo.cs": {
+    "mtime": 1778779379.891769,
+    "hash": "3f2ac1d105855d31e9c456b5e99acd8b"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/obj/Debug/net8.0/Attenda.Application.GlobalUsings.g.cs": {
+    "mtime": 1776120907.2853458,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/obj/Debug/net10.0/Attenda.Application.AssemblyInfo.cs": {
+    "mtime": 1776307100.6460412,
+    "hash": "e1e16617b8aa407cb17e57195daa55b1"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/obj/Debug/net10.0/Attenda.Application.GlobalUsings.g.cs": {
+    "mtime": 1776123895.945299,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/Queries/GetTables/GetTablesHandler.cs": {
+    "mtime": 1776136516.8344324,
+    "hash": "7b28b9dfa0639941317a32bbb03ceaab"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/Queries/GetTables/GetTablesQuery.cs": {
+    "mtime": 1776136516.8345437,
+    "hash": "965f766bfb03f1562d7ad813a68a6ded"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/DTOs/TableDto.cs": {
+    "mtime": 1776136516.8342464,
+    "hash": "230ba4703c79b4b70912df798cdc6a16"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/Commands/DeleteTable/DeleteTableCommand.cs": {
+    "mtime": 1776136516.832699,
+    "hash": "c451e807d134a06b8e2271c0bd485110"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/Commands/DeleteTable/DeleteTableHandler.cs": {
+    "mtime": 1776136516.832813,
+    "hash": "514c1c9d23b70852a34390a9a330e833"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/Commands/UnassignGuestFromTable/UnassignGuestFromTableCommand.cs": {
+    "mtime": 1776136516.8329682,
+    "hash": "e86172dd12833083ef72e88095167dea"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/Commands/UnassignGuestFromTable/UnassignGuestFromTableHandler.cs": {
+    "mtime": 1776136516.8332512,
+    "hash": "ef7e52fb7eff71d0a9060b6705f34004"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/Commands/UpdateTable/UpdateTableCommand.cs": {
+    "mtime": 1776136516.8335216,
+    "hash": "6a407196ac9ee047b5d781a1941cb15a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/Commands/UpdateTable/UpdateTableHandler.cs": {
+    "mtime": 1776136516.8340034,
+    "hash": "493b3d0b47d2e45c0dc46bc70a63abcf"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/Commands/AssignGuestToTable/AssignGuestToTableCommand.cs": {
+    "mtime": 1776136516.832122,
+    "hash": "28fb6518fa35c8bc3240867ea24a3dbd"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/Commands/AssignGuestToTable/AssignGuestToTableHandler.cs": {
+    "mtime": 1776136516.8322356,
+    "hash": "06db16737a030414f31ed120780f9eb8"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/Commands/CreateTable/CreateTableHandler.cs": {
+    "mtime": 1776390548.6532216,
+    "hash": "66e46ed250b09c1104f8e9591a8a3f28"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tables/Commands/CreateTable/CreateTableCommand.cs": {
+    "mtime": 1776136516.832429,
+    "hash": "5b6623a435686460dc1e13ba97307710"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Schedule/Queries/GetSchedule/GetScheduleHandler.cs": {
+    "mtime": 1778631690.5027895,
+    "hash": "6c33bd88ff47c1213743e929bf21fba9"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Schedule/Queries/GetSchedule/GetScheduleQuery.cs": {
+    "mtime": 1778631684.7676787,
+    "hash": "24d3bf7f2b6e331f24a95fb8ba192bd0"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Schedule/DTOs/EventActivityDto.cs": {
+    "mtime": 1778631632.6719723,
+    "hash": "7946713ad8060f95b4baebf421b75bb0"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Schedule/Commands/ReorderActivities/ReorderActivitiesCommand.cs": {
+    "mtime": 1778631674.4336264,
+    "hash": "ec7fd1b43ef6463a20871d7c927f1520"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Schedule/Commands/ReorderActivities/ReorderActivitiesHandler.cs": {
+    "mtime": 1778631679.9893188,
+    "hash": "8917bdcf6d8f306c01b083a901e411cd"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Schedule/Commands/UpdateActivity/UpdateActivityCommand.cs": {
+    "mtime": 1778631653.9069216,
+    "hash": "01b348e7c7702d8e4a1eeacba4388f0f"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Schedule/Commands/UpdateActivity/UpdateActivityHandler.cs": {
+    "mtime": 1778631659.3721483,
+    "hash": "9ca0a378ba8d193ac9e2cf88d61cbfe8"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Schedule/Commands/RemoveActivity/RemoveActivityCommand.cs": {
+    "mtime": 1778631664.2423363,
+    "hash": "5aedf0224efa2a8fadcf16fa4b1b6c52"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Schedule/Commands/RemoveActivity/RemoveActivityHandler.cs": {
+    "mtime": 1778631669.547264,
+    "hash": "982df0fc510866a745e412b5e30cdd30"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Schedule/Commands/AddActivity/AddActivityHandler.cs": {
+    "mtime": 1778631648.8340712,
+    "hash": "6267d436736b55dba98f4051ebf53563"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Schedule/Commands/AddActivity/AddActivityCommand.cs": {
+    "mtime": 1778631642.5747626,
+    "hash": "f9e27f1bca0600930adba75299ef4d2e"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tasks/Queries/GetTasks/GetTasksHandler.cs": {
+    "mtime": 1778729660.6746995,
+    "hash": "f432affeac48bcaacd13f643746c59dc"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tasks/Queries/GetTasks/GetTasksQuery.cs": {
+    "mtime": 1776015569.6194503,
+    "hash": "641f01e39684e0892dcc69fb6a89425b"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tasks/DTOs/TaskItemDto.cs": {
+    "mtime": 1778729335.0384204,
+    "hash": "e7d0e2ccbbc3305bab08ba5c736202c2"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tasks/DTOs/ChecklistItemDto.cs": {
+    "mtime": 1778729317.7168195,
+    "hash": "3f4a8ef9e6c75dd28b9e02a5c26d10a1"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tasks/Commands/DeleteTask/DeleteTaskHandler.cs": {
+    "mtime": 1776015557.9621155,
+    "hash": "239bd0b4b836f58e2b2ab4c835c9341d"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tasks/Commands/DeleteTask/DeleteTaskCommand.cs": {
+    "mtime": 1776015553.8052783,
+    "hash": "07e632f58f09704dd7e587de9be47d2b"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tasks/Commands/CreateTask/CreateTaskCommand.cs": {
+    "mtime": 1776015670.1038554,
+    "hash": "eca572f77dd8511fedf7e4eda2ebd2a3"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tasks/Commands/CreateTask/CreateTaskHandler.cs": {
+    "mtime": 1778729674.844499,
+    "hash": "0245d09cd4d43e8ab7aacd38bd46f0d6"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tasks/Commands/UpdateTaskStatus/UpdateTaskStatusCommand.cs": {
+    "mtime": 1776015591.523882,
+    "hash": "2714d6cea0a806dc43a02386c5001b55"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tasks/Commands/UpdateTaskStatus/UpdateTaskStatusHandler.cs": {
+    "mtime": 1778729668.0443087,
+    "hash": "4062d1742b6410ab6c6159ec869e1b38"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tasks/Commands/UpdateTask/UpdateTaskCommand.cs": {
+    "mtime": 1778729342.9848156,
+    "hash": "f41fbd0ec167a2d7353083e65c7c2451"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Tasks/Commands/UpdateTask/UpdateTaskHandler.cs": {
+    "mtime": 1778729599.937251,
+    "hash": "c34c48d91939d52e79259da98d98f147"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Common/Models/PaginatedList.cs": {
+    "mtime": 1778779378.7873042,
+    "hash": "3e6c3ec1db4fe3ed7e2bfe2e0ff4f40a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Common/Behaviors/ValidationBehavior.cs": {
+    "mtime": 1775713020.0989847,
+    "hash": "1bcfc083ce7986cbb3c515365d33554d"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Common/Mappings/MappingProfile.cs": {
+    "mtime": 1776320232.9880657,
+    "hash": "485fd596096d3b1490725419d3aa7fd9"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Common/Interfaces/IJwtTokenService.cs": {
+    "mtime": 1775713057.505709,
+    "hash": "9f62cdcee8485689497ebf65377afbe0"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Common/Interfaces/IImageStorageService.cs": {
+    "mtime": 1776136516.8246794,
+    "hash": "4adf6c6f022a7fb0686d52958221a720"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Common/Interfaces/IQrCodeService.cs": {
+    "mtime": 1775713060.0094905,
+    "hash": "4b2414cc6446a4ce1acecb965ec70d18"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Common/Interfaces/ICurrentUserService.cs": {
+    "mtime": 1775946071.2920115,
+    "hash": "0031a0084a787d96757c38bf5f087152"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Queries/GetEventDashboard/GetEventDashboardQuery.cs": {
+    "mtime": 1775942952.6718626,
+    "hash": "61e6577b00073f9a9f639c66acd14da2"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Queries/GetEventDashboard/GetEventDashboardHandler.cs": {
+    "mtime": 1778729682.8233788,
+    "hash": "5cc0e85e95715452abf8ad5edbdb2569"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Queries/GetRsvpConfig/GetRsvpConfigQueryHandler.cs": {
+    "mtime": 1776320232.9887488,
+    "hash": "4815544386ea2c0aa842a12a1d972fb3"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Queries/GetRsvpConfig/RsvpConfigDto.cs": {
+    "mtime": 1776320232.9893813,
+    "hash": "d0cddf2a408cb2c98f25b547a848844c"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Queries/GetRsvpConfig/GetRsvpConfigQuery.cs": {
+    "mtime": 1776225925.8762147,
+    "hash": "7cf0173f896226d4b5ff4d98d6f90c08"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Queries/GetEventOverview/GetEventOverviewQuery.cs": {
+    "mtime": 1775888559.5211592,
+    "hash": "de1f78a922863e1f82bf003a009564c9"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Queries/GetEventOverview/GetEventOverviewHandler.cs": {
+    "mtime": 1776136516.8284268,
+    "hash": "6ada3fcc452482ca0b7033290255b114"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Queries/GetUserEvents/GetUserEventsQuery.cs": {
+    "mtime": 1776136516.8286076,
+    "hash": "639b21e3cb101f36285d31532d626626"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/DTOs/EventOverviewDto.cs": {
+    "mtime": 1776136516.8278337,
+    "hash": "40ef0ed26c1692647b35b99ccde8461e"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/DTOs/EventDashboardDto.cs": {
+    "mtime": 1776401525.5941837,
+    "hash": "4c25387e0bf47c847f1a17d4d54462e8"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/DTOs/EventListDto.cs": {
+    "mtime": 1776136516.8275414,
+    "hash": "46a2acbfcb79eb94b63e14d537862840"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/DTOs/EventDtos.cs": {
+    "mtime": 1776136516.8272367,
+    "hash": "f2f245c9b0605009f82006479ede0c3b"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Commands/DeleteEvent/DeleteEventCommand.cs": {
+    "mtime": 1776015102.3643835,
+    "hash": "0fcfb31e25c0e443d85ef0e0a31d537e"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Commands/ToggleEventStatus/ToggleEventStatusCommand.cs": {
+    "mtime": 1776015111.4840472,
+    "hash": "02249b9dfe93c2f2bc7b429ef5b5d42a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Commands/CreateEvent/CreateEventValidator.cs": {
+    "mtime": 1775713012.4622986,
+    "hash": "b77c81e50c10124b4c27b891e31bd820"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Commands/CreateEvent/CreateEventCommand.cs": {
+    "mtime": 1776136516.8254695,
+    "hash": "812cbed2bd421dc979d437d6bdc76116"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Commands/CreateEvent/CreateEventHandler.cs": {
+    "mtime": 1778731196.0554888,
+    "hash": "2814fe239de8baf62de27eb5edc53820"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Commands/UpdateRsvpConfig/UpdateRsvpConfigCommand.cs": {
+    "mtime": 1776225925.8758721,
+    "hash": "54bc716c1d91e6a2e13cf5931fcb7d4d"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Events/Commands/UpdateEvent/UpdateEventCommand.cs": {
+    "mtime": 1776136516.8262408,
+    "hash": "c1d9fee00c41a261594221929b6e16a5"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Queries/GetGuests/GetGuestsHandler.cs": {
+    "mtime": 1778780107.481502,
+    "hash": "daab800b84d574c18a8895da8a52f6dd"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Queries/GetGuests/GetGuestsQuery.cs": {
+    "mtime": 1778780103.6005728,
+    "hash": "94d3b280762248add8687535eea4d801"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Queries/GetGuestGroups/GetGuestGroupsQuery.cs": {
+    "mtime": 1775939335.2246566,
+    "hash": "6facd5a00f23a6c97075c82847eac510"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Queries/GetGuestGroups/GetGuestGroupsHandler.cs": {
+    "mtime": 1775939343.8451757,
+    "hash": "617db229f71d59c0a8e5197c19fb60bc"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Queries/GetGuestByToken/GetGuestByTokenHandler.cs": {
+    "mtime": 1776320232.9974434,
+    "hash": "a29a8d819bbdd2ab21ef56ab3b1cc43e"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Queries/GetGuestByToken/GetGuestByTokenQuery.cs": {
+    "mtime": 1776320232.9977472,
+    "hash": "fcd79c7a6dbfbfc1e4478ce4666fdab2"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/DTOs/GuestDtos.cs": {
+    "mtime": 1776320232.9967465,
+    "hash": "01e2f862dedc2799bd705b4500fa4209"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/SubmitRsvpResponse/SubmitRsvpResponseHandler.cs": {
+    "mtime": 1776320232.9924612,
+    "hash": "69fadfbb7135c4739d859f9c088c68b5"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/SubmitRsvpResponse/SubmitRsvpResponseCommand.cs": {
+    "mtime": 1776320232.9911885,
+    "hash": "990b000110b2059acc4f0f483a89081e"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/ImportGuests/ImportGuestsCommand.cs": {
+    "mtime": 1775939380.8346648,
+    "hash": "d511d4813afab548aeb27440fef42fca"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/ImportGuests/ImportGuestsHandler.cs": {
+    "mtime": 1776225925.877866,
+    "hash": "f2a1ef9b9d0f13afa7697cab0a8f537e"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/DeleteAllGuests/DeleteAllGuestsCommand.cs": {
+    "mtime": 1775940251.2373574,
+    "hash": "4b9b5cdf3bf7119a5d94e8dd5db8f2ad"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/DeleteAllGuests/DeleteAllGuestsHandler.cs": {
+    "mtime": 1775940286.7554622,
+    "hash": "06d59b5d5773f9c579fab1009af6c1c3"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/UpdateGuest/UpdateGuestHandler.cs": {
+    "mtime": 1776320232.9946718,
+    "hash": "ffcef449fcb6e7e292e62d18b2a30b42"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/UpdateGuest/UpdateGuestCommand.cs": {
+    "mtime": 1776320232.993935,
+    "hash": "7f5b9c97f80d22bca8b45759e574ce19"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/CreateGuest/CreateGuestCommand.cs": {
+    "mtime": 1776225925.8772445,
+    "hash": "84ceaab06fdd9a5005f711a063b1e3fa"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/CreateGuest/CreateGuestHandler.cs": {
+    "mtime": 1776390555.10222,
+    "hash": "ad5686e7438319f5cede1f863dbc6071"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/LogInvitationSent/LogInvitationSentHandler.cs": {
+    "mtime": 1776320232.990352,
+    "hash": "f8711bac43111dc761bde4d796a4e9f0"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/DeleteGuests/DeleteGuestsCommand.cs": {
+    "mtime": 1775889593.0631478,
+    "hash": "2412274c06870197fe265b3a8746ee62"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/DeleteGuests/DeleteGuestsHandler.cs": {
+    "mtime": 1775889599.597125,
+    "hash": "2efd437d25c9c8c0f22b55c16c5c31c8"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/Guests/Commands/DeleteGuests/DeleteGuestsCommandValidator.cs": {
+    "mtime": 1775940749.6152234,
+    "hash": "e45847ea34b613ac123e850b4eab0598"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/obj/Debug/net8.0/Attenda.Domain.AssemblyInfo.cs": {
+    "mtime": 1778779653.138279,
+    "hash": "ccbef63fdf33defb2ccfba9ae7b4fe96"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/obj/Debug/net8.0/Attenda.Domain.GlobalUsings.g.cs": {
+    "mtime": 1776120907.3080869,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/obj/Debug/net10.0/Attenda.Domain.AssemblyInfo.cs": {
+    "mtime": 1776307100.436335,
+    "hash": "995746f247408f403be9a2f3dda91d20"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/obj/Debug/net10.0/Attenda.Domain.GlobalUsings.g.cs": {
+    "mtime": 1776123895.6783376,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Aggregates/PaymentPackage.cs": {
+    "mtime": 1776225925.8806632,
+    "hash": "33921219d830d5fb16ec44f14ddac4cf"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Aggregates/UserAggregate/User.cs": {
+    "mtime": 1775948181.988613,
+    "hash": "3328a100c83f0d2aee48a55b92d26a83"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Aggregates/UserAggregate/PaymentMethod.cs": {
+    "mtime": 1775948163.8536525,
+    "hash": "7ad641378c9a012bb1834e6db8469e2c"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Aggregates/EventAggregate/TaskItem.cs": {
+    "mtime": 1778729540.004806,
+    "hash": "9be52cff4d31220128af55530e05d578"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Aggregates/EventAggregate/EventActivity.cs": {
+    "mtime": 1778631570.4721544,
+    "hash": "4210c5fe4cafc8230a58844d3e3589e0"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Aggregates/EventAggregate/CheckIn.cs": {
+    "mtime": 1776315865.0691712,
+    "hash": "046888357e45df6c6658a00d6dd59d90"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Aggregates/EventAggregate/Event.cs": {
+    "mtime": 1778731192.4332893,
+    "hash": "781079081e279bc04a89842b56684a2a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Aggregates/EventAggregate/Table.cs": {
+    "mtime": 1776400181.299177,
+    "hash": "00f401ed0bbdc4c557db048878f84072"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Aggregates/EventAggregate/GuestGroup.cs": {
+    "mtime": 1775944883.341102,
+    "hash": "9585c5b0b0870d994e2b6ee0c928f336"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Aggregates/EventAggregate/ChecklistItem.cs": {
+    "mtime": 1778729296.827433,
+    "hash": "90b1f71e27f1cdfc40d5ea6355ddfef0"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Aggregates/EventAggregate/Guest.cs": {
+    "mtime": 1776320233.0022352,
+    "hash": "8a1e4c9fc71cb5e98d463cee5779c164"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Enums/RsvpStatus.cs": {
+    "mtime": 1775712875.3827777,
+    "hash": "419c6f1e2e2f22570cb16b56f61ffc80"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Enums/EventStatus.cs": {
+    "mtime": 1775712877.387362,
+    "hash": "572c41752772682858c4684c32e95df3"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Enums/ActivityCategory.cs": {
+    "mtime": 1778631553.5943208,
+    "hash": "b130cb1eb8c68927b5f7f7e8b599286b"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Enums/TaskPriority.cs": {
+    "mtime": 1775712878.1527033,
+    "hash": "3e8ad399a739b3f3017e806a1b232335"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Enums/TablePriority.cs": {
+    "mtime": 1776136516.8380632,
+    "hash": "59fe01d588b293fcdcb1379febb25fc0"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Enums/TaskStatus.cs": {
+    "mtime": 1775712880.1558533,
+    "hash": "60d8f05dc5c0044d8bf7c925658dce29"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Common/AggregateRoot.cs": {
+    "mtime": 1775712814.6472218,
+    "hash": "f20c3101e5f77b679c1bcb4a1272a04b"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Common/IDomainEvent.cs": {
+    "mtime": 1775712818.429692,
+    "hash": "0dd27bd8b007d0641b04a13c1b2b407e"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Common/ValueObject.cs": {
+    "mtime": 1775712820.4370804,
+    "hash": "863a2df408003bb5ac41a097233d3474"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Common/Entity.cs": {
+    "mtime": 1776320233.0041554,
+    "hash": "e49b51a01fde98d060a0a8b9bb327c8c"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Events/GuestCheckedInEvent.cs": {
+    "mtime": 1775712992.0873008,
+    "hash": "72eb5012d389f252e659bd47a27e7359"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Events/EventCreatedEvent.cs": {
+    "mtime": 1775712988.0595813,
+    "hash": "c34ec4659e5e54a25aa38f435cb88831"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Events/GuestRsvpConfirmedEvent.cs": {
+    "mtime": 1775712990.0741777,
+    "hash": "3bcd2c0c4e901f21b821f940b687513f"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Interfaces/IEventRepository.cs": {
+    "mtime": 1778780094.4298759,
+    "hash": "726269b329d6e4909f2fb8722404bea9"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Interfaces/IUnitOfWork.cs": {
+    "mtime": 1775712998.1240487,
+    "hash": "00983179d954ae63f1516aaedf9f8243"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Interfaces/IPaymentPackageRepository.cs": {
+    "mtime": 1776395654.6718175,
+    "hash": "a1017ac17a74cbfc190ec4a1298630cf"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/Interfaces/IUserRepository.cs": {
+    "mtime": 1775712996.1154265,
+    "hash": "4d7561381170e8702d8a6b40d07a8621"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/ValueObjects/RsvpConfiguration.cs": {
+    "mtime": 1776320233.0057256,
+    "hash": "8d0a898928924c39905237b3807f2b03"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/ValueObjects/EmailAddress.cs": {
+    "mtime": 1775712951.4761686,
+    "hash": "d1c339eeb2c2eee0e63188f3e69d27dc"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/ValueObjects/EventDate.cs": {
+    "mtime": 1775712953.4790184,
+    "hash": "15b837955b2bd022e84f520d62f78305"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/ValueObjects/RsvpToken.cs": {
+    "mtime": 1775712949.4562523,
+    "hash": "ffc17d947719176c6a9704c08c72ed55"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/ValueObjects/PhoneNumber.cs": {
+    "mtime": 1776136516.8404152,
+    "hash": "cfe06654733e0302a9e3b46c54c5bef8"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/ValueObjects/DietaryRestriction.cs": {
+    "mtime": 1775712955.4911578,
+    "hash": "228f9a56c5bf512b9edc6552ee87e0f9"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/DependencyInjection.cs": {
+    "mtime": 1776395672.1037028,
+    "hash": "e5d471e07949c2908323f8d8fb7c2c12"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/obj/Debug/net8.0/Attenda.Infrastructure.GlobalUsings.g.cs": {
+    "mtime": 1776120907.2754216,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/obj/Debug/net8.0/Attenda.Infrastructure.AssemblyInfo.cs": {
+    "mtime": 1778779662.3213534,
+    "hash": "dfe14c7b7ed7fa6a79d6164dc1cdd308"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/obj/Debug/net10.0/Attenda.Infrastructure.GlobalUsings.g.cs": {
+    "mtime": 1776123896.0395296,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/obj/Debug/net10.0/Attenda.Infrastructure.AssemblyInfo.cs": {
+    "mtime": 1776307100.7440646,
+    "hash": "47f020355b2334e9521999c78606370e"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/AppDbContext.cs": {
+    "mtime": 1778642734.968803,
+    "hash": "5f440e9fee5f9b219cd5063777c91330"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/DbMigrationUtil.cs": {
+    "mtime": 1776225925.8819818,
+    "hash": "e0195079bbe105756ca7e0fd35c9154f"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/AppDbContextFactory.cs": {
+    "mtime": 1778728404.9381397,
+    "hash": "ed3cbc6cba01a2d00529343d92530038"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Configurations/GuestConfiguration.cs": {
+    "mtime": 1778643398.3845677,
+    "hash": "a1eb11530b74758d44a3a230ffe74fcd"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Configurations/CheckInConfiguration.cs": {
+    "mtime": 1778643423.2012382,
+    "hash": "1b4179e91577a1d4bde3353b93d67aa1"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Configurations/EventActivityConfiguration.cs": {
+    "mtime": 1778643388.1512356,
+    "hash": "df936cf1a000d1785f186f48a109b711"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Configurations/ChecklistItemConfiguration.cs": {
+    "mtime": 1778729312.8318305,
+    "hash": "fff40202b764ae8750f6fc18c7614156"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Configurations/PaymentMethodConfiguration.cs": {
+    "mtime": 1778643430.369349,
+    "hash": "a7ff68b968a5bff06c5ecb0555931c5f"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Configurations/EventConfiguration.cs": {
+    "mtime": 1778643393.2445912,
+    "hash": "8998ae9de807210f43235a9b9292921f"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Configurations/TaskItemConfiguration.cs": {
+    "mtime": 1778729308.4755213,
+    "hash": "79f39d1933252fb78b53147eb97fe437"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Configurations/UserConfiguration.cs": {
+    "mtime": 1778643846.697278,
+    "hash": "3da5216f9e1c1d0d1695a794b290a2e0"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Configurations/TableConfiguration.cs": {
+    "mtime": 1778643415.8813417,
+    "hash": "f10ebf46b2544478ac99900f81193384"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260414002646_AddIsBusinessToEvent.Designer.cs": {
+    "mtime": 1776136516.8443942,
+    "hash": "dba633c07db6ceb8653fb53fed1de898"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514040112_AddInvitationSentToGuests.cs": {
+    "mtime": 1778731285.276636,
+    "hash": "9b942a2111ac8a20a7cfcaa8abce18b2"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514040304_AddPrivateNotesToGuests.Designer.cs": {
+    "mtime": 1778731384.747292,
+    "hash": "0191b9a89608e23ead656f954451e4a2"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514034237_UpdatePremiumGuestCount.cs": {
+    "mtime": 1778730171.3329225,
+    "hash": "62231a1622e081e24e68b908826e8eb2"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514040112_AddInvitationSentToGuests.Designer.cs": {
+    "mtime": 1778731272.730837,
+    "hash": "928b69c86a07817ec69efe4900d12d35"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260414044119_SeedPaymentPackages.Designer.cs": {
+    "mtime": 1776225925.8833485,
+    "hash": "2df1bdc42ce93aa754bf8498cf5f43f1"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260414043356_AddPaymentPackages.Designer.cs": {
+    "mtime": 1776225925.8824468,
+    "hash": "2326efde7aa38f9cf19fe8c36ae0f481"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260413235219_RefactorGuestToPhoneNumber.cs": {
+    "mtime": 1776136516.8425405,
+    "hash": "2ef209b0fa45f208ddd444a4e4bcd380"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260513021359_FixNamingAndAddActivities.Designer.cs": {
+    "mtime": 1778638439.7423668,
+    "hash": "775e74a902cf8c66171d473d2ffece84"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260414044119_SeedPaymentPackages.cs": {
+    "mtime": 1776225925.8841093,
+    "hash": "1f7bde103417497ba7e8fbbfb77629f0"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514040554_CreateProfilesTable.cs": {
+    "mtime": 1778731554.860754,
+    "hash": "37a6d1acdfa75fa817be56e5a70caf3d"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260513021359_FixNamingAndAddActivities.cs": {
+    "mtime": 1778641019.2022293,
+    "hash": "2d5644c1681b8e2642712fe18f8666de"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514035426_ForcePremiumGuestCount.Designer.cs": {
+    "mtime": 1778730866.7995787,
+    "hash": "75c83f14b9c96ef3bfaf9c0778f0da23"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514035426_ForcePremiumGuestCount.cs": {
+    "mtime": 1778730876.4560764,
+    "hash": "6ed0c58726ad1bb14b67431980b7edcd"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260413224543_AddTableManagement.cs": {
+    "mtime": 1776136516.8422787,
+    "hash": "60815514febc742bfff871f2f1350d57"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260414002646_AddIsBusinessToEvent.cs": {
+    "mtime": 1776136516.8451047,
+    "hash": "9530c3ac6debff26b5780225dc328f66"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/AppDbContextModelSnapshot.cs": {
+    "mtime": 1778731554.861935,
+    "hash": "bd3161db1d69b67e81c54a7e3165bcc4"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260414043356_AddPaymentPackages.cs": {
+    "mtime": 1778720464.965739,
+    "hash": "dee1ed304fcc7bd34d5d0c1cedf74b1a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514040207_AddPlusOnesToGuests.cs": {
+    "mtime": 1778731337.3673916,
+    "hash": "67f222c05c93769da11d8722b4772bfd"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514035311_FixPremiumGuestCountAnyCase.cs": {
+    "mtime": 1778730806.107891,
+    "hash": "7cd86c2768839a4f9c2b018485aaacd7"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514040304_AddPrivateNotesToGuests.cs": {
+    "mtime": 1778731393.6071842,
+    "hash": "fa33e5a417aeb35c7293f9471a4f7743"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514035311_FixPremiumGuestCountAnyCase.Designer.cs": {
+    "mtime": 1778730791.5420556,
+    "hash": "c629844b9991a6d05d1337408fb17b29"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260413235219_RefactorGuestToPhoneNumber.Designer.cs": {
+    "mtime": 1776136516.842402,
+    "hash": "b945360bee872cc7fbfbf51e6ed3562a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514040554_CreateProfilesTable.Designer.cs": {
+    "mtime": 1778731554.861464,
+    "hash": "8e5bfd0869faee8571c9b7c4151ff0cd"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260413224543_AddTableManagement.Designer.cs": {
+    "mtime": 1776136516.8419476,
+    "hash": "05f7d1a3faf6b4ed266d2d51cb267464"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514034237_UpdatePremiumGuestCount.Designer.cs": {
+    "mtime": 1778730157.0322776,
+    "hash": "3d32a9c1273dd6dfff130e4820db811a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514034620_CreateEventRsvpConfigsTable.Designer.cs": {
+    "mtime": 1778730380.4115891,
+    "hash": "2cf4b4bd3f6369110ef95c4e4fcdeb36"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514040207_AddPlusOnesToGuests.Designer.cs": {
+    "mtime": 1778731327.9647546,
+    "hash": "5bfd5193a9c2a093927e780b276e01c7"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514033457_AddChecklistItems.cs": {
+    "mtime": 1778729697.825803,
+    "hash": "0f0b3d4e065795f9024ec74cc8d2dc0f"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514033457_AddChecklistItems.Designer.cs": {
+    "mtime": 1778729697.8342793,
+    "hash": "8ce8de7bf0ff2d8748ed25fe67657a45"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Migrations/20260514034620_CreateEventRsvpConfigsTable.cs": {
+    "mtime": 1778730395.4876513,
+    "hash": "8dabbaf164580a53de49efe640af7c55"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Repositories/EventRepository.cs": {
+    "mtime": 1778780099.4246418,
+    "hash": "4e2514f3047a41a41b8371332afd71aa"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Repositories/UserRepository.cs": {
+    "mtime": 1775713049.0527704,
+    "hash": "ca633236847b254f3dd12d955f0a97ba"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Persistence/Repositories/PaymentPackageRepository.cs": {
+    "mtime": 1776395666.4409783,
+    "hash": "885b7c5eca7798e2e98ae4b975561d25"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Services/CurrentUserService.cs": {
+    "mtime": 1775946077.2254682,
+    "hash": "dedbb89c9b6a364824ab5e7b80833bb7"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Services/JwtTokenService.cs": {
+    "mtime": 1775713062.0191925,
+    "hash": "354ccab6f07e31d3e4990e609728a0bb"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Services/SupabaseStorageService.cs": {
+    "mtime": 1776136516.8480382,
+    "hash": "ad406e762227963a4b86b01519347334"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/Services/QrCodeService.cs": {
+    "mtime": 1775713064.0268424,
+    "hash": "202e6ac9659b6b3be6b7f47173787d37"
+  },
+  "/Volumes/DHstorage/source/attenda/supabase/migrations/001_create_profiles_and_team_tables.sql": {
+    "mtime": 1778731622.4115305,
+    "hash": "00fa0c609f4567dc9b07f0fe0006e473"
+  },
+  "/Volumes/DHstorage/source/attenda/supabase/migrations/001_add_indexes_and_constraints.sql": {
+    "mtime": 1776320233.0270221,
+    "hash": "eac5bbb9ef848be59beeffa2a73e25fb"
+  },
+  "/Volumes/DHstorage/source/attenda/supabase/migrations/003_create_profiles_roles_only.sql": {
+    "mtime": 1778733919.5744984,
+    "hash": "9cf06c1822f180cd8a8140e32582fc27"
+  },
+  "/Volumes/DHstorage/source/attenda/supabase/migrations/002_enable_rls.sql": {
+    "mtime": 1776320233.0278592,
+    "hash": "a83bd57eceed6bc81bf40fc12184f8ac"
+  },
+  "/Volumes/DHstorage/source/attenda/supabase/functions/deactivate-account/index.ts": {
+    "mtime": 1775876847.5207772,
+    "hash": "9f79d26e3c7276ce7504b7ff92210e7e"
+  },
+  "/Volumes/DHstorage/source/attenda/supabase/functions/delete-account/index.ts": {
+    "mtime": 1775876653.644041,
+    "hash": "f8b8a7e91d2729dca7b27c4adf480a01"
+  },
+  "/Volumes/DHstorage/source/attenda/supabase/functions/invite-user/index.ts": {
+    "mtime": 1775873267.4191842,
+    "hash": "d5503edf8a2866c4cdf0c8ef22f3a7aa"
+  },
+  "/Volumes/DHstorage/source/attenda/supabase/functions/remove-user/index.ts": {
+    "mtime": 1775873319.6457531,
+    "hash": "2aaa9274b6311ed842e657e69c6b50ea"
+  },
+  "/Volumes/DHstorage/source/attenda/scratch/migration/Program.cs": {
+    "mtime": 1776225925.895801,
+    "hash": "791972a5b9e95cd54c4abe841cc73eb0"
+  },
+  "/Volumes/DHstorage/source/attenda/scratch/migration/obj/Debug/net10.0/migration.AssemblyInfo.cs": {
+    "mtime": 1776217575.313725,
+    "hash": "7a633b94548bd190cb77e9b78a65fe19"
+  },
+  "/Volumes/DHstorage/source/attenda/scratch/migration/obj/Debug/net10.0/migration.GlobalUsings.g.cs": {
+    "mtime": 1776013281.4318087,
+    "hash": "98926837ba69930b8428d861944bcd0a"
+  },
+  "/Volumes/DHstorage/source/attenda/render.yaml": {
+    "mtime": 1776054059.5955713,
+    "hash": "85cfd3c782afff757a882a04741c3596"
+  },
+  "/Volumes/DHstorage/source/attenda/README.md": {
+    "mtime": 1775885810.8661358,
+    "hash": "9e04e3ae67c8ca782657cba339c3107b"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/index.html": {
+    "mtime": 1775706232.0199175,
+    "hash": "7c4cbfd33d4756216bc0bcb2560f1cf9"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/README.md": {
+    "mtime": 1775701814.0570464,
+    "hash": "a28dc4cb878325f3e9e5649f3e1469ac"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.API.Tests/obj/Debug/net8.0/Attenda.API.Tests.csproj.FileListAbsolute.txt": {
+    "mtime": 1778729068.2862492,
+    "hash": "934c84d289f7adf6b54bd40a9e164282"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.API.Tests/obj/Debug/net10.0/Attenda.API.Tests.csproj.FileListAbsolute.txt": {
+    "mtime": 1776310416.4697773,
+    "hash": "8fe6c052b6b789aa4724b5ad491cd302"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Application.Tests/obj/Debug/net8.0/Attenda.Application.Tests.csproj.FileListAbsolute.txt": {
+    "mtime": 1778729066.9410906,
+    "hash": "0507713b180fe17254cd13230f0ae9f4"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Application.Tests/obj/Debug/net10.0/Attenda.Application.Tests.csproj.FileListAbsolute.txt": {
+    "mtime": 1776310347.8745155,
+    "hash": "dcaa67f1a68de659916e117a887f123e"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Domain.Tests/obj/Debug/net8.0/Attenda.Domain.Tests.csproj.FileListAbsolute.txt": {
+    "mtime": 1778640000.3634002,
+    "hash": "5c19d33ee62eeaea4137e33519053113"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/tests/Attenda.Domain.Tests/obj/Debug/net10.0/Attenda.Domain.Tests.csproj.FileListAbsolute.txt": {
+    "mtime": 1776125684.5681303,
+    "hash": "bcce8d2314751c2e77bc3e9077662102"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/scratch/db_check/obj/Debug/net10.0/db_check.csproj.FileListAbsolute.txt": {
+    "mtime": 1778720741.7083664,
+    "hash": "a4bf7279b138cd26bbd219fccf8c71be"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/obj/Debug/net8.0/Attenda.API.csproj.FileListAbsolute.txt": {
+    "mtime": 1778720143.3155932,
+    "hash": "50caf5a73591392d039051e2d5b9bb2a"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Application/obj/Debug/net8.0/Attenda.Application.csproj.FileListAbsolute.txt": {
+    "mtime": 1778640000.596147,
+    "hash": "39d02668b23bab03fcc8682245ab8b32"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Domain/obj/Debug/net8.0/Attenda.Domain.csproj.FileListAbsolute.txt": {
+    "mtime": 1778640000.1803124,
+    "hash": "6fe9f76ef0dc94b99da889dcf3eed5e4"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.Infrastructure/obj/Debug/net8.0/Attenda.Infrastructure.csproj.FileListAbsolute.txt": {
+    "mtime": 1778640001.0363288,
+    "hash": "ee22f3c26796efac9bbe001e7c5eecee"
+  },
+  "/Volumes/DHstorage/source/attenda/docs/ARCHITECTURE.md": {
+    "mtime": 1775884968.082775,
+    "hash": "568a975027b01b4cd3247a21d0f42858"
+  },
+  "/Volumes/DHstorage/source/attenda/docs/ARCHITECTURE_AUTH.md": {
+    "mtime": 1775951733.7080433,
+    "hash": "ca56d7e11598d38af0f73be254eed1c7"
+  },
+  "/Volumes/DHstorage/source/attenda/docs/API_REFERENCE.md": {
+    "mtime": 1776136516.8488178,
+    "hash": "9e4e4dd16092ac0df02760979243bd1c"
+  },
+  "/Volumes/DHstorage/source/attenda/docs/CHANGELOG_SESSION.md": {
+    "mtime": 1778629114.5332174,
+    "hash": "a7c80187bcbb5e457dd8d11cb9e4a2fc"
+  },
+  "/Volumes/DHstorage/source/attenda/docs/DOMAIN_MODELS.md": {
+    "mtime": 1775925499.5146637,
+    "hash": "a8954ef461d7213c74de7c0f30012f68"
+  },
+  "/Volumes/DHstorage/source/attenda/docs/AESTHETICS.md": {
+    "mtime": 1776136516.8486838,
+    "hash": "e7f02c2867d418a3bb192c44f3d785b5"
+  },
+  "/Volumes/DHstorage/source/attenda/docs/DOCS.md": {
+    "mtime": 1775925524.5353687,
+    "hash": "0c5d56ac3a29a8ed8596ded559189075"
+  },
+  "/Volumes/DHstorage/source/attenda/docs/INFRASTRUCTURE.md": {
+    "mtime": 1775885790.3370805,
+    "hash": "979a73c30c0f703e4b6f347404d613c8"
+  },
+  "/Volumes/DHstorage/source/attenda/docs/FRONTEND_GUIDE.md": {
+    "mtime": 1776136516.8490813,
+    "hash": "bda4bd46da6e2d566873033476e61072"
+  },
+  "/Volumes/DHstorage/source/attenda/docs/SECURITY_AUDIT.md": {
+    "mtime": 1776320233.0165565,
+    "hash": "a6f4eec7ba0f866e8ec6738f481d38af"
+  },
+  "/Volumes/DHstorage/source/attenda/scratch/migration/obj/Debug/net10.0/migration.csproj.FileListAbsolute.txt": {
+    "mtime": 1776013282.6281183,
+    "hash": "04efb3e505a05373d2d92ff0e112b7a5"
+  },
+  "/Volumes/DHstorage/source/attenda/openspec/config.yaml": {
+    "mtime": 1776320233.0248737,
+    "hash": "8264470c7c7d4d4eafb2cbacb1c01058"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/imgs/adneil3004-carreta-6264647.jpg": {
+    "mtime": 1775977046.9686558,
+    "hash": "3c0886acf39bb31d0d2af810f9d076f9"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/public/icons.svg": {
+    "mtime": 1775701814.0594833,
+    "hash": "3b4fcfcf393eca4d264dca4a4663bc37"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/public/favicon.svg": {
+    "mtime": 1775701814.0587118,
+    "hash": "7e840862161341271697daa99a40d76b"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/public/imgs/concierge-bg.png": {
+    "mtime": 1776225925.8884308,
+    "hash": "787f4e38f2b3192dea32559b8d96010f"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/public/imgs/adneil3004-carreta-6264647.jpg": {
+    "mtime": 1775977786.0967433,
+    "hash": "3c0886acf39bb31d0d2af810f9d076f9"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/assets/hero.png": {
+    "mtime": 1775701814.0606434,
+    "hash": "5cf2b0762834cdddc0dd3ec1397b5011"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/assets/vite.svg": {
+    "mtime": 1775701814.0617576,
+    "hash": "9960a24288958394ac50e57ff638b036"
+  },
+  "/Volumes/DHstorage/source/attenda/frontend/src/assets/react.svg": {
+    "mtime": 1775701814.0615513,
+    "hash": "f0402b67b6ce880f65666bb49e841696"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/wwwroot/uploads/bcc9cbbc-019f-4291-a65d-df94c708903b_639116348255178130.jpeg": {
+    "mtime": 1776038025.5204716,
+    "hash": "3d3070e484226c5ee7217bb9e7912985"
+  },
+  "/Volumes/DHstorage/source/attenda/backend/src/Attenda.API/wwwroot/uploads/c3804766-07d8-4660-adef-009aaf0ab601_639116272848828310.jpg": {
+    "mtime": 1776030484.8975058,
+    "hash": "3c0886acf39bb31d0d2af810f9d076f9"
+  }
+}
