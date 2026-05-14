@@ -163,15 +163,56 @@ if (app.Environment.IsDevelopment())
 // Welcome Endpoint
 app.MapGet("/", () => Results.Ok(new { message = "Attenda API is running 🚀", environment = app.Environment.EnvironmentName, version = "1.0.0" }));
 
+// Health Check Endpoint
+app.MapGet("/health", async (Attenda.Infrastructure.Persistence.AppDbContext context) => 
+{
+    try 
+    {
+        var canConnect = await context.Database.CanConnectAsync();
+        return Results.Ok(new { status = "Healthy", database = canConnect ? "Connected" : "Disconnected" });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(detail: ex.Message, title: "Unhealthy");
+    }
+});
+
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ── Migration Helper ──
+// ── Migration & Diagnostic Helper ──
 using (var scope = app.Services.CreateScope())
 {
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     var context = scope.ServiceProvider.GetRequiredService<Attenda.Infrastructure.Persistence.AppDbContext>();
-    await context.Database.MigrateAsync();
+    
+    try 
+    {
+        logger.LogInformation("Checking database connectivity and migrations...");
+        
+        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        var appliedMigrations = await context.Database.GetAppliedMigrationsAsync();
+        
+        logger.LogInformation("Applied migrations: {AppliedCount}", appliedMigrations.Count());
+        foreach (var m in appliedMigrations) logger.LogDebug("Applied: {Migration}", m);
+        
+        if (pendingMigrations.Any())
+        {
+            logger.LogInformation("Found {PendingCount} pending migrations. Applying now...", pendingMigrations.Count());
+            await context.Database.MigrateAsync();
+            logger.LogInformation("Migrations applied successfully.");
+        }
+        else
+        {
+            logger.LogInformation("No pending migrations found.");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred during database migration or connectivity check.");
+        // We don't rethrow here to allow the API to start and serve a /health or welcome message
+    }
 }
 
 app.MapControllers();
