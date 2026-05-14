@@ -44,17 +44,15 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                 table: "payment_packages",
                 column: "is_active");
 
-            // Seed data
-            migrationBuilder.InsertData(
-                table: "payment_packages",
-                columns: new[] { "id", "name", "type", "description", "guest_count", "price", "currency", "is_active", "has_discount", "discount_percentage", "features" },
-                values: new object[,]
-                {
-                    { Guid.NewGuid(), "Free", "free", "Plan básico para eventos pequeños con hasta 40 invitados", 40, 0.00, "USD", true, false, 0, "{\"seats\": 40, \"events_per_month\": 1, \"guest_management\": true, \"table_layout\": true, \"basic_support\": true}" },
-                    { Guid.NewGuid(), "Standard", "standard", "Plan ideal para eventos medianos con hasta 150 invitados", 150, 99.00, "USD", true, false, 0, "{\"seats\": 150, \"events_per_month\": 3, \"guest_management\": true, \"table_layout\": true, \"task_management\": true, \"email_support\": true}" },
-                    { Guid.NewGuid(), "Premium", "premium", "Plan profesional para eventos grandes con más de 200 invitados", 200, 199.00, "USD", true, false, 0, "{\"seats\": 999, \"events_per_month\": 10, \"guest_management\": true, \"table_layout\": true, \"task_management\": true, \"vendor_management\": true, \"priority_support\": true, \"analytics\": true}" },
-                    { Guid.NewGuid(), "Planner", "planner", "Plan mensual para planner de eventos con eventos ilimitados", 9999, 499.00, "USD", true, false, 0, "{\"seats\": 9999, \"events_per_month\": 999, \"guest_management\": true, \"table_layout\": true, \"task_management\": true, \"vendor_management\": true, \"priority_support\": true, \"analytics\": true, \"white_label\": true, \"api_access\": true, \"dedicated_manager\": true}" }
-                });
+            // Seed data using SQL to avoid metadata issues
+            migrationBuilder.Sql(@"
+                INSERT INTO payment_packages (id, name, type, description, guest_count, price, currency, is_active, has_discount, discount_percentage, features)
+                VALUES 
+                (gen_random_uuid(), 'Free', 'free', 'Plan básico para eventos pequeños con hasta 40 invitados', 40, 0.00, 'USD', true, false, 0, '{""seats"": 40, ""events_per_month"": 1, ""guest_management"": true, ""table_layout"": true, ""basic_support"": true}'),
+                (gen_random_uuid(), 'Standard', 'standard', 'Plan ideal para eventos medianos con hasta 150 invitados', 150, 99.00, 'USD', true, false, 0, '{""seats"": 150, ""events_per_month"": 3, ""guest_management"": true, ""table_layout"": true, ""task_management"": true, ""email_support"": true}'),
+                (gen_random_uuid(), 'Premium', 'premium', 'Plan profesional para eventos grandes con más de 200 invitados', 200, 199.00, 'USD', true, false, 0, '{""seats"": 999, ""events_per_month"": 10, ""guest_management"": true, ""table_layout"": true, ""task_management"": true, ""vendor_management"": true, ""priority_support"": true, ""analytics"": true}'),
+                (gen_random_uuid(), 'Planner', 'planner', 'Plan mensual para planner de eventos con eventos ilimitados', 9999, 499.00, 'USD', true, false, 0, '{""seats"": 9999, ""events_per_month"": 999, ""guest_management"": true, ""table_layout"": true, ""task_management"": true, ""vendor_management"": true, ""priority_support"": true, ""analytics"": true, ""white_label"": true, ""api_access"": true, ""dedicated_manager"": true}')
+            ");
         }
 
         /// <inheritdoc />

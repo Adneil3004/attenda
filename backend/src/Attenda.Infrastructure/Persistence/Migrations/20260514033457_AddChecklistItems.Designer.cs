@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Attenda.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260513025713_CreateEventActivitiesTableForReal")]
-    partial class CreateEventActivitiesTableForReal
+    [Migration("20260514033457_AddChecklistItems")]
+    partial class AddChecklistItems
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,7 +28,6 @@ namespace Attenda.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.CheckIn", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -61,10 +60,44 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                     b.ToTable("check_ins", (string)null);
                 });
 
+            modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.ChecklistItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsDone")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_done");
+
+                    b.Property<Guid?>("TaskItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_item_id");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("text");
+
+                    b.HasKey("Id")
+                        .HasName("pk_task_checklist_items");
+
+                    b.HasIndex("TaskItemId")
+                        .HasDatabaseName("ix_task_checklist_items_task_item_id");
+
+                    b.ToTable("task_checklist_items", (string)null);
+                });
+
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.Event", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -137,7 +170,6 @@ namespace Attenda.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.EventActivity", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -194,7 +226,6 @@ namespace Attenda.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.Guest", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -302,7 +333,6 @@ namespace Attenda.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.Table", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -337,7 +367,6 @@ namespace Attenda.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.TaskItem", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -453,7 +482,6 @@ namespace Attenda.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Attenda.Domain.Aggregates.UserAggregate.PaymentMethod", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -501,7 +529,6 @@ namespace Attenda.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Attenda.Domain.Aggregates.UserAggregate.User", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -549,6 +576,15 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                         .HasForeignKey("event_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_check_ins_events_event_id");
+                });
+
+            modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.ChecklistItem", b =>
+                {
+                    b.HasOne("Attenda.Domain.Aggregates.EventAggregate.TaskItem", null)
+                        .WithMany("Checklist")
+                        .HasForeignKey("TaskItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_task_checklist_items_task_items_task_item_id");
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.Event", b =>
@@ -738,6 +774,11 @@ namespace Attenda.Infrastructure.Persistence.Migrations
                     b.Navigation("Tables");
 
                     b.Navigation("TaskItems");
+                });
+
+            modelBuilder.Entity("Attenda.Domain.Aggregates.EventAggregate.TaskItem", b =>
+                {
+                    b.Navigation("Checklist");
                 });
 
             modelBuilder.Entity("Attenda.Domain.Aggregates.UserAggregate.User", b =>

@@ -12,6 +12,8 @@ public class TaskItem : Entity
     public TaskPriority Priority { get; private set; }
     public DateTime? DueDate { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    private readonly List<ChecklistItem> _checklist = new();
+    public IReadOnlyCollection<ChecklistItem> Checklist => _checklist.AsReadOnly();
 
     private TaskItem() : base() { Title = null!; } // Required by EF Core
 
@@ -38,4 +40,23 @@ public class TaskItem : Entity
         Description = description;
         DueDate = dueDate;
     }
+
+    public void AddChecklistItem(string text)
+    {
+        _checklist.Add(ChecklistItem.Create(text));
+    }
+
+    public void RemoveChecklistItem(Guid itemId)
+    {
+        var item = _checklist.FirstOrDefault(i => i.Id == itemId);
+        if (item != null) _checklist.Remove(item);
+    }
+
+    public void ToggleChecklistItem(Guid itemId, bool isDone)
+    {
+        var item = _checklist.FirstOrDefault(i => i.Id == itemId);
+        item?.Toggle(isDone);
+    }
+
+    public void ClearChecklist() => _checklist.Clear();
 }

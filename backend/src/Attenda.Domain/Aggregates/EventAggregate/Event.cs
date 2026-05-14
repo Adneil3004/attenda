@@ -87,8 +87,7 @@ public class Event : AggregateRoot
     {
         "free" => 40,
         "standard" => 150,
-        "premium" => 250,
-        "elite" => 500,
+        "premium" => 999,
         "planner" => 9999,
         _ => 20 // Default legacy limit if unknown
     };

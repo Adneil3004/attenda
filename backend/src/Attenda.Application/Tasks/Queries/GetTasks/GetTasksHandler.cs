@@ -35,6 +35,7 @@ public class GetTasksHandler : IRequestHandler<GetTasksQuery, List<TaskItemDto>>
             t.Status.ToString(),
             t.Priority.ToString(),
             t.DueDate,
-            t.CreatedAt)).ToList();
+            t.CreatedAt,
+            t.Checklist.Select(c => new ChecklistItemDto(c.Id, c.Text, c.IsDone)).ToList())).ToList();
     }
 }

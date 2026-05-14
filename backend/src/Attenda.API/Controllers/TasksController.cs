@@ -78,7 +78,8 @@ public class TasksController : ControllerBase
             request.Description,
             request.Priority,
             request.DueDate,
-            userId);
+            userId,
+            request.Checklist);
 
         var result = await _mediator.Send(command);
 
@@ -138,7 +139,8 @@ public record UpdateTaskRequest(
     string? Title,
     string? Description,
     TaskPriority? Priority,
-    DateTime? DueDate);
+    DateTime? DueDate,
+    List<ChecklistItemDto>? Checklist = null);
 
 public record UpdateTaskStatusRequest(
     Guid EventId,

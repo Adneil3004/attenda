@@ -58,41 +58,42 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Auth - Switching to JWKS Discovery (RS256)
+// Auth - Supabase Configuration (ES256)
 var supabaseUrl = builder.Configuration["Supabase:Url"] ?? "";
+var supabaseAuthority = $"{supabaseUrl}/auth/v1";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var jwtSecret = builder.Configuration["Supabase:JwtSecret"];
-        
-        options.Authority = $"{supabaseUrl}/auth/v1";
-        options.MetadataAddress = $"{supabaseUrl}/auth/v1/.well-known/openid-configuration";
-        options.RequireHttpsMetadata = false; 
+        // NO Authority/MetadataAddress — el discovery automático interfiere con la clave manual
+        // y produce IDX10500 al reemplazar (o no setear) IssuerSigningKeys.
         options.IncludeErrorDetails = true;
         
-        // Manual ES256 Key Fallback (Extracted from https://pfrblrqwxxjqvzfiftei.supabase.co/auth/v1/.well-known/jwks.json)
+        // Clave pública ES256 de Supabase (JWKS: pfrblrqwxxjqvzfiftei.supabase.co)
         var x = "RrrhRCKE2gPKeckYBHYwwBiSymgfhPmXjn2UiGZL3BQ";
         var y = "3WwXWUTgqBYtMKPK31mt86JuItSYEt8foeMre16eZK8";
-        var ecKey = new ECDsaSecurityKey(System.Security.Cryptography.ECDsa.Create(new System.Security.Cryptography.ECParameters
-        {
-            Curve = System.Security.Cryptography.ECCurve.NamedCurves.nistP256,
-            Q = new System.Security.Cryptography.ECPoint
-            {
-                X = Microsoft.IdentityModel.Tokens.Base64UrlEncoder.DecodeBytes(x),
-                Y = Microsoft.IdentityModel.Tokens.Base64UrlEncoder.DecodeBytes(y)
-            }
-        })) { KeyId = "cfee8468-d599-437e-bf47-1ba4e79f07e7" };
+        var ecKey = new ECDsaSecurityKey(
+            System.Security.Cryptography.ECDsa.Create(
+                new System.Security.Cryptography.ECParameters
+                {
+                    Curve = System.Security.Cryptography.ECCurve.NamedCurves.nistP256,
+                    Q = new System.Security.Cryptography.ECPoint
+                    {
+                        X = Microsoft.IdentityModel.Tokens.Base64UrlEncoder.DecodeBytes(x),
+                        Y = Microsoft.IdentityModel.Tokens.Base64UrlEncoder.DecodeBytes(y)
+                    }
+                }))
+        { KeyId = "cfee8468-d599-437e-bf47-1ba4e79f07e7" };
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = $"{supabaseUrl}/auth/v1",
+            ValidIssuer = supabaseAuthority,
             ValidateAudience = true,
             ValidAudience = "authenticated",
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = ecKey, // Force the ES256 key
+            IssuerSigningKey = ecKey,
             NameClaimType = ClaimTypes.NameIdentifier,
             RoleClaimType = "role",
             ClockSkew = TimeSpan.FromMinutes(5)
@@ -103,10 +104,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             OnAuthenticationFailed = context =>
             {
                 Console.WriteLine($"[AUTH FAILED] {context.Exception.GetType().Name}: {context.Exception.Message}");
-                if (context.Exception.InnerException != null)
-                {
-                    Console.WriteLine($"[AUTH INNER] {context.Exception.InnerException.Message}");
-                }
                 return Task.CompletedTask;
             },
             OnTokenValidated = context =>
@@ -115,15 +112,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 {
                     var subClaim = identity.FindFirst("sub");
                     if (subClaim != null)
-                    {
                         identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, subClaim.Value));
-                    }
                 }
                 Console.WriteLine("[AUTH SUCCESS] Token validated successfully.");
-                return Task.CompletedTask;
-            },
-            OnForbidden = context => {
-                Console.WriteLine("[AUTH FORBIDDEN] User is authenticated but not allowed to access this resource.");
                 return Task.CompletedTask;
             }
         };
@@ -134,10 +125,20 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("https://adneil3004.github.io", "http://localhost:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        // Vite puede arrancar en cualquier puerto libre (5173, 5174, 5175…)
+        // Usamos SetIsOriginAllowed para cubrir todos los puertos de localhost sin
+        // tener que actualizar esta lista cada vez. En producción solo se permite
+        // el dominio exacto de GitHub Pages.
+        policy.SetIsOriginAllowed(origin =>
+        {
+            if (string.IsNullOrWhiteSpace(origin)) return false;
+            var uri = new Uri(origin);
+            if (uri.Host is "localhost" or "127.0.0.1") return true;
+            return origin.Equals("https://adneil3004.github.io", StringComparison.OrdinalIgnoreCase);
+        })
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
 
@@ -191,17 +192,31 @@ using (var scope = app.Services.CreateScope())
     {
         logger.LogInformation("Checking database connectivity and migrations...");
         
-        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-        var appliedMigrations = await context.Database.GetAppliedMigrationsAsync();
+        var pendingMigrations = (await context.Database.GetPendingMigrationsAsync()).ToList();
+        var appliedMigrations = (await context.Database.GetAppliedMigrationsAsync()).ToList();
         
-        logger.LogInformation("Applied migrations: {AppliedCount}", appliedMigrations.Count());
-        foreach (var m in appliedMigrations) logger.LogDebug("Applied: {Migration}", m);
+        logger.LogInformation("Applied migrations: {AppliedCount}", appliedMigrations.Count);
         
         if (pendingMigrations.Any())
         {
-            logger.LogInformation("Found {PendingCount} pending migrations. Applying now...", pendingMigrations.Count());
-            await context.Database.MigrateAsync();
-            logger.LogInformation("Migrations applied successfully.");
+            logger.LogInformation("Pending migrations found: {PendingMigrations}", string.Join(", ", pendingMigrations));
+            logger.LogInformation("Applying migrations now...");
+            try 
+            {
+                await context.Database.MigrateAsync();
+                logger.LogInformation("Migrations applied successfully.");
+            }
+            catch (Exception migEx)
+            {
+                logger.LogError(migEx, "CRITICAL: Failed to apply migrations. Check if the database is in a partial state.");
+                // If it fails, we might want to know if 'users' table exists at all
+                try {
+                    var tableExists = await context.Database.ExecuteSqlRawAsync("SELECT to_regclass('public.users') IS NOT NULL;");
+                    logger.LogWarning("Diagnostic: 'users' table registration check returned successfully.");
+                } catch {
+                    logger.LogError("Diagnostic: Failed to even check if 'users' table exists.");
+                }
+            }
         }
         else
         {
@@ -211,7 +226,6 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         logger.LogError(ex, "An error occurred during database migration or connectivity check.");
-        // We don't rethrow here to allow the API to start and serve a /health or welcome message
     }
 }
 

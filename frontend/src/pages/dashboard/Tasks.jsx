@@ -1,75 +1,87 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import {
-  DndContext,
+import { 
+  DndContext, 
+  closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  closestCorners,
   DragOverlay,
-  useDroppable
+  defaultDropAnimationSideEffects
 } from '@dnd-kit/core';
 import {
+  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-  useSortable
+  useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import TaskDrawer from '../../components/dashboard/TaskDrawer';
+import { motion, AnimatePresence } from 'framer-motion';
 import { tasksApi } from '../../lib/tasks';
 import { DateService } from '../../lib/dateUtils';
+import TaskDrawer from '../../components/dashboard/TaskDrawer';
 
-const COLUMNS = ['To Do', 'In Progress', 'Done', 'Cancelled'];
+// --- Icons (Inline SVGs for reliability) ---
+const PlusIcon = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>;
+const FilterIcon = () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>;
+const ChevronLeftIcon = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>;
+const ChevronRightIcon = () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>;
+const BoardIcon = () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" /></svg>;
+const CalendarIcon = () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>;
 
-// ─── Droppable Column Component ───
-const DroppableColumn = ({ column, children, columnTasks }) => {
-  const { setNodeRef } = useDroppable({
-    id: column,
-  });
+// --- Components ---
 
-  const wipLimitValue = 3;
-  const isWIP = column === 'In Progress';
-  const overLimit = isWIP && columnTasks.length > wipLimitValue;
+const TaskCard = ({ task, onClick, isOverlay = false }) => {
+  const priorityColors = {
+    'Urgent': 'bg-red-500/10 text-red-600 border-red-500/20',
+    'High': 'bg-orange-500/10 text-orange-600 border-orange-500/20',
+    'Medium': 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+    'Low': 'bg-slate-500/10 text-slate-600 border-slate-500/20'
+  };
 
   return (
     <div 
-      ref={setNodeRef}
-      className="w-full lg:w-80 2xl:w-96 min-[1920px]:w-[26rem] flex-shrink-0 flex flex-col bg-[var(--color-surface-container-low)] dark:bg-[var(--color-surface-container-high)] rounded-2xl p-4 hide-scrollbar min-h-[150px] lg:h-full lg:overflow-hidden mb-6 lg:mb-0"
+      onClick={onClick}
+      className={`
+        group relative p-4 mb-3 bg-[var(--color-surface-container-lowest)] 
+        rounded-2xl border border-[var(--color-outline-variant)]/10 
+        hover:border-[var(--color-primary)]/30 hover:shadow-xl hover:shadow-primary/5 
+        transition-all duration-300 cursor-grab active:cursor-grabbing
+        ${isOverlay ? 'shadow-2xl ring-2 ring-[var(--color-primary)]/20 rotate-2' : ''}
+      `}
     >
-      <div className="flex items-center justify-between mb-4 px-2">
-        <h3 className="font-bold text-sm text-[var(--color-primary)] flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)] opacity-60"></span>
-          {column}
-        </h3>
-        
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-[var(--color-text-muted)] bg-[var(--color-surface-container-high)] dark:bg-[var(--color-surface-container-low)] px-2 py-0.5 rounded-full">
-            {columnTasks.length}
-          </span>
-          {isWIP && (
-            <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${overLimit ? 'bg-[var(--color-error)]/10 text-[var(--color-error)]' : 'bg-[var(--color-card-bg)] text-[var(--color-primary)] shadow-sm border border-[var(--color-card-border)]'}`}>
-              WIP Limit {wipLimitValue}
-            </span>
-          )}
+      <div className="flex justify-between items-start mb-3">
+        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest border ${priorityColors[task.priority] || priorityColors.Medium}`}>
+          {task.priority}
+        </span>
+        <div className="flex -space-x-2">
+          <img src={task.avatar} alt={task.assignee} className="w-6 h-6 rounded-full border-2 border-[var(--color-surface-container-lowest)] shadow-sm" />
         </div>
       </div>
+      
+      <h4 className="text-sm font-bold text-[var(--color-primary)] mb-2 group-hover:text-[var(--color-secondary)] transition-colors">
+        {task.title}
+      </h4>
+      
+      <p className="text-xs text-[var(--color-on-surface-variant)] line-clamp-2 mb-4 leading-relaxed opacity-80">
+        {task.description || 'No description provided.'}
+      </p>
 
-      <div className="flex-1 lg:overflow-y-auto overflow-x-hidden space-y-4 pb-4 lg:pb-10 hide-scrollbar pt-2">
-        {children}
-        
-        {columnTasks.length === 0 && (
-          <div className="h-24 border-2 border-dashed border-[var(--color-card-border)] rounded-xl flex items-center justify-center text-xs font-semibold text-[var(--color-text-muted)]">
-            Drag tasks here
-          </div>
-        )}
+      <div className="flex items-center justify-between pt-3 border-t border-[var(--color-outline-variant)]/5">
+        <div className="flex items-center gap-1.5 text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
+          <CalendarIcon />
+          <span>{task.dueDate || 'No date'}</span>
+        </div>
+        <div className="flex items-center gap-2 text-[var(--color-text-muted)]">
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+        </div>
       </div>
     </div>
   );
 };
 
-// ─── Sortable Item Component ───
 const SortableTaskCard = ({ task, onClick }) => {
   const {
     attributes,
@@ -78,7 +90,7 @@ const SortableTaskCard = ({ task, onClick }) => {
     transform,
     transition,
     isDragging
-  } = useSortable({ id: task.id, data: task });
+  } = useSortable({ id: task.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -87,657 +99,401 @@ const SortableTaskCard = ({ task, onClick }) => {
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={`relative group cursor-grab active:cursor-grabbing`}
-      onClick={(e) => {
-        if (e.defaultPrevented) return;
-        onClick(task);
-      }}
-    >
-      <TaskCard task={task} />
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <TaskCard task={task} onClick={() => onClick(task)} />
     </div>
   );
 };
 
-// ─── Base Card Component ───
-const TaskCard = ({ task, isLayoutOverlay }) => {
-  const priorityConfig = {
-    'Urgent': { color: 'var(--color-error)', label: 'Urgent', bg: 'bg-red-500/10', text: 'text-red-500', pulse: true },
-    'High': { color: '#f97316', label: 'High', bg: 'bg-orange-500/10', text: 'text-orange-500', pulse: false },
-    'Medium': { color: 'var(--color-primary)', label: 'Medium', bg: 'bg-blue-500/10', text: 'text-blue-500', pulse: false },
-    'Low': { color: 'var(--color-text-muted)', label: 'Low', bg: 'var(--color-surface-container-highest)', text: 'text-[var(--color-text-secondary)]', pulse: false }
-  };
-
-  const config = priorityConfig[task.priority] || priorityConfig['Medium'];
+const BoardColumn = ({ title, status, tasks, onTaskClick, onAddTask }) => {
+  const { setNodeRef } = useSortable({
+    id: status,
+    data: { type: 'Column', status }
+  });
 
   return (
-    <div className={`bg-[var(--color-card-bg)] rounded-xl p-5 border border-[var(--color-card-border)] hover:-translate-y-1 hover:shadow-lg transition-all duration-300 relative overflow-hidden ${isLayoutOverlay ? 'shadow-2xl rotate-3 scale-105 cursor-grabbing z-50' : 'shadow-sm'}`}>
-      {/* Priority Indicator Line */}
-      <div 
-        className={`absolute top-0 left-0 w-1.5 h-full ${config.pulse ? 'animate-pulse' : ''}`}
-        style={{ backgroundColor: config.color }}
-      ></div>
-      
-      {config.pulse && (
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500/20 to-transparent"></div>
-      )}
-
-      <div className="flex justify-between items-start mb-4 pl-1">
-        <div className="flex flex-col gap-1">
-          <span className="bg-[var(--color-surface-container-highest)] text-[var(--color-primary)] text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded w-fit">
-            {task.tag || 'General'}
-          </span>
-          <span className={`px-1.5 py-0.5 rounded border border-current opacity-80 w-fit text-[8px] font-black uppercase tracking-tighter ${config.text}`} style={{ backgroundColor: config.bg.startsWith('var') ? config.bg : undefined }}>
-            {config.label}
+    <div className="flex flex-col w-80 min-w-[20rem] h-full bg-[var(--color-surface-container-low)]/30 rounded-3xl p-4 border border-[var(--color-outline-variant)]/5">
+      <div className="flex items-center justify-between mb-6 px-2">
+        <div className="flex items-center gap-3">
+          <div className={`w-2 h-2 rounded-full ${
+            status === 'To Do' ? 'bg-slate-400' :
+            status === 'In Progress' ? 'bg-amber-400' :
+            status === 'Done' ? 'bg-green-400' : 'bg-red-400'
+          }`} />
+          <h3 className="text-sm font-black text-[var(--color-primary)] uppercase tracking-[0.2em]">{title}</h3>
+          <span className="bg-[var(--color-primary)]/5 text-[var(--color-primary)] px-2 py-0.5 rounded text-[10px] font-bold">
+            {tasks.length}
           </span>
         </div>
-        <div className="flex -space-x-2">
-          <img src={task.avatar || 'https://ui-avatars.com/api/?name=User&background=0D1117&color=fff'} alt="assignee" className="w-6 h-6 rounded-full border-2 border-[var(--color-card-bg)] shadow-sm" />
-        </div>
+        <button 
+          onClick={() => onAddTask(status)}
+          className="p-1.5 hover:bg-[var(--color-primary)]/10 rounded-full transition-colors text-[var(--color-primary)]"
+        >
+          <PlusIcon />
+        </button>
       </div>
-      
-      <h4 className="text-sm font-semibold text-[var(--color-primary)] font-display leading-snug mb-4 pl-1">
-        {task.title}
-      </h4>
-      
-      <div className="flex items-center justify-between pt-4 border-t border-[var(--color-card-border)] pl-1">
-        <div className="flex items-center gap-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors">
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <span className="text-[10px] font-bold">{task.dueDate || 'No date'}</span>
-        </div>
-        {task.status === 'Done' && (
-          <span className="text-[var(--color-success)] animate-in zoom-in duration-300 drop-shadow-sm">
-            <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-          </span>
+
+      <div ref={setNodeRef} className="flex-1 overflow-y-auto hide-scrollbar pb-20">
+        <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+          {tasks.map(task => (
+            <SortableTaskCard key={task.id} task={task} onClick={onTaskClick} />
+          ))}
+        </SortableContext>
+        
+        {tasks.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-[var(--color-outline-variant)]/10 rounded-2xl opacity-40">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">No tasks here</p>
+          </div>
         )}
       </div>
     </div>
   );
 };
 
-// ─── New Task Modal ───
-const NewTaskModal = ({ isOpen, onClose, onSubmit, loading, eventId }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState('Medium');
-  const [dueDate, setDueDate] = useState('');
-  const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    if (!isOpen) {
-      setTitle('');
-      setDescription('');
-      setPriority('Medium');
-      const initialDate = localStorage.getItem(`eventDate_${eventId}`) 
-        ? DateService.toInputFormat(localStorage.getItem(`eventDate_${eventId}`))
-        : DateService.getNowInputFormat();
-      setDueDate(initialDate);
-      setErrors({});
-    }
-  }, [isOpen, eventId]);
-
-  const minDateTime = DateService.getNowInputFormat();
-
-  if (!isOpen) return null;
-
-  const validate = () => {
-    const newErrors = {};
-    if (!title.trim()) {
-      newErrors.title = 'Title is required';
-    }
-    if (!dueDate) {
-      newErrors.dueDate = 'Due date is required';
-    } else if (dueDate < minDateTime) {
-      newErrors.dueDate = 'Date must be in the future';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-    // Ensure date is sent in UTC format to the backend
-    const payload = {
-      title: title.trim(),
-      description,
-      priority,
-      dueDate: dueDate ? DateService.toUTC(dueDate) : null
-    };
-    
-    onSubmit(payload);
-  };
-
-  const handleTitleChange = (e) => {
-    setTitle(e.target.value);
-    if (errors.title) setErrors({ ...errors, title: null });
-  };
-
-  const handleDateChange = (e) => {
-    setDueDate(e.target.value);
-    if (errors.dueDate) setErrors({ ...errors, dueDate: null });
-  };
-
-  return (
-    <>
-      <div className="fixed inset-0 bg-black/20 dark:bg-black/60 backdrop-blur-md z-40" onClick={onClose} />
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-[var(--color-surface-container-lowest)] rounded-[2rem] shadow-2xl w-full max-w-md border border-[var(--color-outline-variant)]/20 animate-in zoom-in-95 duration-200 overflow-hidden">
-          <div className="px-8 py-6 border-b border-[var(--color-outline-variant)]/10 flex items-center justify-between bg-[var(--color-surface-container-low)]">
-            <div>
-              <h2 className="text-xl font-bold text-[var(--color-primary)]">New Task</h2>
-              <p className="text-xs text-[var(--color-text-muted)] mt-0.5 font-medium">Create a new task for your event</p>
-            </div>
-            <button
-              onClick={onClose}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-container-high)] hover:text-[var(--color-primary)] transition-all active:scale-90"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <form onSubmit={handleSubmit} className="px-8 py-8 space-y-6">
-            <div>
-              <label className="block text-xs font-bold text-[var(--color-primary)] uppercase tracking-widest mb-3">Title</label>
-              <input
-                type="text"
-                value={title}
-                onChange={handleTitleChange}
-                className={`w-full px-5 py-4 rounded-2xl border bg-[var(--color-surface-container-low)] text-[var(--color-primary)] font-semibold placeholder-[var(--color-text-muted)]/50 outline-none transition-all ${errors.title ? 'border-[var(--color-error)] ring-4 ring-[var(--color-error)]/10' : 'border-transparent focus:bg-[var(--color-surface-container-lowest)] focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10'}`}
-                placeholder="Task title"
-                required
-              />
-              {errors.title && <p className="text-xs text-red-500 mt-2 font-bold flex items-center gap-1">{errors.title}</p>}
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-[var(--color-primary)] uppercase tracking-widest mb-3">Description</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-5 py-4 rounded-2xl border bg-[var(--color-surface-container-low)] border-transparent text-[var(--color-primary)] placeholder-[var(--color-text-muted)]/50 focus:bg-[var(--color-surface-container-lowest)] focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all resize-none"
-                rows={3}
-                placeholder="Task description (optional)"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-[var(--color-primary)] uppercase tracking-widest mb-3">Priority</label>
-                <select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="w-full px-5 py-4 rounded-2xl border bg-[var(--color-surface-container-low)] border-transparent text-[var(--color-primary)] font-bold text-xs outline-none transition-all focus:bg-[var(--color-surface-container-lowest)]"
-                >
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                  <option value="Urgent">Urgent</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[var(--color-primary)] uppercase tracking-widest mb-3">Due Date</label>
-                <input
-                  type="datetime-local"
-                  value={dueDate}
-                  onChange={handleDateChange}
-                  min={minDateTime}
-                  className={`w-full px-5 py-4 rounded-2xl border bg-[var(--color-surface-container-low)] text-[var(--color-primary)] font-semibold outline-none transition-all ${errors.dueDate ? 'border-[var(--color-error)] ring-4 ring-[var(--color-error)]/10' : 'border-transparent focus:bg-[var(--color-surface-container-lowest)] focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/10'}`}
-                />
-                {errors.dueDate && <p className="text-xs text-[var(--color-error)] mt-2 font-bold flex items-center gap-1">{errors.dueDate}</p>}
-              </div>
-            </div>
-            <div className="flex gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-4 rounded-2xl text-sm font-bold uppercase tracking-widest border border-[var(--color-outline-variant)]/20 hover:bg-[var(--color-surface-container-low)] transition-all text-[var(--color-text-muted)]"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading || !title.trim()}
-                className="flex-1 py-4 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-2xl text-sm font-bold uppercase tracking-widest shadow-xl shadow-[var(--color-primary)]/10 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Creating...' : 'Create Task'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </>
-  );
-};
-
-// ─── Main Tasks Dashboard ───
-const Tasks = () => {
-  const { eventId } = useParams();
-  const [tasks, setTasks] = useState([]);
-  const [activeTask, setActiveTask] = useState(null);
-  const [selectedTaskForDrawer, setSelectedTaskForDrawer] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showNewTaskModal, setShowNewTaskModal] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [activeTab, setActiveTab] = useState('board'); // 'board' or 'calendar'
-
-
+const BoardView = ({ tasks, onTaskClick, onAddTask, onDragEnd }) => {
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  // Load tasks from API
-  const loadTasks = useCallback(async () => {
-    try {
-      setLoading(true);
-      
-      if (!eventId) {
-        console.warn('[TasksBoard] No event ID found in URL');
-        setTasks([]);
-        return;
-      }
+  const columns = ['To Do', 'In Progress', 'Done'];
 
-      const loadedTasks = await tasksApi.getAll(eventId);
-      setTasks(loadedTasks);
+  return (
+    <div className="h-full overflow-x-auto pb-4 hide-scrollbar">
+      <div className="flex gap-6 h-full min-w-max px-2">
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
+        >
+          {columns.map(status => (
+            <BoardColumn 
+              key={status} 
+              title={status} 
+              status={status}
+              tasks={tasks.filter(t => t.status === status)}
+              onTaskClick={onTaskClick}
+              onAddTask={onAddTask}
+            />
+          ))}
+        </DndContext>
+      </div>
+    </div>
+  );
+};
+
+const CalendarView = ({ tasks, onTaskClick }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  
+  const monthName = currentDate.toLocaleString('default', { month: 'long' });
+  const year = currentDate.getFullYear();
+
+  const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+  const startDay = startOfMonth.getDay();
+
+  const days = useMemo(() => {
+    const arr = [];
+    // Previous month padding
+    for (let i = startDay - 1; i >= 0; i--) {
+      const d = new Date(currentDate.getFullYear(), currentDate.getMonth(), -i);
+      arr.push({ date: d, currentMonth: false });
+    }
+    // Current month
+    for (let i = 1; i <= endOfMonth.getDate(); i++) {
+      const d = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
+      arr.push({ date: d, currentMonth: true });
+    }
+    // Next month padding
+    const remaining = 42 - arr.length;
+    for (let i = 1; i <= remaining; i++) {
+      const d = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, i);
+      arr.push({ date: d, currentMonth: false });
+    }
+    return arr;
+  }, [currentDate, startDay, endOfMonth]);
+
+  const getTasksForDate = (date) => {
+    return tasks.filter(task => {
+      if (!task.dueDateRaw) return false;
+      const tDate = new Date(task.dueDateRaw);
+      return (
+        tDate.getDate() === date.getDate() &&
+        tDate.getMonth() === date.getMonth() &&
+        tDate.getFullYear() === date.getFullYear()
+      );
+    });
+  };
+
+  const isToday = (date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-[var(--color-surface-container-lowest)] rounded-3xl border border-[var(--color-outline-variant)]/10 overflow-hidden shadow-sm">
+      <div className="flex items-center justify-between p-6 border-b border-[var(--color-outline-variant)]/10 bg-[var(--color-surface-container-low)]/30">
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-black text-[var(--color-primary)] uppercase tracking-tighter">
+            {monthName} <span className="text-[var(--color-secondary)] opacity-50">{year}</span>
+          </h2>
+          <div className="flex items-center gap-1 bg-[var(--color-surface-container-lowest)] border border-[var(--color-outline-variant)]/20 p-1 rounded-xl">
+            <button 
+              onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}
+              className="p-1.5 hover:bg-[var(--color-surface-container-low)] rounded-lg transition-colors"
+            >
+              <ChevronLeftIcon />
+            </button>
+            <button 
+              onClick={() => setCurrentDate(new Date())}
+              className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest hover:bg-[var(--color-surface-container-low)] rounded-lg transition-colors"
+            >
+              Today
+            </button>
+            <button 
+              onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
+              className="p-1.5 hover:bg-[var(--color-surface-container-low)] rounded-lg transition-colors"
+            >
+              <ChevronRightIcon />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-7 border-b border-[var(--color-outline-variant)]/10 bg-[var(--color-surface-container-low)]/10">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+          <div key={day} className="py-3 text-center text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-[0.2em]">
+            {day}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto hide-scrollbar">
+        <div className="grid grid-cols-7 auto-rows-fr">
+          {days.map((item, idx) => {
+            const dayTasks = getTasksForDate(item.date);
+            const today = isToday(item.date);
+            
+            return (
+              <div 
+                key={idx} 
+                className={`
+                  min-h-[120px] p-2 border-r border-b border-[var(--color-outline-variant)]/5 
+                  ${!item.currentMonth ? 'bg-[var(--color-surface-container-low)]/20 opacity-30' : 'bg-[var(--color-surface-container-lowest)]'}
+                  hover:bg-[var(--color-secondary)]/5 transition-colors group
+                `}
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <span className={`
+                    text-xs font-black p-1.5 w-7 h-7 flex items-center justify-center rounded-lg transition-all
+                    ${today ? 'bg-[var(--color-primary)] text-white shadow-lg' : 'text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-primary)]'}
+                  `}>
+                    {item.date.getDate()}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {dayTasks.map(task => (
+                    <div 
+                      key={task.id}
+                      onClick={() => onTaskClick(task)}
+                      className={`
+                        px-2 py-1 text-[10px] font-bold rounded-lg truncate cursor-pointer transition-all border
+                        ${task.priority === 'Urgent' ? 'bg-red-500/10 text-red-600 border-red-500/10' : 
+                          task.priority === 'High' ? 'bg-orange-500/10 text-orange-600 border-orange-500/10' :
+                          'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-variant)] border-transparent'}
+                        hover:scale-105 hover:shadow-md
+                      `}
+                    >
+                      {task.title}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Tasks = () => {
+  const { eventId } = useParams();
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState('board'); // 'board' or 'calendar'
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [initialStatus, setInitialStatus] = useState('To Do');
+
+  useEffect(() => {
+    fetchTasks();
+  }, [eventId]);
+
+  const fetchTasks = async () => {
+    try {
+      const data = await tasksApi.getAll(eventId);
+      setTasks(data);
     } catch (error) {
-      console.error('Failed to load tasks:', error);
+      console.error('Error fetching tasks:', error);
     } finally {
       setLoading(false);
     }
-  }, [eventId]);
-
-  useEffect(() => {
-    loadTasks();
-    fetchEvent();
-  }, [loadTasks, eventId]);
-
-  const fetchEvent = async () => {
-    try {
-      const { apiClient } = await import('../../lib/api');
-      const eventData = await apiClient.get(`/events/${eventId}`);
-      if (eventData?.eventDate) {
-        localStorage.setItem(`eventDate_${eventId}`, eventData.eventDate);
-      }
-    } catch (error) {
-      console.error('Error fetching event data:', error);
-    }
   };
 
-  const getTasksByStatus = (status) => tasks.filter(t => t.status === status);
+  const handleTaskClick = (task) => {
+    setSelectedTask(task);
+    setIsDrawerOpen(true);
+  };
 
-  const handleDragStart = (event) => {
-    const { active } = event;
-    const task = tasks.find(t => t.id === active.id);
-    setActiveTask(task);
+  const handleAddTask = (status = 'To Do') => {
+    setInitialStatus(status);
+    setSelectedTask(null);
+    setIsDrawerOpen(true);
+    setIsCreating(true);
+  };
+
+  const handleUpdate = (updatedTask) => {
+    setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
+    setIsDrawerOpen(false);
+  };
+
+  const handleDelete = (taskId) => {
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+    setIsDrawerOpen(false);
   };
 
   const handleDragEnd = async (event) => {
-    setActiveTask(null);
     const { active, over } = event;
-
     if (!over) return;
 
-    const activeId = active.id;
+    const taskId = active.id;
     const overId = over.id;
 
-    const activeTaskItem = tasks.find(t => t.id === activeId);
-    
-    let newStatus = COLUMNS.includes(overId) ? overId : tasks.find(t => t.id === overId)?.status;
+    const activeTask = tasks.find(t => t.id === taskId);
+    if (!activeTask) return;
 
-    if (activeTaskItem && newStatus && activeTaskItem.status !== newStatus) {
-      // Optimistic update
-      setTasks(tasks.map(t => {
-        if (t.id === activeId) return { ...t, status: newStatus };
-        return t;
-      }));
-
-      // Call API
-      try {
-        await tasksApi.updateStatus(activeId, newStatus, eventId);
-      } catch (error) {
-        console.error('Failed to update task status:', error);
-        // Revert on error
-        loadTasks();
+    // Check if dropped over a column
+    const columns = ['To Do', 'In Progress', 'Done'];
+    if (columns.includes(overId)) {
+      if (activeTask.status !== overId) {
+        // Update status
+        setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: overId } : t));
+        try {
+          await tasksApi.updateStatus(taskId, overId, eventId);
+        } catch (error) {
+          console.error('Failed to update status:', error);
+          fetchTasks(); // Rollback
+        }
       }
     }
   };
 
-  const handleCreateTask = async (taskData) => {
-    setCreating(true);
-    try {
-      if (!eventId) throw new Error('No active event selected.');
-      
-      const newTask = await tasksApi.create({ ...taskData, eventId });
-      setTasks([...tasks, newTask]);
-      setShowNewTaskModal(false);
-    } catch (error) {
-      console.error('Failed to create task:', error);
-      alert('Failed to create task. Please try again.');
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleTaskUpdated = (updatedTask) => {
-    setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t));
-    setSelectedTaskForDrawer(null);
-  };
-
-  const handleTaskDeleted = (taskId) => {
-    setTasks(tasks.filter(t => t.id !== taskId));
-    setSelectedTaskForDrawer(null);
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="w-12 h-12 border-4 border-[var(--color-primary)]/20 border-t-[var(--color-primary)] rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-full bg-[var(--color-surface)]">
-      <header className="px-4 sm:px-6 lg:px-10 py-4 sm:py-6 lg:py-8 flex-shrink-0 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[var(--color-outline-variant)]/10">
-        <div className="flex flex-col gap-4 w-full">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl lg:text-3xl font-bold text-[var(--color-primary)] font-headline tracking-tight uppercase">
-                {activeTab === 'board' ? 'Event Task Management' : 'Planning Calendar'}
-              </h1>
+    <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Header section with Glassmorphism */}
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="p-2 bg-[var(--color-primary)] rounded-xl text-white shadow-lg shadow-primary/20">
+              <BoardIcon />
             </div>
-            <button 
-              onClick={() => setShowNewTaskModal(true)}
-              className="bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
-            >
-              <span>+</span> New Task
-            </button>
+            <h1 className="text-3xl font-black text-[var(--color-primary)] tracking-tight">Mission Control</h1>
           </div>
-          
-          <div className="flex items-center gap-1 bg-[var(--color-surface-container-low)] p-1 rounded-xl w-fit">
-            <button
-              onClick={() => setActiveTab('board')}
-              className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'board' ? 'bg-[var(--color-surface-container-lowest)] shadow-sm text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'}`}
+          <p className="text-sm font-medium text-[var(--color-on-surface-variant)] opacity-70">Orchestrate your event operations with precision.</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex bg-[var(--color-surface-container-low)] p-1 rounded-2xl border border-[var(--color-outline-variant)]/10 shadow-inner">
+            <button 
+              onClick={() => setView('board')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                view === 'board' ? 'bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] shadow-sm' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
+              }`}
             >
-              Board View
+              <BoardIcon />
+              Board
             </button>
-            <button
-              onClick={() => setActiveTab('calendar')}
-              className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'calendar' ? 'bg-[var(--color-surface-container-lowest)] shadow-sm text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'}`}
+            <button 
+              onClick={() => setView('calendar')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                view === 'calendar' ? 'bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] shadow-sm' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'
+              }`}
             >
+              <CalendarIcon />
               Calendar
             </button>
           </div>
+          
+          <button 
+            onClick={() => handleAddTask()}
+            className="flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+          >
+            <PlusIcon />
+            New Task
+          </button>
         </div>
       </header>
 
-      <div className="flex-1 overflow-auto">
-        {activeTab === 'board' ? (
-          <BoardView 
-            loading={loading}
-            tasks={tasks}
-            sensors={sensors}
-            handleDragStart={handleDragStart}
-            handleDragEnd={handleDragEnd}
-            getTasksByStatus={getTasksByStatus}
-            setSelectedTaskForDrawer={setSelectedTaskForDrawer}
-            activeTask={activeTask}
-          />
-        ) : (
-          <CalendarView tasks={tasks} />
-        )}
-      </div>
+      {/* Main Viewport */}
+      <main className="flex-1 min-h-0 relative">
+        <AnimatePresence mode="wait">
+          {view === 'board' ? (
+            <motion.div 
+              key="board"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="h-full"
+            >
+              <BoardView 
+                tasks={tasks} 
+                onTaskClick={handleTaskClick} 
+                onAddTask={handleAddTask}
+                onDragEnd={handleDragEnd}
+              />
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="calendar"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="h-full"
+            >
+              <CalendarView tasks={tasks} onTaskClick={handleTaskClick} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
 
+      {/* Drawer for Details / Creation */}
       <TaskDrawer 
-        isOpen={!!selectedTaskForDrawer} 
-        onClose={() => setSelectedTaskForDrawer(null)} 
-        task={selectedTaskForDrawer}
+        isOpen={isDrawerOpen}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setIsCreating(false);
+        }}
+        task={selectedTask}
         eventId={eventId}
-        onUpdate={handleTaskUpdated}
-        onDelete={handleTaskDeleted}
-      />
-      
-      <NewTaskModal 
-        isOpen={showNewTaskModal} 
-        onClose={() => setShowNewTaskModal(false)} 
-        onSubmit={handleCreateTask}
-        loading={creating}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
       />
     </div>
   );
 };
-
-// ─── Sub-Components ───
-
-const BoardView = ({ loading, tasks, sensors, handleDragStart, handleDragEnd, getTasksByStatus, setSelectedTaskForDrawer, activeTask }) => {
-  return (
-    <div className="h-full p-4 sm:p-6 lg:p-10">
-      {loading ? (
-        <div className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]"></div>
-        </div>
-      ) : (
-        <DndContext 
-          sensors={sensors}
-          collisionDetection={closestCorners}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="flex flex-col lg:flex-row gap-6 h-full lg:items-start lg:min-w-max">
-            {COLUMNS.map(column => {
-              const columnTasks = getTasksByStatus(column);
-              
-              return (
-                <DroppableColumn key={column} column={column} columnTasks={columnTasks}>
-                  <SortableContext items={columnTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                    {columnTasks.map(task => (
-                      <SortableTaskCard 
-                        key={task.id} 
-                        task={task} 
-                        onClick={() => setSelectedTaskForDrawer(task)}
-                      />
-                    ))}
-                  </SortableContext>
-                </DroppableColumn>
-              );
-            })}
-          </div>
-          
-          <DragOverlay dropAnimation={{ duration: 200, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
-            {activeTask ? <TaskCard task={activeTask} isLayoutOverlay={true} /> : null}
-          </DragOverlay>
-        </DndContext>
-      )}
-    </div>
-  );
-};
-
-const CalendarView = ({ tasks }) => {
-  const [selectedDay, setSelectedDay] = useState(12);
-
-  const timelineTasks = [
-    { date: 'OCT 08', title: 'Venue Deposit Paid', time: '10:30 AM', user: 'Marc J.', status: 'COMPLETED', color: 'bg-green-500' },
-    { date: 'OCT 12', title: 'Confirm Floral Arrangements', time: '09:00 AM', user: 'Marc J.', status: 'IN PROGRESS', color: 'bg-indigo-500', active: true },
-    { date: 'OCT 12', title: 'Final Catering Menu Review', time: '02:30 PM', user: 'Elena S.', status: 'NOT STARTED', color: 'bg-gray-400' },
-  ];
-
-  const sidebarTasks = [
-    { title: 'Confirm Floral Arrangements', time: '09:00 AM', user: 'Marc J.', status: 'In Progress', color: 'border-indigo-500', statusBg: 'bg-indigo-50/50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300' },
-    { title: 'Final Catering Menu Review', time: '02:30 PM', user: 'Elena S.', status: 'Not Started', color: 'border-slate-200', statusBg: 'bg-slate-50/50 text-slate-500 dark:bg-slate-800 dark:text-slate-400' },
-  ];
-
-  return (
-    <div className="flex flex-col lg:flex-row h-full">
-      {/* ─── Left Column (Main Content) ─── */}
-      <div className="flex-1 p-6 lg:p-10 lg:border-r border-[var(--color-outline-variant)]/10">
-        {/* Calendar Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
-          <div>
-            <h2 className="text-3xl font-black text-[var(--color-primary)] font-headline">October 2024</h2>
-            <p className="text-sm font-bold text-[var(--color-text-muted)] mt-1 uppercase tracking-widest">Planning: 14 Active Tasks</p>
-          </div>
-          <div className="flex p-1 bg-[var(--color-surface-container-low)] rounded-xl shadow-inner-sm">
-            {['Month', 'Week', 'Day'].map(view => (
-              <button
-                key={view}
-                className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${view === 'Month' ? 'bg-[var(--color-surface-container-lowest)] shadow-sm text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary)]'}`}
-              >
-                {view}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Calendar Grid */}
-        <div className="mb-12">
-          <div className="grid grid-cols-7 mb-4">
-            {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map(day => (
-              <div key={day} className="text-center text-[10px] font-black text-[var(--color-text-muted)] tracking-[0.2em]">{day}</div>
-            ))}
-          </div>
-          <div className="grid grid-cols-7 border-t border-l border-[var(--color-outline-variant)]/10 rounded-xl overflow-hidden shadow-sm">
-            {/* Simple mock grid for Oct 2024 */}
-            {[...Array(31)].map((_, i) => {
-              const day = i + 1;
-              const isSelected = day === selectedDay;
-              
-              return (
-                <div 
-                  key={i} 
-                  onClick={() => setSelectedDay(day)}
-                  className={`relative h-24 sm:h-28 lg:h-32 p-2 border-r border-b border-[var(--color-outline-variant)]/10 transition-all cursor-pointer hover:bg-[var(--color-surface-container-low)]/50 ${isSelected ? 'bg-[var(--color-primary)]/5 ring-2 ring-[var(--color-primary)]/30 ring-inset z-10' : 'bg-[var(--color-surface-container-lowest)]'}`}
-                >
-                  <span className={`text-xs font-black ${isSelected ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'} ${day === 30 ? 'opacity-20' : ''}`}>
-                    {day < 10 ? `0${day}` : day}
-                  </span>
-                  
-                  {day === 8 && (
-                    <div className="mt-2 bg-green-500/10 border border-green-500/20 rounded px-1.5 py-0.5">
-                      <p className="text-[8px] font-black text-green-600 uppercase tracking-tighter truncate leading-tight">Completed</p>
-                    </div>
-                  )}
-
-                  {day === 12 && (
-                    <div className="mt-2 space-y-1">
-                      <div className="bg-[var(--color-primary)] rounded px-1.5 py-1">
-                        <p className="text-[8px] font-black text-white uppercase tracking-tighter truncate leading-tight">Confir...</p>
-                      </div>
-                      <div className="bg-[var(--color-surface-container-high)] rounded px-1.5 py-1">
-                        <p className="text-[8px] font-black text-[var(--color-text-muted)] uppercase tracking-tighter truncate leading-tight">Cateri...</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Workstream Timeline */}
-        <div className="border-t border-[var(--color-outline-variant)]/10 pt-10">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-xl font-black text-[var(--color-primary)] font-headline">Workstream Timeline</h3>
-              <p className="text-xs font-bold text-[var(--color-text-muted)] mt-1">Visual task progression for October</p>
-            </div>
-            <div className="flex gap-4">
-              <button className="text-slate-400 hover:text-slate-600 transition-colors"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg></button>
-              <button className="text-slate-400 hover:text-slate-600 transition-colors"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></button>
-            </div>
-          </div>
-
-          <div className="space-y-4 relative before:absolute before:left-2 before:top-4 before:bottom-4 before:w-0.5 before:bg-[var(--color-outline-variant)]/10 pl-8">
-            {timelineTasks.map((t, i) => (
-              <div key={i} className="relative group">
-                <div className={`absolute -left-[30px] top-4 w-3.5 h-3.5 rounded-full border-2 border-[var(--color-surface-container-lowest)] ${t.color} z-10 shadow-sm`}></div>
-                <div className="absolute -left-20 top-2.5">
-                  <span className="text-[8px] font-black text-[var(--color-text-secondary)] uppercase tracking-widest">{t.date}</span>
-                </div>
-                <div className={`p-6 rounded-2xl border transition-all ${t.active ? 'bg-[var(--color-surface-container-lowest)] shadow-xl shadow-[var(--color-primary)]/5 border-[var(--color-primary)]/20' : 'bg-[var(--color-surface-container-low)]/50 border-transparent hover:bg-[var(--color-surface-container-low)]'}`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-black text-[var(--color-primary)] mb-2">{t.title}</h4>
-                      <div className="flex items-center gap-4 text-[10px] font-bold text-[var(--color-text-muted)]">
-                        <div className="flex items-center gap-1.5 leading-none">
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                          <span>{t.time}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 leading-none">
-                          <div className="w-5 h-5 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-[8px] text-white">MK</div>
-                          <span>{t.user}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className={`px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest ${t.status === 'COMPLETED' ? 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400' : t.status === 'IN PROGRESS' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' : 'bg-gray-100 text-slate-500 dark:bg-gray-700 dark:text-slate-400'}`}>
-                      {t.status}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ─── Right Column (Sidebar) ─── */}
-      <div className="w-full lg:w-[380px] p-6 lg:p-10 bg-[var(--color-surface-container-low)] flex flex-col h-full overflow-y-auto">
-        <div className="mb-10">
-          <p className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.2em] mb-2 leading-none">Selected Day</p>
-          <h2 className="text-2xl font-black text-[var(--color-primary)] font-headline leading-tight">Tasks for Oct {selectedDay}</h2>
-        </div>
-
-        <div className="space-y-6 flex-1">
-          {sidebarTasks.map((t, i) => (
-            <div key={i} className={`bg-[var(--color-surface-container-lowest)] p-6 rounded-2xl shadow-lg shadow-[var(--color-primary)]/5 border-l-4 ${t.color} relative group transition-all hover:-translate-y-1`}>
-              <button className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
-              </button>
-              <div className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest w-fit mb-4 ${t.statusBg}`}>
-                {t.status}
-              </div>
-              <h4 className="text-lg font-black text-[var(--color-primary)] mb-6 pr-6 leading-snug">{t.title}</h4>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-[10px] text-white overflow-hidden">
-                    <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center">MK</div>
-                  </div>
-                  <span className="text-[11px] font-bold text-[var(--color-text-muted)]">{t.user}</span>
-                </div>
-                <span className="text-[11px] font-bold text-[var(--color-text-muted)] tracking-tight">{t.time}</span>
-              </div>
-            </div>
-          ))}
-
-          {/* Add Task Placeholder */}
-          <div className="border-2 border-dashed border-[var(--color-outline-variant)]/20 rounded-3xl p-8 flex flex-col items-center justify-center gap-3 transition-all hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-surface-container-lowest)]/50 group cursor-pointer">
-            <div className="w-10 h-10 rounded-full bg-[var(--color-surface-container-high)] flex items-center justify-center text-[var(--color-text-muted)] group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all transform group-active:scale-90">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-            </div>
-            <span className="text-xs font-black text-[var(--color-text-muted)] opacity-40 uppercase tracking-widest group-hover:text-[var(--color-primary)] group-hover:opacity-100 transition-opacity">Add task for Oct {selectedDay}</span>
-          </div>
-        </div>
-
-        {/* Milestone Card */}
-        <div className="mt-10 bg-[var(--color-surface-container-high)] dark:bg-[#030712] rounded-2xl p-6 flex items-center justify-between border border-[var(--color-outline-variant)]/20 shadow-xl shadow-[var(--color-primary)]/5 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary)]/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-          <div>
-            <p className="text-[10px] font-black text-[var(--color-secondary)] uppercase tracking-widest mb-1 leading-none">Next Milestone</p>
-            <h4 className="text-lg font-black text-[var(--color-primary)] dark:text-white font-headline">Gala Setup</h4>
-          </div>
-          <div className="relative w-14 h-14">
-            <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-              <circle className="stroke-white/10" strokeWidth="4" fill="none" r="16" cx="18" cy="18" />
-              <circle className="stroke-indigo-500 animate-in fade-in duration-1000" strokeWidth="4" strokeDasharray="72, 100" strokeLinecap="round" fill="none" r="16" cx="18" cy="18" />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[10px] font-black text-[var(--color-primary)] dark:text-white">72%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 
 export default Tasks;
